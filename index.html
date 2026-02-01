@@ -1,0 +1,1056 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>STAR (KCA) ACADEMY — Rankings</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    *{box-sizing:border-box}
+    :root{
+      --bg:#070b12;
+      --bg-soft:#111827;
+      --bg-softer:#0b1220;
+      --border:#1f2937;
+      --text:#e5e7eb;
+      --muted:#9ca3af;
+      --accent:#4f46e5;
+      --accent-soft:rgba(79,70,229,.12);
+      --accent-strong:#a855f7;
+      --danger:#ef4444;
+      --gold:#facc15;
+      --up:#22c55e;
+      --down:#f97316;
+      --card-radius:20px;
+      --shadow-soft:0 18px 40px rgba(15,23,42,.7)
+    }
+
+    body{
+      margin:0;
+      font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;
+      background:radial-gradient(circle at top,#1d2537 0,#020617 55%,#000 100%);
+      color:var(--text);
+      min-height:100vh;
+      -webkit-font-smoothing:antialiased
+    }
+    main{padding:24px 16px 40px}
+    .container{max-width:1400px;margin:0 auto;padding:20px}
+    .logo{
+      font-weight:800;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+      font-size:.9rem;
+      color:var(--muted);
+      display:flex;
+      align-items:center;
+      gap:10px
+    }
+    .logo span{
+      display:inline-flex;
+      padding:4px 10px;
+      border-radius:999px;
+      background:linear-gradient(120deg,#a855f7,#4f46e5);
+      color:#0f172a;
+      font-size:.75rem;
+      box-shadow:0 12px 30px rgba(88,28,135,.7)
+    }
+    h1{
+      margin:.4rem 0 0;
+      font-size:1.9rem;
+      letter-spacing:.04em;
+      text-transform:uppercase
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns:2.4fr 1.8fr;
+      gap:24px;
+      margin-top:24px
+    }
+    @media(max-width:900px){
+      .grid{grid-template-columns:1fr}
+    }
+    .card{
+      background:radial-gradient(circle at top left,#1f2937 0,rgba(15,23,42,.9) 55%,#020617 100%);
+      border-radius:var(--card-radius);
+      border:1px solid rgba(148,163,184,.35);
+      box-shadow:var(--shadow-soft);
+      padding:18px 18px 16px;
+      position:relative;
+      overflow:hidden
+    }
+    .card::before{
+      content:"";
+      position:absolute;
+      inset:-40%;
+      background:radial-gradient(circle at 0 0,rgba(56,189,248,.08),transparent 55%);
+      opacity:.7;
+      pointer-events:none
+    }
+    .card>div,.card>header{position:relative;z-index:1}
+    .card header{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-bottom:12px;
+      gap:12px
+    }
+    .card-title{
+      font-size:.95rem;
+      font-weight:600;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+      color:#e5e7eb
+    }
+    .card-subtitle{
+      font-size:.8rem;
+      color:var(--muted)
+    }
+    .pill{
+      font-size:.7rem;
+      text-transform:uppercase;
+      letter-spacing:.12em;
+      padding:4px 8px;
+      border-radius:999px;
+      background:rgba(15,23,42,.85);
+      border:1px solid rgba(148,163,184,.5);
+      display:inline-flex;
+      align-items:center;
+      gap:4px;
+      color:#e5e7eb
+    }
+    .pill span.dot{
+      width:7px;
+      height:7px;
+      border-radius:999px;
+      background:radial-gradient(circle at 30% 30%,#22c55e 0,#16a34a 40%,#0f766e 100%);
+      box-shadow:0 0 10px rgba(34,197,94,.7)
+    }
+
+    .toolbar{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      align-items:center;
+      margin-bottom:8px
+    }
+    .toolbar-left{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+    .toolbar-right{display:flex;flex-wrap:wrap;gap:8px;margin-left:auto}
+
+    .field{
+      position:relative;
+      display:flex;
+      align-items:center;
+      border-radius:999px;
+      background:rgba(15,23,42,.9);
+      border:1px solid rgba(55,65,81,.9);
+      padding:0 10px;
+      min-height:32px;
+      font-size:.8rem;
+      color:var(--muted);
+      gap:6px
+    }
+    .field input,.field select{
+      background:transparent;
+      border:none;
+      outline:none;
+      color:inherit;
+      font:inherit
+    }
+    .field input::placeholder{color:#6b7280}
+
+    .btn{
+      border-radius:999px;
+      border:1px solid rgba(148,163,184,.7);
+      background:rgba(15,23,42,.9);
+      color:#e5e7eb;
+      padding:6px 12px;
+      font-size:.75rem;
+      font-weight:500;
+      text-transform:uppercase;
+      letter-spacing:.12em;
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      cursor:pointer;
+      transition:background .15s ease,border-color .15s ease,transform .1s ease
+    }
+    .btn-primary{
+      background:linear-gradient(135deg,#4f46e5,#7c3aed);
+      border-color:rgba(129,140,248,.9);
+      color:#e5e7eb;
+      box-shadow:0 10px 25px rgba(55,48,163,.7)
+    }
+    .btn:hover{transform:translateY(-1px);border-color:#e5e7eb}
+    .btn-primary:hover{background:linear-gradient(135deg,#6366f1,#a855f7)}
+
+    .table-wrapper{
+      margin-top:10px;
+      border-radius:16px;
+      border:1px solid rgba(31,41,55,.95);
+      background:radial-gradient(circle at top,#020617 0,#020617 50%,#000 100%);
+      overflow-x:auto;
+      overflow-y:hidden;
+    }
+    table{
+      width:100%;
+      border-collapse:collapse;
+      font-size:.8rem;
+      min-width:1100px;
+    }
+    thead{
+      background:linear-gradient(90deg,rgba(15,23,42,.98),rgba(17,24,39,.98));
+      position:relative
+    }
+    thead::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:radial-gradient(circle at 0 0,rgba(129,140,248,.18),transparent 55%);
+      opacity:.7;
+      pointer-events:none
+    }
+    thead th{
+      text-align:left;
+      font-weight:500;
+      padding:8px 10px;
+      border-bottom:1px solid rgba(55,65,81,.95);
+      color:var(--muted);
+      text-transform:uppercase;
+      letter-spacing:.12em;
+      font-size:.68rem;
+      white-space:nowrap
+    }
+    thead th.num{ text-align:center; }
+
+    th.sticky-rank{
+      position:sticky;
+      left:0;
+      z-index:5;
+      background:inherit;
+    }
+    th.sticky-col{
+      position:sticky;
+      left:50px;
+      z-index:4;
+      background:inherit;
+      width:125px;
+      max-width:125px;
+    }
+
+    tbody tr{
+      border-bottom:1px solid rgba(31,41,55,.85);
+      background:linear-gradient(90deg,rgba(15,23,42,.92),rgba(15,23,42,.9));
+      cursor:pointer;
+      transition:background .12s ease,transform .06s ease
+    }
+    tbody tr:nth-child(2n){background:linear-gradient(90deg,rgba(15,23,42,.92),rgba(15,23,42,.94))}
+    tbody tr:hover{background:rgba(30,64,175,.35)}
+    tbody tr.selected{
+      background:inherit;
+      transform:none;
+      outline:1px solid rgba(129,140,248,.85);
+      outline-offset:-1px;
+    }
+    tbody tr.row-elim{opacity:0.8;}
+    tbody td{
+      padding:7px 10px;
+      vertical-align:middle
+    }
+    td.rank{
+      width:50px;
+      font-weight:600;
+      color:var(--muted);
+      font-variant-numeric:tabular-nums;
+      text-align:center;
+    }
+    td.rank.sticky-rank{
+      position:sticky;
+      left:0;
+      z-index:3;
+      background:inherit;
+    }
+    td.num{
+      text-align:center;
+      font-variant-numeric:tabular-nums;
+    }
+    td.name{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      font-weight:500;
+      position:relative;
+      z-index:3;
+      white-space:nowrap;
+      min-width:0;
+    }
+    td.name .name-wrap{
+      display:flex;
+      align-items:center;
+      gap:6px;
+      min-width:0;
+      flex:1;
+    }
+    td.name .name-text{
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+      min-width:0;
+    }
+    td.name.sticky-col{
+      position:sticky;
+      left:50px;
+      background:inherit;
+      box-shadow:8px 0 12px rgba(15,23,42,.9);
+      width:125px;
+      max-width:125px;
+    }
+    .avatar{
+      width:26px;
+      height:26px;
+      border-radius:999px;
+      object-fit:cover;
+      border:1px solid rgba(148,163,184,.75);
+      box-shadow:0 6px 16px rgba(15,23,42,.8)
+    }
+    .chip{
+      display:inline-flex;
+      align-items:center;
+      padding:2px 7px;
+      border-radius:999px;
+      background:rgba(15,23,42,.9);
+      border:1px solid rgba(55,65,81,.9);
+      font-size:.7rem;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      color:var(--muted)
+    }
+    .chip.elim{
+      border-color:rgba(248,113,113,.7);
+      color:#fecaca;
+      background:rgba(127,29,29,.7)
+    }
+    .delta{
+      font-variant-numeric:tabular-nums;
+      white-space:nowrap;
+      font-size:.75rem;
+      color:var(--muted);
+      margin-left:auto;
+    }
+    .delta.up{color:var(--up)}
+    .delta.down{color:var(--down)}
+
+    .mini{
+      margin-top:14px;
+      font-size:.75rem;
+      color:var(--muted);
+      line-height:1.4
+    }
+
+    .profile{
+      display:flex;
+      flex-direction:column;
+      gap:12px
+    }
+    .profile-main{
+      display:flex;
+      gap:12px;
+      align-items:center
+    }
+    .profile-pic-wrap{
+      position:relative;
+      width:88px;
+      height:88px;
+      border-radius:24px;
+      padding:2px;
+      background:conic-gradient(from 210deg,#4f46e5,#a855f7,#22c55e,#4f46e5);
+      box-shadow:0 18px 45px rgba(15,23,42,.9)
+    }
+    .profile-pic-inner{
+      position:relative;
+      width:100%;
+      height:100%;
+      border-radius:inherit;
+      overflow:hidden;
+      background:radial-gradient(circle at top,#1f2937,#020617)
+    }
+    .profile-pic-inner img{
+      width:100%;
+      height:100%;
+      object-fit:cover
+    }
+    .profile-text h2{
+      margin:0;
+      font-size:1.1rem;
+      letter-spacing:.04em;
+      text-transform:uppercase
+    }
+    .profile-text p{
+      margin:2px 0 0;
+      color:var(--muted);
+      font-size:.8rem
+    }
+    .badge-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:6px
+    }
+    .badge{
+      font-size:.7rem;
+      padding:3px 7px;
+      border-radius:999px;
+      border:1px solid rgba(55,65,81,.9);
+      background:rgba(15,23,42,.9);
+      color:var(--muted)
+    }
+    .badge.gold{
+      border-color:rgba(250,204,21,.7);
+      color:var(--gold);
+      background:rgba(23,37,84,.9)
+    }
+
+    .chart-wrap{
+      margin-top:6px;
+      border-radius:16px;
+      border:1px solid rgba(31,41,55,.9);
+      background:radial-gradient(circle at top,#020617,#000);
+      padding:10px;
+      height:260px;
+      position:relative
+    }
+    .chart-wrap::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:radial-gradient(circle at 20% 0,rgba(59,130,246,.22),transparent 55%);
+      opacity:.7;
+      pointer-events:none
+    }
+    .chart-wrap>canvas{position:relative;z-index:1}
+
+    .sr{
+      position:absolute;
+      width:1px;
+      height:1px;
+      padding:0;
+      margin:-1px;
+      overflow:hidden;
+      clip:rect(0,0,0,0);
+      white-space:nowrap;
+      border:0
+    }
+
+    @media(max-width:650px){
+      h1{font-size:1.35rem}
+      .container{padding:12px}
+      .card{padding:14px}
+      .toolbar{gap:8px}
+      .field{min-height:30px}
+      table{
+        font-size:.78rem;
+        min-width:980px;
+      }
+      .profile-main{align-items:flex-start}
+      #chartLine{height:320px !important}
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header class="container">
+      <div class="logo">
+        <span>STAR (KCA) ACADEMY</span>
+        ROUNDS DASHBOARD
+      </div>
+      <h1>STAR (KCA) ACADEMY — RANKINGS</h1>
+    </header>
+
+    <div class="container">
+      <div class="grid">
+        <div class="card">
+          <header>
+            <div>
+              <div class="card-title">Top contestants</div>
+              <div class="card-subtitle">Search, choose a stage, and switch ranking source.</div>
+            </div>
+            <div class="pill">
+              <span class="dot"></span>
+              Live ranking
+            </div>
+          </header>
+
+          <div class="toolbar">
+            <div class="toolbar-left">
+              <div class="field" style="min-width:190px">
+                <input id="q" type="search" placeholder="Search a contestant..." />
+              </div>
+
+              <label class="sr" for="prime">Stage</label>
+              <div class="field">
+                <select id="prime" aria-label="Active stage">
+                  <option value="0">PRERANK</option>
+                  <option value="1">ROUND 1</option>
+                  <option value="2">ROUND 2</option>
+                  <option value="3">ROUND 3</option>
+                  <option value="4">ROUND 4</option>
+                  <option value="5">ROUND 5</option>
+                  <option value="6">ROUND 6</option>
+                  <option value="7">FINAL</option>
+                </select>
+              </div>
+
+              <label class="sr" for="viewSelect">Ranking source</label>
+              <div class="field">
+                <select id="viewSelect" aria-label="Ranking source" class="view-select">
+                  <option value="rank">RANK</option>
+                  <option value="neitsu">NEITSU</option>
+                  <option value="hauras">HAURAS</option>
+                  <option value="bibi_blu">BIBI BLU</option>
+                  <option value="kaina">KAINA</option>
+                  <option value="cal">CAL</option>
+                  <option value="aya">AYA</option>
+                  <option value="score">SCORE</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="toolbar-right">
+              <button id="share" class="btn btn-primary" type="button">COPY LINK</button>
+            </div>
+          </div>
+
+          <div class="table-wrapper">
+            <table id="top">
+              <thead>
+                <tr>
+                  <th class="sticky-rank">#</th>
+                  <th class="sticky-col">Contestant</th>
+                  <th class="num" data-prime="0">PRERANK</th>
+                  <th class="num" data-prime="1">ROUND 1</th>
+                  <th class="num" data-prime="2">ROUND 2</th>
+                  <th class="num" data-prime="3">ROUND 3</th>
+                  <th class="num" data-prime="4">ROUND 4</th>
+                  <th class="num" data-prime="5">ROUND 5</th>
+                  <th class="num" data-prime="6">ROUND 6</th>
+                  <th class="num" data-prime="7">FINAL</th>
+                  <th class="num">Average</th>
+                </tr>
+              </thead>
+              <tbody id="topBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <header>
+            <div>
+              <div class="card-title">Contestant profile & chart</div>
+              <div class="card-subtitle">Click a contestant to see their trajectory.</div>
+            </div>
+          </header>
+
+          <div class="profile">
+            <div class="profile-main">
+              <div class="profile-pic-wrap">
+                <div class="profile-pic-inner">
+                  <img id="pic" src="assets/placeholder.jpg" alt="Selected contestant" />
+                </div>
+              </div>
+              <div class="profile-text">
+                <h2 id="infoName">No contestant selected</h2>
+                <p id="infoPromo">KCA 2026</p>
+                <div class="badge-row">
+                  <span class="badge gold">Active stage</span>
+                  <span class="badge">RANK / NEITSU / HAURAS / BIBI BLU / KAINA / CAL / AYA / SCORE</span>
+                </div>
+                <p id="infoExtra" style="margin-top:6px;font-size:.8rem;color:var(--muted);max-width:320px;">
+                  Rank, average and elimination status will appear here.
+                </p>
+              </div>
+            </div>
+
+            <div class="chart-wrap">
+              <canvas id="chartLine"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="container">
+      <p class="mini">
+        Δ places = rank difference compared to previous stage (▲ = better, ▼ = worse). Click a contestant to view details.
+      </p>
+    </footer>
+  </main>
+
+  <script>
+    "use strict";
+
+    /*********************************
+     * 1) DATA (hardcoded so it's the same on PC & mobile)
+     *********************************/
+
+    const VIEW_KEYS = ["rank","neitsu","hauras","bibi_blu","kaina","cal","aya","score"];
+    const MAX_PRIME = 7;
+    const labels = ["PRERANK","ROUND 1","ROUND 2","ROUND 3","ROUND 4","ROUND 5","ROUND 6","FINAL"];
+
+    function blankRanks(){
+      const o = {};
+      for(let p=0;p<=MAX_PRIME;p++) o["p"+p] = null;
+      return o;
+    }
+
+    // Contestants (single season)
+    const baseEleves = [
+      { id:1, nom: "Heaven", img: "assets/heaven.jpg", eliminatedAt: null },
+      { id:2, nom: "Manuee", img: "assets/manuee.jpg", eliminatedAt: null },
+      { id:3, nom: "Donghyun", img: "assets/donghyun.jpg", eliminatedAt: null },
+      { id:4, nom: "Suhaa", img: "assets/suhaa.jpg", eliminatedAt: null },
+      { id:5, nom: "Asli", img: "assets/asli.jpg", eliminatedAt: null },
+      { id:6, nom: "Hwa Young", img: "assets/hwa_young.jpg", eliminatedAt: null },
+      { id:7, nom: "Kelsy", img: "assets/kelsy.jpg", eliminatedAt: null },
+      { id:8, nom: "Lizy", img: "assets/lizy.jpg", eliminatedAt: null },
+      { id:9, nom: "Eria", img: "assets/eria.jpg", eliminatedAt: null },
+      { id:10, nom: "Sun", img: "assets/sun.jpg", eliminatedAt: null },
+      { id:11, nom: "Johi", img: "assets/johi.jpg", eliminatedAt: null },
+      { id:12, nom: "Kyo", img: "assets/kyo.jpg", eliminatedAt: null },
+      { id:13, nom: "Chanel", img: "assets/chanel.jpg", eliminatedAt: null },
+      { id:14, nom: "Lea", img: "assets/lea.jpg", eliminatedAt: null },
+      { id:15, nom: "Mimi", img: "assets/mimi.jpg", eliminatedAt: null },
+      { id:16, nom: "Megara", img: "assets/megara.jpg", eliminatedAt: null },
+      { id:17, nom: "Yza", img: "assets/yza.jpg", eliminatedAt: null },
+      { id:18, nom: "Panida", img: "assets/panida.jpg", eliminatedAt: null },
+      { id:19, nom: "Brahmini", img: "assets/brahmini.jpg", eliminatedAt: null },
+      { id:20, nom: "Hope", img: "assets/hope.jpg", eliminatedAt: null },
+      { id:21, nom: "Katie", img: "assets/katie.jpg", eliminatedAt: null },
+      { id:22, nom: "Kora", img: "assets/kora.jpg", eliminatedAt: null },
+    ];
+
+    // Build full dataset with empty rankings for each view
+    const eleves = baseEleves.map(e => {
+      const obj = { ...e };
+      VIEW_KEYS.forEach(k => obj[k] = blankRanks());
+      return obj;
+    });
+
+    // Helper: set an ordered ranking list for a given view + stage
+    function setOrder(viewKey, primeNumber, orderedNames){
+      orderedNames.forEach((name, i) => {
+        const e = eleves.find(x => x.nom === name);
+        if (e && e[viewKey]) e[viewKey]["p"+primeNumber] = i + 1;
+      });
+    }
+
+function setValues(viewKey, primeNumber, valuesByName){
+  const key = "p" + primeNumber;
+  eleves.forEach(e => {
+    if(!e || !e[viewKey]) return;
+    const v = valuesByName[e.nom];
+    if(v === undefined || v === null) return;
+    e[viewKey][key] = v;
+  });
+}
+
+    // ✅ PRE-RANK data already embedded (so it shows everywhere)
+    setOrder("rank", 0, [
+      "Yza","Hope","Lea","Megara","Asli","Chanel","Heaven","Manuee","Hwa Young","Mimi","Eria","Panida",
+      "Kelsy","Suhaa","Johi","Sun","Kora","Brahmini","Katie","Donghyun","Lizy","Kyo"
+    ]);
+
+    // ✅ PRERANK scores (absolute values)
+    setValues("score", 0, {
+      "Asli": 89,
+      "Brahmini": 71,
+      "Chanel": 86.5,
+      "Donghyun": 67.5,
+      "Eria": 82.5,
+      "Heaven": 86,
+      "Hope": 94,
+      "Hwa Young": 86,
+      "Johi": 76.5,
+      "Katie": 71,
+      "Kelsy": 80.5,
+      "Kora": 75,
+      "Kyo": 60.5,
+      "Lea": 91.5,
+      "Lizy": 62.5,
+      "Manuee": 86,
+      "Megara": 90,
+      "Mimi": 85.5,
+      "Panida": 82,
+      "Suhaa": 78.5,
+      "Sun": 76.5,
+      "Yza": 97.5
+    });
+
+
+    // Examples for later:
+    // setOrder("rank", 1, [ "Yza", "Hope", ... ]);        // ROUND 1
+    // setOrder("neitsu", 0, [ "Yza", "Hope", ... ]);      // PRERANK for another source
+
+    /*********************************
+     * 2) DOM refs + state
+     *********************************/
+    const dom = {
+      q: document.getElementById("q"),
+      prime: document.getElementById("prime"),
+      viewSelect: document.getElementById("viewSelect"),
+      topBody: document.getElementById("topBody"),
+      pic: document.getElementById("pic"),
+      infoName: document.getElementById("infoName"),
+      infoPromo: document.getElementById("infoPromo"),
+      infoExtra: document.getElementById("infoExtra"),
+      share: document.getElementById("share")
+    };
+
+    const appState = {
+      view: "rank",
+      selectedId: null
+    };
+
+    /*********************************
+     * 3) Helpers
+     *********************************/
+    function getLabelList(){ return labels.slice(); }
+
+    function mean(nums){
+      if(!nums.length) return null;
+      return nums.reduce((a,b)=>a+b,0)/nums.length;
+    }
+
+    function averageUpTo(eleve, view, maxPrime){
+      const vals = [];
+      for(let p=0;p<=maxPrime;p++){
+        const v = eleve[view]["p"+p];
+        if(v != null && v !== "" && !Number.isNaN(+v)) vals.push(+v);
+      }
+      return mean(vals);
+    }
+
+    function getActivePrimeNumber(){
+      const n = parseInt(dom.prime.value, 10);
+      return Number.isFinite(n) ? n : 0;
+    }
+
+    function computeRows(){
+      const q = (dom.q.value || "").trim().toLowerCase();
+      const view = appState.view;
+      const maxP = getActivePrimeNumber();
+
+      let list = eleves.slice();
+
+      if(q){
+        list = list.filter(e => e.nom.toLowerCase().includes(q));
+      }
+
+      const rows = list.map(e => ({ e, avg: averageUpTo(e, view, maxP) }));
+
+      rows.sort((a,b)=>{
+        const av = a.avg;
+        const bv = b.avg;
+        const aHas = av != null;
+        const bHas = bv != null;
+
+        if(aHas && !bHas) return -1;
+        if(!aHas && bHas) return 1;
+
+        if(!aHas && !bHas) return a.e.nom.localeCompare(b.e.nom);
+
+        if(view === "score"){
+          if(bv !== av) return bv - av; // higher score = better
+        }else{
+          if(av !== bv) return av - bv; // lower rank = better
+        }
+        return a.e.nom.localeCompare(b.e.nom);
+      });
+
+      return { rows, maxP, view };
+    }
+
+    function deltaBetween(eleve, view, prime){
+      if(prime <= 0) return null;
+      const a = eleve[view]["p"+prime];
+      const b = eleve[view]["p"+(prime-1)];
+      if(a==null || b==null) return null;
+      const da = +b - +a; // positive means improved if ranks
+      if(view === "score") return (+a - +b); // positive means improved score
+      return da;
+    }
+
+    /*********************************
+     * 4) Render table
+     *********************************/
+    function renderTable(){
+      const { rows, maxP, view } = computeRows();
+      dom.topBody.innerHTML = "";
+
+      rows.forEach((r, idx) => {
+        const e = r.e;
+        const tr = document.createElement("tr");
+        if(appState.selectedId === e.id) tr.classList.add("selected");
+        if(e.eliminatedAt != null) tr.classList.add("row-elim");
+
+        tr.addEventListener("click", () => {
+          appState.selectedId = e.id;
+          renderAll();
+        });
+
+        // Rank #
+        const tdRank = document.createElement("td");
+        tdRank.className = "rank sticky-rank";
+        tdRank.textContent = String(idx + 1);
+        tr.appendChild(tdRank);
+
+        // Name
+        const tdName = document.createElement("td");
+        tdName.className = "name sticky-col";
+
+        const wrap = document.createElement("div");
+        wrap.className = "name-wrap";
+
+        const img = document.createElement("img");
+        img.className = "avatar";
+        img.src = e.img || "assets/placeholder.jpg";
+        img.alt = e.nom;
+
+        const nm = document.createElement("span");
+        nm.className = "name-text";
+        nm.textContent = e.nom;
+
+        wrap.appendChild(img);
+        wrap.appendChild(nm);
+        tdName.appendChild(wrap);
+
+        if(e.eliminatedAt != null){
+          const chip = document.createElement("span");
+          chip.className = "chip elim";
+          chip.textContent = "ELIMINATED";
+          tdName.appendChild(chip);
+        }
+
+        // delta
+        const d = deltaBetween(e, view, maxP);
+        const delta = document.createElement("span");
+        delta.className = "delta";
+        if(d != null && d !== 0){
+          if(d > 0) delta.classList.add("up");
+          if(d < 0) delta.classList.add("down");
+          const arrow = d > 0 ? "▲" : "▼";
+          delta.textContent = `${arrow} ${Math.abs(d)}`;
+        }else{
+          delta.textContent = "";
+        }
+        tdName.appendChild(delta);
+        tr.appendChild(tdName);
+
+        // Stages columns 0..7
+        for(let p=0;p<=MAX_PRIME;p++){
+          const td = document.createElement("td");
+          td.className = "num";
+          const key = "p"+p;
+          const val = e[view][key];
+          td.textContent = (val==null) ? "—" : String(val);
+          tr.appendChild(td);
+        }
+
+        // Average
+        const tdAvg = document.createElement("td");
+        tdAvg.className = "num";
+        const avg = averageUpTo(e, view, maxP);
+        tdAvg.textContent = (avg == null) ? "—" : ((view === "score") ? avg.toFixed(1) : avg.toFixed(2));
+        tr.appendChild(tdAvg);
+
+        dom.topBody.appendChild(tr);
+      });
+
+      highlightActivePrime(maxP);
+    }
+
+    function highlightActivePrime(activeP){
+      document.querySelectorAll("#top thead th[data-prime]").forEach(th => {
+        const p = parseInt(th.getAttribute("data-prime"),10);
+        th.style.color = (p === activeP) ? "var(--gold)" : "var(--muted)";
+      });
+    }
+
+    /*********************************
+     * 5) Profile + chart
+     *********************************/
+    let chart = null;
+
+    function hashStringToHue(str){
+      let h = 0;
+      for(let i=0;i<str.length;i++){
+        h = (h * 31 + str.charCodeAt(i)) >>> 0;
+      }
+      return h % 360;
+    }
+    function colorFromName(name, alpha=0.28){
+      const hue = hashStringToHue(name);
+      return `hsla(${hue}, 80%, 60%, ${alpha})`;
+    }
+
+    function renderProfile(){
+      const e = eleves.find(x => x.id === appState.selectedId);
+      const view = appState.view;
+
+      if(!e){
+        dom.pic.src = "assets/placeholder.jpg";
+        dom.infoName.textContent = "No contestant selected";
+        dom.infoExtra.textContent = "Rank, average and elimination status will appear here.";
+        renderChart(null);
+        return;
+      }
+
+      dom.pic.src = e.img || "assets/placeholder.jpg";
+      dom.infoName.textContent = e.nom;
+
+      const maxP = getActivePrimeNumber();
+      const avg = averageUpTo(e, view, maxP);
+      const cur = e[view]["p"+maxP];
+
+      const status = e.eliminatedAt != null
+        ? (() => {
+            const lbl = labels[Number(e.eliminatedAt)] || ("Stage " + e.eliminatedAt);
+            return `Eliminated at ${lbl}`;
+          })()
+        : "Still in the competition";
+
+      dom.infoExtra.textContent =
+        `Current ${view.toUpperCase()}: ${(cur==null ? "—" : cur)} · Average: ${(avg==null ? "—" : (view==="score" ? avg.toFixed(1) : avg.toFixed(2)))} · ${status}`;
+
+      renderChart(e);
+    }
+
+    function renderChart(selected){
+      if(!window.Chart) return;
+
+      const canvas = document.getElementById("chartLine");
+      if(!canvas) return;
+      const ctx = canvas.getContext("2d");
+
+      const view = appState.view;
+      const lbls = getLabelList();
+
+      const tickColor = getComputedStyle(document.body).getPropertyValue("--muted").trim() || "#9ca3af";
+      const grid = "rgba(148,163,184,.15)";
+
+      const datasets = eleves.map(x => {
+        const isSel = selected && x.id === selected.id;
+
+        // ✅ same color selected / not selected
+        const lineColor = colorFromName(x.nom, 0.32);
+
+        return {
+          label: x.nom,
+          data: lbls.map((_, i) => {
+            const v = x[view]["p" + i];
+            return (v == null ? null : Number(v));
+          }),
+          spanGaps: true,
+          tension: 0.25,
+
+          borderColor: lineColor,
+          pointBackgroundColor: lineColor,
+          pointBorderColor: lineColor,
+
+          borderWidth: isSel ? 3 : 1,
+          pointRadius: isSel ? 2 : 1,
+          pointHoverRadius: isSel ? 3 : 2,
+
+          // selected line on top
+          order: isSel ? 0 : 1
+        };
+      });
+
+      if(chart){ chart.destroy(); chart = null; }
+
+      const yReverse = (view !== "score");
+      const suggestedMin = (view === "score") ? 0 : 1;
+      const suggestedMax = (view === "score") ? 100 : Math.max(2, eleves.length);
+
+      chart = new Chart(ctx, {
+        type: "line",
+        data: { labels: lbls, datasets },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: "nearest", intersect: false },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              enabled: true,
+              callbacks: {
+                label: (item) => `${item.dataset.label}: ${item.formattedValue}`
+              }
+            }
+          },
+          scales: {
+            y: {
+              reverse: yReverse,
+              suggestedMin,
+              suggestedMax,
+              ticks: {
+                color: tickColor,
+                stepSize: (view === "score") ? 10 : 1,
+                precision: 0,
+                callback: (v) => (Number.isFinite(v) ? Math.round(v) : v)
+              },
+              grid: { color: grid }
+            },
+            x: {
+              ticks: { color: tickColor, maxRotation: 0, autoSkip: true },
+              grid: { display: false }
+            }
+          }
+        }
+      });
+    }
+
+    /*********************************
+     * 6) Events
+     *********************************/
+    dom.q.addEventListener("input", () => renderAll(false));
+
+    dom.prime.addEventListener("change", () => renderAll(false));
+
+    dom.viewSelect.value = appState.view;
+    dom.viewSelect.addEventListener("change", () => {
+      const v = dom.viewSelect.value;
+      if(!VIEW_KEYS.includes(v)) return;
+      appState.view = v;
+      renderAll(false);
+    });
+
+    dom.share.addEventListener("click", async () => {
+      // Simple share link (same data because hardcoded)
+      const url = location.href;
+      try{
+        await navigator.clipboard.writeText(url);
+        alert("Link copied!");
+      }catch(err){
+        prompt("Copy this link:", url);
+      }
+    });
+
+    /*********************************
+     * 7) Render all + boot
+     *********************************/
+    function renderAll(){
+      renderTable();
+      renderProfile();
+    }
+
+    // Render immediately (table works without Chart.js)
+    renderAll();
+
+    // Load Chart.js (CDN) to enable the chart
+    if(!window.Chart){
+      const s = document.createElement("script");
+      s.src = "https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js";
+      s.onload = () => renderAll();
+      document.head.appendChild(s);
+    }
+  </script>
+</body>
+</html>
