@@ -1,0 +1,1288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>STAR (KCA) ACADEMY — Rounds Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    *{box-sizing:border-box}
+    :root{
+      --bg:#070b12;
+      --bg-soft:#111827;
+      --bg-softer:#0b1220;
+      --border:#1f2937;
+      --text:#e5e7eb;
+      --muted:#9ca3af;
+      --accent:#4f46e5;
+      --accent-soft:rgba(79,70,229,.12);
+      --accent-strong:#a855f7;
+      --danger:#ef4444;
+      --gold:#facc15;
+      --up:#22c55e;
+      --down:#f97316;
+      --card-radius:20px;
+      --shadow-soft:0 18px 40px rgba(15,23,42,.7);
+    }
+
+    /* Light theme */
+    body[data-theme="light"]{
+      --bg:#f3f4f6;
+      --bg-soft:#ffffff;
+      --bg-softer:#e5e7eb;
+      --border:#d1d5db;
+      --text:#111827;
+      --muted:#6b7280;
+      --accent:#2563eb;
+      --accent-soft:rgba(37,99,235,.10);
+      --accent-strong:#7c3aed;
+      --danger:#b91c1c;
+      --gold:#ca8a04;
+      --up:#16a34a;
+      --down:#ea580c;
+      background:radial-gradient(circle at top,#e5e7eb 0,#f9fafb 55%,#e5e7eb 100%);
+      color:var(--text);
+    }
+    body[data-theme="light"] .card{
+      background:linear-gradient(180deg,#ffffff,#f3f4f6);
+      border-color:var(--border);
+      box-shadow:0 12px 25px rgba(148,163,184,.35);
+    }
+    body[data-theme="light"] .table-wrapper{background:#fff;border-color:var(--border);}
+    body[data-theme="light"] thead{background:linear-gradient(90deg,#e5e7eb,#f3f4f6);}
+    body[data-theme="light"] tbody tr,
+    body[data-theme="light"] tbody tr:nth-child(2n){background:#fff;}
+    body[data-theme="light"] tbody tr:hover{background:#e5e7eb;}
+    body[data-theme="light"] tbody tr.selected{background:linear-gradient(90deg,#e0f2fe,#ede9fe);}
+    body[data-theme="light"] .chart-wrap{background:linear-gradient(180deg,#ffffff,#e5e7eb);border-color:var(--border);}
+
+    body{
+      margin:0;
+      font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;
+      background:radial-gradient(circle at top,#1d2537 0,#020617 55%,#000 100%);
+      color:var(--text);
+      min-height:100vh;
+    }
+    a{color:inherit}
+    .container{max-width:1200px;margin:0 auto;padding:18px;}
+    .pill{
+      display:inline-flex;align-items:center;gap:10px;
+      padding:6px 12px;border-radius:999px;
+      background:rgba(168,85,247,.16);
+      border:1px solid rgba(168,85,247,.38);
+      color:#e9d5ff;font-weight:700;font-size:.78rem;letter-spacing:.09em;
+      text-transform:uppercase;
+    }
+    .title{margin:10px 0 0;font-size:2.1rem;letter-spacing:.02em;}
+    .sub{margin:6px 0 0;color:var(--muted);font-size:.95rem}
+
+    .grid{display:grid;grid-template-columns: 1.45fr .95fr;gap:16px;margin-top:18px;}
+    .card{
+      background:linear-gradient(180deg,rgba(17,24,39,.85),rgba(2,6,23,.75));
+      border:1px solid var(--border);
+      border-radius:var(--card-radius);
+      box-shadow:var(--shadow-soft);
+      overflow:hidden;
+    }
+    .card-head{padding:14px 14px 10px;border-bottom:1px solid rgba(31,41,55,.55);}
+    .card-head h3{margin:0;font-size:.95rem;letter-spacing:.08em;text-transform:uppercase;}
+    .card-head p{margin:6px 0 0;color:var(--muted);font-size:.86rem}
+    .toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px;}
+    .toolbar .spacer{flex:1}
+    .input, select{
+      background:rgba(2,6,23,.65);
+      border:1px solid rgba(31,41,55,.9);
+      color:var(--text);
+      border-radius:999px;
+      padding:9px 12px;
+      outline:none;
+      font-size:.9rem;
+    }
+    body[data-theme="light"] .input,
+    body[data-theme="light"] select{
+      background:#fff;border:1px solid var(--border);color:var(--text);
+    }
+    .btn{
+      cursor:pointer;
+      background:rgba(79,70,229,.10);
+      border:1px solid rgba(79,70,229,.40);
+      color:#c7d2fe;
+      padding:9px 12px;
+      border-radius:999px;
+      font-weight:700;
+      font-size:.85rem;
+      letter-spacing:.02em;
+      transition:transform .06s ease, background .15s ease;
+      user-select:none;
+      display:inline-flex;align-items:center;gap:8px;
+    }
+    .btn:active{transform:translateY(1px)}
+    .btn.primary{
+      background:linear-gradient(90deg,rgba(168,85,247,.65),rgba(79,70,229,.55));
+      border-color:rgba(168,85,247,.65);
+      color:#fff;
+    }
+    .btn.ghost{background:transparent;border-color:rgba(148,163,184,.25);color:var(--text)}
+    .btn.danger{background:rgba(239,68,68,.10);border-color:rgba(239,68,68,.45);color:#fecaca}
+
+    /* Tabs */
+    .seg{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+    .seg button{
+      background:transparent;
+      border:1px solid rgba(148,163,184,.20);
+      color:var(--muted);
+      padding:7px 10px;border-radius:999px;
+      font-weight:800;font-size:.78rem;
+      letter-spacing:.06em;text-transform:uppercase;
+      cursor:pointer;
+    }
+    .seg button.active{
+      background:rgba(250,204,21,.10);
+      border-color:rgba(250,204,21,.40);
+      color:var(--gold);
+    }
+
+    /* Table */
+    .table-wrapper{overflow:auto;max-height:560px;background:rgba(2,6,23,.35);}
+    table{width:100%;border-collapse:separate;border-spacing:0;min-width:920px;}
+    thead{position:sticky;top:0;z-index:2;background:rgba(2,6,23,.92);backdrop-filter:blur(10px);}
+    th, td{padding:10px 12px;border-bottom:1px solid rgba(31,41,55,.55);white-space:nowrap;}
+    th{text-align:left;color:var(--muted);font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;}
+    tbody tr{background:transparent}
+    tbody tr:nth-child(2n){background:rgba(2,6,23,.22)}
+    tbody tr:hover{background:rgba(79,70,229,.08)}
+    tbody tr.selected{background:linear-gradient(90deg,rgba(79,70,229,.20),rgba(168,85,247,.18))}
+    .num{text-align:center;font-variant-numeric:tabular-nums;}
+    .sticky-col{position:sticky;left:0;background:inherit;z-index:1;}
+    thead .sticky-col{z-index:3}
+    .name{min-width:270px;}
+    .name-wrap{display:flex;align-items:center;gap:10px;}
+    .avatar{width:26px;height:26px;border-radius:999px;border:1px solid rgba(148,163,184,.25);object-fit:cover;flex:0 0 auto}
+    .name-text{font-weight:800}
+    .delta{display:block;font-size:.75rem;color:var(--muted);margin-left:36px;margin-top:2px}
+    .delta.up{color:var(--up)}
+    .delta.down{color:var(--down)}
+    .badge{
+      display:inline-flex;align-items:center;gap:6px;
+      padding:4px 10px;border-radius:999px;
+      border:1px solid rgba(148,163,184,.25);
+      color:var(--muted);font-size:.76rem;font-weight:700;
+    }
+    .badge.gold{border-color:rgba(250,204,21,.45);color:var(--gold);background:rgba(250,204,21,.10)}
+    .elim{background:rgba(239,68,68,.10);border-color:rgba(239,68,68,.40);color:#fecaca}
+    .table-input{
+      width:72px;
+      padding:8px 10px;border-radius:12px;
+      border:1px solid rgba(148,163,184,.25);
+      background:rgba(2,6,23,.45);
+      color:var(--text);
+      text-align:center;
+      font-weight:800;
+      outline:none;
+    }
+    body[data-theme="light"] .table-input{background:#fff;border-color:var(--border);color:var(--text)}
+
+    /* Profile */
+    .profile{display:flex;gap:12px;align-items:center;}
+    .profile-pic{width:68px;height:68px;border-radius:999px;overflow:hidden;border:2px solid rgba(168,85,247,.55);flex:0 0 auto;background:rgba(2,6,23,.35)}
+    .profile-pic img{width:100%;height:100%;object-fit:cover;display:block}
+    .profile-text h2{margin:0;font-size:1.25rem}
+    .profile-text p{margin:4px 0 0;color:var(--muted)}
+    .badge-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+    .chart-wrap{height:320px;border:1px solid rgba(31,41,55,.55);border-radius:16px;margin-top:12px;background:rgba(2,6,23,.35);padding:10px}
+    .mini{margin:0;color:var(--muted);font-size:.82rem}
+
+    /* Mobile layout */
+    .mobile-topbar{
+      display:none;
+      position:sticky;
+      top:0;
+      z-index:50;
+      padding:10px 12px;
+      background:rgba(2,6,23,.85);
+      backdrop-filter:blur(10px);
+      border-bottom:1px solid rgba(31,41,55,.55);
+    }
+    body[data-theme="light"] .mobile-topbar{background:rgba(255,255,255,.92);}
+    .mobile-topbar .row{display:flex;align-items:center;gap:10px;}
+    .mobile-topbar .logo{font-weight:900;letter-spacing:.08em}
+    .mobile-topbar .actions{margin-left:auto;display:flex;gap:8px;align-items:center}
+    .iconbtn{
+      width:38px;height:38px;border-radius:12px;
+      display:inline-flex;align-items:center;justify-content:center;
+      border:1px solid rgba(148,163,184,.25);
+      background:transparent;color:var(--text);
+      font-weight:900;
+      cursor:pointer;
+      user-select:none;
+    }
+    .menu-wrap{position:relative;}
+    .menu-pop{
+      position:absolute;right:0;top:44px;
+      width:230px;
+      background:rgba(2,6,23,.95);
+      border:1px solid rgba(31,41,55,.85);
+      border-radius:16px;
+      box-shadow:0 18px 40px rgba(0,0,0,.55);
+      padding:8px;
+      display:none;
+      z-index:100;
+    }
+    body[data-theme="light"] .menu-pop{background:#fff;border-color:var(--border)}
+    .menu-pop.open{display:block}
+    .menu-pop .btn{width:100%;justify-content:center}
+    .menu-pop .sep{height:1px;background:rgba(148,163,184,.18);margin:6px 2px}
+
+    /* Hide desktop action buttons on mobile */
+    @media (max-width: 900px){
+      .grid{grid-template-columns:1fr;}
+      .container{padding:12px;}
+      .title{font-size:1.6rem;}
+      table{min-width:840px;}
+      .table-wrapper{max-height:520px;}
+      .mobile-topbar{display:block}
+      .desktop-actions{display:none !important}
+      .card-head h3{font-size:.9rem}
+    }
+  </style>
+</head>
+
+<body>
+  <div class="mobile-topbar">
+    <div class="row">
+      <div class="logo">STAR (KCA) ACADEMY</div>
+      <div class="actions">
+        <button class="iconbtn" id="jumpA" title="Go to table">A</button>
+        <div class="menu-wrap">
+          <button class="iconbtn" id="menuBtn" title="Menu">MENU</button>
+          <div class="menu-pop" id="menuPop" aria-hidden="true">
+            <button class="btn ghost" id="modeToggle2">Edit mode</button>
+            <button class="btn ghost" id="sortBtn2">Sort by name</button>
+            <button class="btn ghost" id="toggleElimBtn2">Hide eliminated</button>
+            <div class="sep"></div>
+            <button class="btn primary" id="share2">Copy link</button>
+            <button class="btn ghost" id="themeToggle2">Light mode</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <main class="container">
+    <div>
+      <span class="pill">STAR (KCA) ACADEMY <span style="opacity:.55">•</span> ROUNDS DASHBOARD</span>
+      <h1 class="title">STAR (KCA) ACADEMY — RANKINGS</h1>
+      <p class="sub">Enter values in <strong>Edit mode</strong>. All changes are saved automatically in your browser.</p>
+    </div>
+
+    <div class="grid">
+      <!-- A) TABLE -->
+      <section class="card" id="topCard">
+        <div class="card-head">
+          <div style="display:flex;align-items:center;gap:10px;justify-content:space-between;">
+            <div>
+              <h3>TOP CONTESTANTS</h3>
+              <p>Filter by stage, metric, and season.</p>
+            </div>
+            <span class="badge gold" style="display:inline-flex;align-items:center;gap:6px;">
+              <span style="width:8px;height:8px;border-radius:999px;background:var(--up);display:inline-block"></span>
+              LIVE RANKING
+            </span>
+          </div>
+
+          <div class="toolbar">
+            <input class="input" id="q" placeholder="Search a contestant..." />
+            <select id="promo"></select>
+            <select id="prime"></select>
+            <div class="spacer"></div>
+
+            <!-- Desktop actions -->
+            <div class="desktop-actions" style="display:flex;gap:8px;flex-wrap:wrap;">
+              <button class="btn ghost" id="modeToggle">Edit mode</button>
+              <button class="btn ghost" id="sortBtn">Sort by name</button>
+              <button class="btn ghost" id="toggleElimBtn">Hide eliminated</button>
+              <button class="btn primary" id="share">Copy link</button>
+              <button class="btn ghost" id="themeToggle">Light mode</button>
+            </div>
+          </div>
+
+          <div class="seg" role="tablist" aria-label="Metric tabs">
+            <button role="tab" data-view="rank"   class="active" aria-selected="true">RANK</button>
+            <button role="tab" data-view="neitsu" aria-selected="false">NEITSU</button>
+            <button role="tab" data-view="hauras" aria-selected="false">HAURAS</button>
+            <button role="tab" data-view="bibi"   aria-selected="false">BIBI BLU</button>
+            <button role="tab" data-view="kaina"  aria-selected="false">KAINA</button>
+            <button role="tab" data-view="cal"    aria-selected="false">CAL</button>
+            <button role="tab" data-view="aya"    aria-selected="false">AYA</button>
+            <button role="tab" data-view="score"  aria-selected="false">SCORE</button>
+          </div>
+        </div>
+
+        <div class="table-wrapper">
+          <table id="top">
+            <thead>
+              <tr>
+                <th class="num">#</th>
+                <th class="sticky-col name">CONTESTANT</th>
+                <th class="num" data-prime="0">PRERANK</th>
+                <th class="num" data-prime="1">ROUND 1</th>
+                <th class="num" data-prime="2">ROUND 2</th>
+                <th class="num" data-prime="3">ROUND 3</th>
+                <th class="num" data-prime="4">ROUND 4</th>
+                <th class="num" data-prime="5">ROUND 5</th>
+                <th class="num" data-prime="6">ROUND 6</th>
+                <th class="num" data-prime="7">FINAL</th>
+                <th class="num">AVG</th>
+              </tr>
+            </thead>
+            <tbody id="topBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- B) PROFILE -->
+      <aside class="card" id="profileCard">
+        <div class="card-head">
+          <h3>CONTESTANT PROFILE & CHART</h3>
+          <p>Tap a contestant in the table to see their trajectory.</p>
+        </div>
+
+        <div style="padding:14px;">
+          <div class="profile">
+            <div class="profile-pic">
+              <img id="pic" src="assets/placeholder.jpg" alt="Selected contestant"/>
+            </div>
+            <div class="profile-text">
+              <h2 id="infoName">Select a contestant</h2>
+              <p id="infoPromo">Season —</p>
+              <div class="badge-row">
+                <span class="badge gold" id="activeStageBadge">Active stage</span>
+                <span class="badge" id="activeViewBadge">RANK / NEITSU / HAURAS / BIBI BLU / KAINA / CAL / AYA / SCORE</span>
+              </div>
+              <p id="infoExtra" style="margin-top:8px;font-size:.86rem;color:var(--muted);">
+                Rank, average and status will appear here.
+              </p>
+
+              <div id="elimEditor" style="margin-top:10px;font-size:.86rem;display:none;">
+                <label style="display:inline-flex;align-items:center;gap:6px;">
+                  <input type="checkbox" id="elimCheckbox" />
+                  Eliminated
+                </label>
+                <select id="elimPrime" style="margin-left:8px;"></select>
+              </div>
+            </div>
+          </div>
+
+          <div class="chart-wrap">
+            <div id="chartFallback" class="mini" style="display:none;padding:8px;">
+              Chart unavailable (Chart.js didn’t load). The table still works.
+            </div>
+            <canvas id="chartLine"></canvas>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <footer class="container" style="padding-top:10px">
+      <p class="mini">
+        Δ places = change vs previous stage (▲ better, ▼ worse). Values are saved in your device.
+        Share a read-only link by adding <strong>?viewer=1</strong> to the URL.
+      </p>
+    </footer>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script>
+  (function() {
+    "use strict";
+
+    // Stage keys (0..7)
+    const STAGES = [
+      { key:"p0", label:"PRERANK" },
+      { key:"p1", label:"ROUND 1" },
+      { key:"p2", label:"ROUND 2" },
+      { key:"p3", label:"ROUND 3" },
+      { key:"p4", label:"ROUND 4" },
+      { key:"p5", label:"ROUND 5" },
+      { key:"p6", label:"ROUND 6" },
+      { key:"p7", label:"FINAL" },
+    ];
+    const MAX_STAGE = STAGES.length - 1;
+    const STAGE_KEYS = STAGES.map(s => s.key);
+
+    const VIEWS = [
+      { key:"rank",   label:"RANK",   kind:"rank" },
+      { key:"neitsu", label:"NEITSU", kind:"rank" },
+      { key:"hauras", label:"HAURAS", kind:"rank" },
+      { key:"bibi",   label:"BIBI BLU", kind:"rank" },
+      { key:"kaina",  label:"KAINA",  kind:"rank" },
+      { key:"cal",    label:"CAL",    kind:"rank" },
+      { key:"aya",    label:"AYA",    kind:"rank" },
+      { key:"score",  label:"SCORE",  kind:"score" },
+    ];
+    const VIEW_BY_KEY = new Map(VIEWS.map(v => [v.key, v]));
+
+    const STORAGE = {
+      data: "kcaRoundsDataV1",
+      theme: "kcaRoundsTheme",
+      hideElim: "kcaRoundsHideElim",
+      editMode: "kcaRoundsEditMode"
+    };
+
+    /*********************************
+     * 1) Contestants
+     *********************************/
+    const baseEleves = [
+      { id:1, nom: "Heaven", promo: "KCA 2026", img: "assets/heaven.jpg", eliminatedAt: null },
+      { id:2, nom: "Manuee", promo: "KCA 2026", img: "assets/manuee.jpg", eliminatedAt: null },
+      { id:3, nom: "Donghyun", promo: "KCA 2026", img: "assets/donghyun.jpg", eliminatedAt: null },
+      { id:4, nom: "Suhaa", promo: "KCA 2026", img: "assets/suhaa.jpg", eliminatedAt: null },
+      { id:5, nom: "Asli", promo: "KCA 2026", img: "assets/asli.jpg", eliminatedAt: null },
+      { id:6, nom: "Hwa Young", promo: "KCA 2026", img: "assets/hwa_young.jpg", eliminatedAt: null },
+      { id:7, nom: "Kelsy", promo: "KCA 2026", img: "assets/kelsy.jpg", eliminatedAt: null },
+      { id:8, nom: "Lizy", promo: "KCA 2026", img: "assets/lizy.jpg", eliminatedAt: null },
+      { id:9, nom: "Eria", promo: "KCA 2026", img: "assets/eria.jpg", eliminatedAt: null },
+      { id:10, nom: "Sun", promo: "KCA 2026", img: "assets/sun.jpg", eliminatedAt: null },
+      { id:11, nom: "Johi", promo: "KCA 2026", img: "assets/johi.jpg", eliminatedAt: null },
+      { id:12, nom: "Kyo", promo: "KCA 2026", img: "assets/kyo.jpg", eliminatedAt: null },
+      { id:13, nom: "Chanel", promo: "KCA 2026", img: "assets/chanel.jpg", eliminatedAt: null },
+      { id:14, nom: "Lea", promo: "KCA 2026", img: "assets/lea.jpg", eliminatedAt: null },
+      { id:15, nom: "Mimi", promo: "KCA 2026", img: "assets/mimi.jpg", eliminatedAt: null },
+      { id:16, nom: "Megara", promo: "KCA 2026", img: "assets/megara.jpg", eliminatedAt: null },
+      { id:17, nom: "Yza", promo: "KCA 2026", img: "assets/yza.jpg", eliminatedAt: null },
+      { id:18, nom: "Panida", promo: "KCA 2026", img: "assets/panida.jpg", eliminatedAt: null },
+      { id:19, nom: "Brahmini", promo: "KCA 2026", img: "assets/brahmini.jpg", eliminatedAt: null },
+      { id:20, nom: "Hope", promo: "KCA 2026", img: "assets/hope.jpg", eliminatedAt: null },
+      { id:21, nom: "Katie", promo: "KCA 2026", img: "assets/katie.jpg", eliminatedAt: null },
+      { id:22, nom: "Kora", promo: "KCA 2026", img: "assets/kora.jpg", eliminatedAt: null }
+    ];
+
+    // Normalized contestant objects with per-view data
+    const eleves = baseEleves.map(e => {
+      const obj = { ...e };
+      VIEWS.forEach(v => {
+        obj[v.key] = {};
+        STAGE_KEYS.forEach(k => obj[v.key][k] = null);
+      });
+      return obj;
+    });
+
+    /*********************************
+     * Helpers
+     *********************************/
+    const fmt = (n, viewKey) => {
+      if (n == null || Number.isNaN(Number(n))) return "—";
+      const v = Number(n);
+      if (viewKey === "score") {
+        return Number.isInteger(v) ? v.toString() : v.toFixed(1);
+      }
+      // ranks
+      return Number.isInteger(v) ? v.toString() : v.toFixed(1);
+    };
+    const uniq = (arr) => [...new Set(arr)];
+    const mean = (arr) => {
+      const vals = arr.filter(v => v != null && !Number.isNaN(Number(v))).map(Number);
+      if (!vals.length) return null;
+      return vals.reduce((a,b)=>a+b,0)/vals.length;
+    };
+
+    function stageLabel(i) {
+      return STAGES[i] ? STAGES[i].label : "STAGE";
+    }
+
+    function maxAvailableStage() {
+      // max stage index that has any value across any view
+      let max = 0;
+      eleves.forEach(e => {
+        for (let i = 0; i <= MAX_STAGE; i++) {
+          const key = STAGE_KEYS[i];
+          for (const v of VIEWS) {
+            if (e[v.key][key] != null) {
+              if (i > max) max = i;
+              break;
+            }
+          }
+        }
+      });
+      return max;
+    }
+
+    function stageToNum(str) {
+      if (str === "auto" || !str) return maxAvailableStage();
+      const n = parseInt(str, 10);
+      if (Number.isNaN(n) || n < 0) return 0;
+      if (n > MAX_STAGE) return MAX_STAGE;
+      return n;
+    }
+
+    function readParamsFromURL() {
+      const p = new URLSearchParams(location.search);
+      return {
+        view:  p.get("view")  || "rank",
+        q:     p.get("q")     || "",
+        promo: p.get("promo") || "all",
+        stage: p.get("stage") || "auto",
+        sort:  p.get("sort")  || "rank",
+        viewer: (p.get("viewer") === "1" || p.get("viewer") === "true")
+      };
+    }
+    function writeParamsToURL(state) {
+      const p = new URLSearchParams();
+      if (state.view  && state.view  !== "rank") p.set("view", state.view);
+      if (state.q) p.set("q", state.q);
+      if (state.promo && state.promo !== "all") p.set("promo", state.promo);
+      if (state.stage && state.stage !== "auto") p.set("stage", state.stage);
+      if (state.sort && state.sort !== "rank") p.set("sort", state.sort);
+      if (state.viewer) p.set("viewer","1");
+      const qs = p.toString();
+      const url = location.pathname + (qs ? ("?" + qs) : "");
+      history.replaceState(null, "", url);
+    }
+
+    function isEliminatedAtStage(eleve, stageNum) {
+      return (eleve.eliminatedAt != null && stageNum >= eleve.eliminatedAt);
+    }
+
+    /*********************************
+     * LocalStorage
+     *********************************/
+    function loadSavedData() {
+      try {
+        const raw = localStorage.getItem(STORAGE.data);
+        if (!raw) return;
+        const parsed = JSON.parse(raw);
+        if (!parsed || !Array.isArray(parsed.eleves)) return;
+
+        parsed.eleves.forEach(saved => {
+          const target = eleves.find(e => e.id === saved.id);
+          if (!target) return;
+          if ("eliminatedAt" in saved) target.eliminatedAt = saved.eliminatedAt;
+
+          VIEWS.forEach(v => {
+            if (saved[v.key]) Object.assign(target[v.key], saved[v.key]);
+          });
+        });
+      } catch (e) {
+        console.warn("Failed to read localStorage", e);
+      }
+    }
+
+    function saveData() {
+      const payload = {
+        version: 1,
+        eleves: eleves.map(e => {
+          const out = {
+            id: e.id,
+            eliminatedAt: e.eliminatedAt ?? null
+          };
+          VIEWS.forEach(v => out[v.key] = e[v.key]);
+          return out;
+        })
+      };
+      try {
+        localStorage.setItem(STORAGE.data, JSON.stringify(payload));
+      } catch (e) {
+        console.warn("Failed to write localStorage", e);
+      }
+    }
+
+    /*********************************
+     * DOM
+     *********************************/
+    const dom = {
+      inputSearch: document.getElementById("q"),
+      promoSelect: document.getElementById("promo"),
+      stageSelect: document.getElementById("prime"),
+      sortBtn: document.getElementById("sortBtn"),
+      modeToggle: document.getElementById("modeToggle"),
+      toggleElimBtn: document.getElementById("toggleElimBtn"),
+      shareBtn: document.getElementById("share"),
+      themeToggle: document.getElementById("themeToggle"),
+      tabs: Array.from(document.querySelectorAll(".seg [role='tab']")),
+      tbody: document.getElementById("topBody"),
+
+      // profile
+      pic: document.getElementById("pic"),
+      infoName: document.getElementById("infoName"),
+      infoPromo: document.getElementById("infoPromo"),
+      infoExtra: document.getElementById("infoExtra"),
+      activeStageBadge: document.getElementById("activeStageBadge"),
+      activeViewBadge: document.getElementById("activeViewBadge"),
+      chartCanvas: document.getElementById("chartLine"),
+      chartFallback: document.getElementById("chartFallback"),
+
+      elimEditor: document.getElementById("elimEditor"),
+      elimCheckbox: document.getElementById("elimCheckbox"),
+      elimStage: document.getElementById("elimPrime"),
+
+      // mobile
+      jumpA: document.getElementById("jumpA"),
+      menuBtn: document.getElementById("menuBtn"),
+      menuPop: document.getElementById("menuPop"),
+
+      // mobile duplicates
+      sortBtn2: document.getElementById("sortBtn2"),
+      modeToggle2: document.getElementById("modeToggle2"),
+      toggleElimBtn2: document.getElementById("toggleElimBtn2"),
+      share2: document.getElementById("share2"),
+      themeToggle2: document.getElementById("themeToggle2"),
+    };
+
+    const urlState = readParamsFromURL();
+
+    const appState = {
+      view: VIEW_BY_KEY.has(urlState.view) ? urlState.view : "rank",
+      q: urlState.q,
+      promo: urlState.promo,
+      stage: urlState.stage,
+      nameAsc: (urlState.sort === "name"),
+      isEditMode: false,
+      hideElim: false,
+      viewer: !!urlState.viewer
+    };
+
+    let chartLine = null;
+    let selectedId = null;
+
+    /*********************************
+     * Theme
+     *********************************/
+    function applyTheme(theme) {
+      document.body.dataset.theme = theme;
+      const label = theme === "dark" ? "Light mode" : "Dark mode";
+      if (dom.themeToggle) dom.themeToggle.textContent = label;
+      if (dom.themeToggle2) dom.themeToggle2.textContent = label;
+      try { localStorage.setItem(STORAGE.theme, theme); } catch (e) {}
+    }
+    function initTheme() {
+      let saved = null;
+      try { saved = localStorage.getItem(STORAGE.theme); } catch (e) {}
+      const theme = (saved === "light" || saved === "dark") ? saved : "dark";
+      applyTheme(theme);
+    }
+
+    /*********************************
+     * Hide eliminated
+     *********************************/
+    function updateHideElimUI() {
+      const label = appState.hideElim ? "Show eliminated" : "Hide eliminated";
+      if (dom.toggleElimBtn) dom.toggleElimBtn.textContent = label;
+      if (dom.toggleElimBtn2) dom.toggleElimBtn2.textContent = label;
+    }
+    function initHideElim() {
+      try {
+        const saved = localStorage.getItem(STORAGE.hideElim);
+        if (saved != null) appState.hideElim = (saved === "1");
+      } catch (e) {}
+      updateHideElimUI();
+    }
+
+    /*********************************
+     * Edit mode (disabled if viewer)
+     *********************************/
+    function updateModeUI() {
+      const label = appState.isEditMode ? "Read mode" : "Edit mode";
+      if (dom.modeToggle) dom.modeToggle.textContent = label;
+      if (dom.modeToggle2) dom.modeToggle2.textContent = label;
+
+      // hide toggles in viewer mode
+      const hide = appState.viewer ? "none" : "";
+      if (dom.modeToggle) dom.modeToggle.style.display = hide;
+      if (dom.modeToggle2) dom.modeToggle2.style.display = hide;
+      if (appState.viewer) appState.isEditMode = false;
+    }
+    function initEditMode() {
+      if (appState.viewer) {
+        appState.isEditMode = false;
+        updateModeUI();
+        return;
+      }
+      try {
+        const saved = localStorage.getItem(STORAGE.editMode);
+        appState.isEditMode = (saved === "1");
+      } catch (e) {}
+      updateModeUI();
+    }
+
+    /*********************************
+     * Inputs
+     *********************************/
+    function initPromosSelect() {
+      const promos = ["all", ...uniq(eleves.map(e => e.promo))];
+      dom.promoSelect.innerHTML = promos
+        .map(p => `<option value="${p}">${p === "all" ? "All seasons" : p}</option>`)
+        .join("");
+      if (promos.includes(appState.promo)) dom.promoSelect.value = appState.promo;
+      else dom.promoSelect.value = "all";
+    }
+
+    function initStageSelect() {
+      const options = ['<option value="auto">Auto (latest stage)</option>'];
+      STAGES.forEach((s, idx) => {
+        options.push(`<option value="${idx}">${s.label}</option>`);
+      });
+      dom.stageSelect.innerHTML = options.join("");
+      dom.stageSelect.value = appState.stage;
+    }
+
+    function setActiveTab(viewKey) {
+      dom.tabs.forEach(btn => {
+        const isActive = btn.dataset.view === viewKey;
+        btn.classList.toggle("active", isActive);
+        btn.setAttribute("aria-selected", isActive ? "true" : "false");
+      });
+    }
+
+    function initInputsFromState() {
+      dom.inputSearch.value = appState.q;
+      initStageSelect();
+      setActiveTab(appState.view);
+    }
+
+    function initElimSelect() {
+      if (!dom.elimStage) return;
+      let html = '<option value="">Stage?</option>';
+      STAGES.forEach((s, idx) => {
+        html += `<option value="${idx}">${s.label}</option>`;
+      });
+      dom.elimStage.innerHTML = html;
+    }
+
+    /*********************************
+     * Filtering
+     *********************************/
+    function getFilteredBaseList() {
+      const q = (appState.q || "").trim().toLowerCase();
+      return eleves.filter(e => {
+        const byPromo = (appState.promo === "all" || e.promo === appState.promo);
+        const byQ = (!q || e.nom.toLowerCase().includes(q));
+        return byPromo && byQ;
+      });
+    }
+    function filterEliminated(list, stageNum) {
+      if (!appState.hideElim) return list;
+      return list.filter(e => !isEliminatedAtStage(e, stageNum));
+    }
+
+    /*********************************
+     * Ranking computation
+     *********************************/
+    function averageUpTo(src, upto) {
+      const vals = [];
+      for (let i = 0; i <= upto; i++) vals.push(src[STAGE_KEYS[i]]);
+      return mean(vals);
+    }
+    function lastKnownValue(row) {
+      for (let i = MAX_STAGE; i >= 0; i--) {
+        const key = STAGE_KEYS[i];
+        const v = row[key];
+        if (v != null) return Number(v);
+      }
+      return null;
+    }
+
+    function computeRows(list, viewKey, stageNum) {
+      const view = VIEW_BY_KEY.get(viewKey);
+      const isScore = (view && view.kind === "score");
+
+      return list
+        .map(e => {
+          const src = e[viewKey];
+          const row = { ...e };
+          STAGE_KEYS.forEach(k => row[k] = (src[k] ?? null));
+          row.moy = averageUpTo(src, stageNum);
+          return row;
+        })
+        .sort((a,b) => {
+          const av = (a.moy == null ? (isScore ? -Infinity : Infinity) : Number(a.moy));
+          const bv = (b.moy == null ? (isScore ? -Infinity : Infinity) : Number(b.moy));
+
+          if (av !== bv) return isScore ? (bv - av) : (av - bv);
+
+          const al = lastKnownValue(a);
+          const bl = lastKnownValue(b);
+          if (al != null && bl != null && al !== bl) return isScore ? (bl - al) : (al - bl);
+
+          return a.nom.localeCompare(b.nom);
+        })
+        .map((row,i) => ({ ...row, rank: i+1 }));
+    }
+
+    function compute(list, stageNum, viewKey) {
+      const rowsNow = computeRows(list, viewKey, stageNum);
+      const prevStage = stageNum > 0 ? stageNum - 1 : null;
+      const prevMap = new Map();
+      if (prevStage != null) {
+        computeRows(list, viewKey, prevStage).forEach(r => prevMap.set(r.id, r.rank));
+      }
+      return rowsNow.map(r => {
+        const prevRank = prevMap.get(r.id);
+        const deltaPlaces = (prevRank != null) ? (prevRank - r.rank) : 0;
+        return {
+          ...r,
+          eliminated: isEliminatedAtStage(r, stageNum),
+          deltaPlaces
+        };
+      });
+    }
+
+    /*********************************
+     * Rendering
+     *********************************/
+    function updateProfile(eleve, row, stageNum) {
+      if (!eleve) {
+        dom.pic.src = "assets/placeholder.jpg";
+        dom.infoName.textContent = "No contestant";
+        dom.infoPromo.textContent = "";
+        dom.infoExtra.textContent = "";
+        if (dom.elimEditor) dom.elimEditor.style.display = "none";
+        return;
+      }
+
+      dom.pic.src = eleve.img || "assets/placeholder.jpg";
+      dom.pic.onerror = () => { dom.pic.src = "assets/placeholder.jpg"; };
+
+      dom.infoName.textContent = eleve.nom;
+      dom.infoPromo.textContent = "Season " + eleve.promo;
+
+      dom.activeStageBadge.textContent = "Active stage: " + stageLabel(stageNum);
+      const viewLabel = (VIEW_BY_KEY.get(appState.view)?.label || appState.view).toUpperCase();
+      dom.activeViewBadge.textContent = viewLabel;
+
+      const status = (eleve.eliminatedAt != null && stageNum >= eleve.eliminatedAt)
+        ? `Eliminated at ${stageLabel(eleve.eliminatedAt)}`
+        : "Still in the competition";
+
+      const moyTxt = row ? fmt(row.moy, appState.view) : "—";
+      const rankTxt = row ? row.rank : "—";
+
+      dom.infoExtra.innerHTML = `
+        Current rank: <strong>${rankTxt}</strong> •
+        Average: <strong>${moyTxt}</strong> •
+        ${status}
+      `;
+
+      // elimination editor
+      if (!dom.elimEditor) return;
+      if (appState.viewer || !appState.isEditMode || !eleve) {
+        dom.elimEditor.style.display = "none";
+        return;
+      }
+      dom.elimEditor.style.display = "block";
+      dom.elimCheckbox.checked = eleve.eliminatedAt != null;
+      dom.elimStage.value = (eleve.eliminatedAt != null) ? String(eleve.eliminatedAt) : "";
+    }
+
+    function highlightDataset(id) {
+      if (!chartLine) return;
+      chartLine.data.datasets.forEach(ds => {
+        if (id == null) {
+          ds.borderColor = ds._faintColor;
+          ds.backgroundColor = ds._faintColor;
+          ds.borderWidth = 1;
+          ds.pointRadius = 2;
+        } else if (ds._id === id) {
+          ds.borderColor = ds._strongColor;
+          ds.backgroundColor = ds._strongColor;
+          ds.borderWidth = 3;
+          ds.pointRadius = 5;
+        } else {
+          ds.borderColor = ds._faintColor;
+          ds.backgroundColor = ds._faintColor;
+          ds.borderWidth = 1;
+          ds.pointRadius = 2;
+        }
+      });
+      chartLine.update("none");
+    }
+
+    function buildGlobalChart(baseList, viewKey) {
+      if (!dom.chartCanvas) return;
+
+      if (!window.Chart) {
+        dom.chartCanvas.style.display = "none";
+        if (dom.chartFallback) dom.chartFallback.style.display = "block";
+        return;
+      }
+      if (dom.chartFallback) dom.chartFallback.style.display = "none";
+      dom.chartCanvas.style.display = "block";
+
+      const view = VIEW_BY_KEY.get(viewKey);
+      const isScore = (view && view.kind === "score");
+
+      const labels = STAGES.map(s => s.label);
+      const sorted = [...baseList].sort((a,b)=>a.nom.localeCompare(b.nom));
+
+      const datasets = sorted.map((e, idx) => {
+        const src = e[viewKey];
+        const data = STAGE_KEYS.map(k => src[k] == null ? null : Number(src[k]));
+        const hue = (idx * 37) % 360;
+        const strong = `hsl(${hue} 80% 60%)`;
+        const faint  = `hsla(${hue}, 80%, 60%, 0.18)`;
+        return {
+          label: e.nom,
+          data,
+          tension: 0.25,
+          spanGaps: true,
+          pointRadius: 2,
+          pointHitRadius: 7,
+          borderWidth: 1,
+          borderColor: faint,
+          backgroundColor: faint,
+          _id: e.id,
+          _strongColor: strong,
+          _faintColor: faint
+        };
+      });
+
+      if (chartLine) chartLine.destroy();
+
+      chartLine = new Chart(dom.chartCanvas.getContext("2d"), {
+        type: "line",
+        data: { labels, datasets },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              reverse: !isScore,
+              ticks: { precision: 0 },
+              title: {
+                display: true,
+                text: isScore ? "Score (higher = better)" : "Rank (1 = best)"
+              }
+            }
+          },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => isScore
+                  ? `${ctx.dataset.label}: score ${ctx.parsed.y}`
+                  : `${ctx.dataset.label}: rank ${ctx.parsed.y}`
+              }
+            }
+          }
+        }
+      });
+
+      if (selectedId != null) highlightDataset(selectedId);
+    }
+
+    function renderTable(rows, stageNum) {
+      if (!dom.tbody) return;
+      dom.tbody.innerHTML = "";
+
+      const isScore = (VIEW_BY_KEY.get(appState.view)?.kind === "score");
+
+      rows.forEach(r => {
+        const tr = document.createElement("tr");
+        tr.dataset.id = String(r.id);
+
+        // rank
+        const tdRank = document.createElement("td");
+        tdRank.className = "num";
+        tdRank.innerHTML = `<strong>${r.rank}</strong>`;
+        tr.appendChild(tdRank);
+
+        // name sticky
+        const tdName = document.createElement("td");
+        tdName.className = "sticky-col name";
+
+        const elimBadge = r.eliminated ? `<span class="badge elim">ELIM</span>` : "";
+        const delta = r.deltaPlaces || 0;
+        const deltaSymbol = delta > 0 ? "▲" : (delta < 0 ? "▼" : "•");
+        const deltaText = delta === 0 ? "0" : Math.abs(delta);
+        const deltaClass = delta > 0 ? "up" : (delta < 0 ? "down" : "");
+        tdName.innerHTML = `
+          <span class="name-wrap">
+            <img class="avatar" alt="${r.nom}" src="${r.img}" onerror="this.src='assets/placeholder.jpg'" />
+            <span class="name-text">${r.nom}</span>
+            ${elimBadge}
+          </span>
+          <span class="delta ${deltaClass}">${deltaSymbol} ${deltaText}</span>
+        `;
+        tr.appendChild(tdName);
+
+        // stage columns
+        STAGE_KEYS.forEach((key, idx) => {
+          const td = document.createElement("td");
+          td.className = "num";
+
+          const canEdit = (!appState.viewer && appState.isEditMode);
+          if (canEdit) {
+            const input = document.createElement("input");
+            input.className = "table-input";
+            input.dataset.id = String(r.id);
+            input.dataset.view = appState.view;
+            input.dataset.stage = String(idx);
+
+            if (isScore) {
+              input.type = "number";
+              input.min = "0";
+              input.max = "100";
+              input.step = "1";
+              input.placeholder = "—";
+            } else {
+              input.type = "number";
+              input.min = "1";
+              input.step = "1";
+              input.placeholder = "—";
+            }
+
+            const current = eleves.find(e => e.id === r.id)[appState.view][key];
+            input.value = current == null ? "" : String(current);
+
+            input.addEventListener("change", onTableInputChange);
+            td.appendChild(input);
+          } else {
+            td.textContent = fmt(r[key], appState.view);
+          }
+          tr.appendChild(td);
+        });
+
+        // average
+        const tdAvg = document.createElement("td");
+        tdAvg.className = "num";
+        tdAvg.innerHTML = `<strong>${fmt(r.moy, appState.view)}</strong>`;
+        tr.appendChild(tdAvg);
+
+        dom.tbody.appendChild(tr);
+      });
+
+      // highlight active stage header
+      document.querySelectorAll("#top thead th[data-prime]").forEach(th => {
+        th.style.color = "var(--muted)";
+      });
+      const thStage = document.querySelector(`#top thead th[data-prime="${stageNum}"]`);
+      if (thStage) thStage.style.color = "var(--gold)";
+    }
+
+    function selectRowById(id, rows, stageNum) {
+      selectedId = id;
+      dom.tbody.querySelectorAll("tr").forEach(tr => {
+        tr.classList.toggle("selected", Number(tr.dataset.id) === id);
+      });
+      const eleve = eleves.find(e => e.id === id);
+      const row = rows.find(r => r.id === id);
+      updateProfile(eleve, row, stageNum);
+      highlightDataset(id);
+    }
+
+    function apply() {
+      const baseListAll = getFilteredBaseList();
+      const stageNum = stageToNum(appState.stage);
+      const baseList = filterEliminated(baseListAll, stageNum);
+
+      let rows = compute(baseList, stageNum, appState.view);
+
+      if (appState.nameAsc) {
+        rows = rows
+          .slice()
+          .sort((a,b)=>a.nom.localeCompare(b.nom))
+          .map((x,i)=>({ ...x, rank:i+1 }));
+      }
+
+      renderTable(rows, stageNum);
+      buildGlobalChart(baseList, appState.view);
+
+      writeParamsToURL({
+        view: appState.view,
+        q: appState.q,
+        promo: appState.promo,
+        stage: appState.stage,
+        sort: appState.nameAsc ? "name" : "rank",
+        viewer: appState.viewer
+      });
+
+      if (rows.length) {
+        let idToSelect = selectedId;
+        if (idToSelect == null || !rows.some(r => r.id === idToSelect)) idToSelect = rows[0].id;
+        selectRowById(idToSelect, rows, stageNum);
+      } else {
+        selectedId = null;
+        highlightDataset(null);
+        updateProfile(null, null, stageNum);
+      }
+    }
+
+    /*********************************
+     * Events
+     *********************************/
+    function onTableInputChange(e) {
+      const input = e.target;
+      const id = Number(input.dataset.id);
+      const viewKey = input.dataset.view;
+      const stageIndex = Number(input.dataset.stage);
+
+      const eleve = eleves.find(el => el.id === id);
+      if (!eleve || !VIEW_BY_KEY.has(viewKey) || stageIndex < 0 || stageIndex > MAX_STAGE) return;
+
+      const key = STAGE_KEYS[stageIndex];
+      const valStr = input.value.trim();
+      eleve[viewKey][key] = (valStr === "") ? null : Number(valStr);
+
+      saveData();
+      apply();
+    }
+
+    function bindEvents() {
+
+      // search, selects
+      if (dom.inputSearch) dom.inputSearch.addEventListener("input", (e) => {
+        appState.q = e.target.value;
+        apply();
+      });
+      if (dom.promoSelect) dom.promoSelect.addEventListener("change", (e) => {
+        appState.promo = e.target.value;
+        apply();
+      });
+      if (dom.stageSelect) dom.stageSelect.addEventListener("change", (e) => {
+        appState.stage = e.target.value;
+        apply();
+      });
+
+      // tabs
+      (dom.tabs || []).forEach(btn => {
+        btn.addEventListener("click", () => {
+          appState.view = btn.dataset.view;
+          setActiveTab(appState.view);
+          apply();
+        });
+      });
+
+      // row click
+      if (dom.tbody) dom.tbody.addEventListener("click", (e) => {
+        const tr = e.target.closest("tr[data-id]");
+        if (!tr) return;
+        const id = Number(tr.dataset.id);
+        apply({ selectId: id });
+      });
+
+      // edit mode toggles
+      const onToggleEdit = () => {
+        appState.isEditMode = !appState.isEditMode;
+        updateModeUI();
+        apply();
+      };
+      if (dom.modeToggle) dom.modeToggle.addEventListener("click", onToggleEdit);
+      if (dom.modeToggle2) dom.modeToggle2.addEventListener("click", onToggleEdit);
+
+      // sort
+      const onSort = () => {
+        appState.nameAsc = !appState.nameAsc;
+        const label = appState.nameAsc ? "Sort by rank" : "Sort by name";
+        if (dom.sortBtn) dom.sortBtn.textContent = label;
+        if (dom.sortBtn2) dom.sortBtn2.textContent = label;
+        apply();
+      };
+      if (dom.sortBtn) dom.sortBtn.addEventListener("click", onSort);
+      if (dom.sortBtn2) dom.sortBtn2.addEventListener("click", onSort);
+
+      // hide eliminated
+      const onHideElim = () => {
+        appState.hideElim = !appState.hideElim;
+        updateHideElimUI();
+        try { localStorage.setItem(STORAGE.hideElim, appState.hideElim ? "1" : "0"); } catch (e) {}
+        apply();
+      };
+      if (dom.toggleElimBtn) dom.toggleElimBtn.addEventListener("click", onHideElim);
+      if (dom.toggleElimBtn2) dom.toggleElimBtn2.addEventListener("click", onHideElim);
+
+      // copy link
+      const onCopy = async () => {
+        const url = location.href;
+        try {
+          await navigator.clipboard.writeText(url);
+          toast("Link copied!");
+        } catch (e) {
+          // fallback
+          try {
+            const tmp = document.createElement("textarea");
+            tmp.value = url;
+            document.body.appendChild(tmp);
+            tmp.select();
+            document.execCommand("copy");
+            document.body.removeChild(tmp);
+            toast("Link copied!");
+          } catch (e2) {
+            toast("Copy failed.");
+          }
+        }
+      };
+      if (dom.shareBtn) dom.shareBtn.addEventListener("click", onCopy);
+      if (dom.share2) dom.share2.addEventListener("click", onCopy);
+
+      // theme
+      const onTheme = () => {
+        const next = (document.body.dataset.theme === "dark") ? "light" : "dark";
+        applyTheme(next);
+      };
+      if (dom.themeToggle) dom.themeToggle.addEventListener("click", onTheme);
+      if (dom.themeToggle2) dom.themeToggle2.addEventListener("click", onTheme);
+
+      // elimination editor
+      if (dom.elimCheckbox) dom.elimCheckbox.addEventListener("change", () => {
+        if (selectedId == null) return;
+        const t = eleves.find(e => e.id === selectedId);
+        if (!t) return;
+        t.eliminatedAt = dom.elimCheckbox.checked ? Number(dom.elimStage?.value || "") || 0 : null;
+        saveData();
+        apply();
+      });
+      if (dom.elimStage) dom.elimStage.addEventListener("change", () => {
+        if (selectedId == null) return;
+        const t = eleves.find(e => e.id === selectedId);
+        if (!t) return;
+        if (!dom.elimCheckbox?.checked) return;
+        t.eliminatedAt = Number(dom.elimStage.value || "") || 0;
+        saveData();
+        apply();
+      });
+
+      // mobile: jump + menu open/close
+      if (dom.jumpA) dom.jumpA.addEventListener("click", () => {
+        document.getElementById("colA")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+      const closeMenu = () => dom.menuPop?.classList.remove("open");
+      if (dom.menuBtn) dom.menuBtn.addEventListener("click", () => {
+        dom.menuPop?.classList.toggle("open");
+      });
+      document.addEventListener("click", (e) => {
+        if (!dom.menuPop || !dom.menuBtn) return;
+        if (dom.menuPop.contains(e.target) || dom.menuBtn.contains(e.target)) return;
+        closeMenu();
+      });
+    }
+
+    /*********************************
+     * Init
+     *********************************/
+    function init() {
+      loadSavedData();
+      initTheme();
+      initPromosSelect();
+      initInputsFromState();
+      initHideElim();
+      initElimSelect();
+      initEditMode();
+      updateHideElimUI();
+
+      // init sort labels
+      const sortLabel = appState.nameAsc ? "Sort by rank" : "Sort by name";
+      if (dom.sortBtn) dom.sortBtn.textContent = sortLabel;
+      if (dom.sortBtn2) dom.sortBtn2.textContent = sortLabel;
+
+      bindEvents();
+      apply();
+    }
+
+    // Ensure DOM is ready (prevents "buttons not working" if script runs too early)
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", init);
+    } else {
+      init();
+    }
+  })();
+  </script>
+</body>
+</html>
