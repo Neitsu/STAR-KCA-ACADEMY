@@ -122,6 +122,8 @@ const ROUND_LABELS = { PRERANK: "Prerank", ROUND_1: "R1", ROUND_2: "R2", ROUND_3
 const CANDIDATE_NAMES = ["yza","hope","lea","megara","asli","chanel","heaven","manuee","hwa_young","mimi","eria","panida","kelsy","suhaa","johi","sun","kora","brahmini","katie","donghyun","lizy","kyo"];
 const PRETTY = { yza:"Yza", hope:"Hope", lea:"Lea", megara:"Megara", asli:"Asli", chanel:"Chanel", heaven:"Heaven", manuee:"Manuee", hwa_young:"Hwa Young", mimi:"Mimi", eria:"Eria", panida:"Panida", kelsy:"Kelsy", suhaa:"Suhaa", johi:"Johi", sun:"Sun", kora:"Kora", brahmini:"Brahmini", katie:"Katie", donghyun:"Donghyun", lizy:"Lizy", kyo:"Kyo" };
 
+const JUDGE_NAMES = ["Neitsu", "Bibiblu", "Kaina", "Hauras", "Cal", "Aya"];
+
 
 function canonicalRoundId(value) {
   const raw = String(value || '').trim().toUpperCase().replace(/\s+/g, '_').replace(/-/g, '_');
@@ -142,7 +144,8 @@ const state = {
   profileChart: null,
   rankingsChart: null,
   votesRound: "PRERANK",
-  votesTimer: null
+  votesTimer: null,
+  rankingView: "official"
 };
 
 async function fetchSheetTab(sheetName) {
@@ -274,6 +277,66 @@ function getOfficialRankingByRound() {
   return result;
 }
 
+
+function normalizeJudgeName(value) {
+  return String(value || '').trim().toLowerCase();
+}
+
+function getJudgeRankingByRound(judgeName) {
+  const result = {};
+  ROUND_ORDER.forEach(r => result[r] = {});
+  const target = normalizeJudgeName(judgeName);
+  const rows = state.data.judge_rankings.filter(r => normalizeJudgeName(r.judge_name) === target);
+  ROUND_ORDER.forEach(round => {
+    rows
+      .filter(r => r.round_id === round)
+      .map(r => ({ id: r.contestant_id, rank: Number(r.rank) }))
+      .filter(r => Number.isFinite(r.rank))
+      .forEach(r => { result[round][r.id] = r.rank; });
+  });
+  return result;
+}
+
+function getPerformanceScoreByRound() {
+  const result = {};
+  ROUND_ORDER.forEach(r => result[r] = {});
+  ROUND_ORDER.forEach(round => {
+    state.data.scores
+      .filter(s => s.round_id === round)
+      .forEach(s => {
+        const total = Number(s.total);
+        if (Number.isFinite(total)) result[round][s.contestant_id] = total;
+      });
+  });
+  return result;
+}
+
+function getPerformanceRankingByRound() {
+  const byScore = getPerformanceScoreByRound();
+  const result = {};
+  ROUND_ORDER.forEach(r => result[r] = {});
+  ROUND_ORDER.forEach(round => {
+    Object.entries(byScore[round])
+      .map(([id, score]) => ({ id, score }))
+      .sort((a, b) => b.score - a.score)
+      .forEach((row, idx) => { result[round][row.id] = idx + 1; });
+  });
+  return result;
+}
+
+function getRankingMapByView(view) {
+  if (view === 'official') return getOfficialRankingByRound();
+  if (view === 'performance_score') return getPerformanceRankingByRound();
+  return getJudgeRankingByRound(view.replace('judge:', ''));
+}
+
+function getRankingViewOptions() {
+  const options = [{ value: 'official', label: 'Official ranking' }];
+  JUDGE_NAMES.forEach(name => options.push({ value: `judge:${name}`, label: `Judge · ${name}` }));
+  options.push({ value: 'performance_score', label: 'Performance score' });
+  return options;
+}
+
 function getLatestRound(officialByRound) {
   for (let i = ROUND_ORDER.length - 1; i >= 0; i--) {
     const round = ROUND_ORDER[i];
@@ -361,9 +424,11 @@ function renderContestants() {
 }
 
 function renderRankings() {
+  const rankingMap = getRankingMapByView(state.rankingView);
   const officialByRound = getOfficialRankingByRound();
   const contestants = sortedContestants();
   const root = document.getElementById("rankings");
+  const viewOptions = getRankingViewOptions();
 
   const rowsForNominations = {
     nominee: state.data.round_status.filter(r => r.round_id === state.latestRound && r.status === "nominee"),
@@ -376,7 +441,9 @@ function renderRankings() {
   root.innerHTML = `
     <div class="card">
       <h2>Rankings · Trajectory</h2>
-      <p class="small">Table shows official rank evolution by round.</p>
+      <div class="filters">
+        <select id="rankingViewSelect">${viewOptions.map(opt => `<option value="${opt.value}" ${opt.value===state.rankingView?"selected":""}>${opt.label}</option>`).join("")}</select>
+      </div>
       <div class="table-wrap">
         <table>
           <thead>
@@ -388,12 +455,12 @@ function renderRankings() {
           </thead>
           <tbody>
             ${contestants.map((c, idx) => {
-              const currentRank = officialByRound[state.latestRound][c.id];
+              const currentRank = rankingMap[state.latestRound][c.id];
               return `<tr>
                 <td>${Number.isFinite(currentRank) ? currentRank : idx + 1}</td>
                 <td>${c.name}</td>
                 ${ROUND_ORDER.map(r => {
-                  const val = officialByRound[r][c.id];
+                  const val = rankingMap[r][c.id];
                   return `<td>${Number.isFinite(val) ? val : "—"}</td>`;
                 }).join("")}
               </tr>`;
@@ -415,9 +482,14 @@ function renderRankings() {
       <canvas id="allContestantsChart" height="120"></canvas>
     </div>`;
 
+  document.getElementById('rankingViewSelect').addEventListener('change', (e) => {
+    state.rankingView = e.target.value;
+    renderRankings();
+  });
+
   const datasets = contestants.map((c, idx) => ({
     label: c.name,
-    data: ROUND_ORDER.map(r => officialByRound[r][c.id] ?? null),
+    data: ROUND_ORDER.map(r => rankingMap[r][c.id] ?? null),
     borderColor: `hsl(${(idx * 33) % 360} 82% 66%)`,
     backgroundColor: "transparent",
     borderWidth: 1.8,
@@ -461,14 +533,27 @@ function renderProfile(contestantId) {
     <div class="card">
       <h3>Rounds overview</h3>
       <div class="table-wrap"><table>
-      <thead><tr><th>Round</th><th>Official rank</th><th>Total score (if provided)</th><th>Status</th></tr></thead>
+      <thead><tr><th>Round</th><th>Official</th><th>Neitsu</th><th>Bibiblu</th><th>Kaina</th><th>Hauras</th><th>Cal</th><th>Aya</th><th>Performance score</th><th>Performance rank</th><th>Status</th></tr></thead>
       <tbody>
-      ${ROUND_ORDER.map(r => {
-        const score = scores.find(s => s.round_id === r)?.total;
-        const rank = officialByRound[r][c.id];
-        const status = getStatus(r, c.id);
-        return `<tr><td>${ROUND_LABELS[r]}</td><td>${Number.isFinite(rank) ? rank : "—"}</td><td>${score ?? "—"}</td><td>${statusLabel(status)}</td></tr>`;
-      }).join("")}
+      ${(() => {
+        const perfScoreByRound = getPerformanceScoreByRound();
+        const perfRankByRound = getPerformanceRankingByRound();
+        const judges = {
+          neitsu: getJudgeRankingByRound('Neitsu'),
+          bibiblu: getJudgeRankingByRound('Bibiblu'),
+          kaina: getJudgeRankingByRound('Kaina'),
+          hauras: getJudgeRankingByRound('Hauras'),
+          cal: getJudgeRankingByRound('Cal'),
+          aya: getJudgeRankingByRound('Aya')
+        };
+        return ROUND_ORDER.map(r => {
+          const rank = officialByRound[r][c.id];
+          const status = getStatus(r, c.id);
+          const perfScore = perfScoreByRound[r][c.id];
+          const perfRank = perfRankByRound[r][c.id];
+          return `<tr><td>${ROUND_LABELS[r]}</td><td>${Number.isFinite(rank) ? rank : "—"}</td><td>${judges.neitsu[r][c.id] ?? "—"}</td><td>${judges.bibiblu[r][c.id] ?? "—"}</td><td>${judges.kaina[r][c.id] ?? "—"}</td><td>${judges.hauras[r][c.id] ?? "—"}</td><td>${judges.cal[r][c.id] ?? "—"}</td><td>${judges.aya[r][c.id] ?? "—"}</td><td>${Number.isFinite(perfScore) ? perfScore : "—"}</td><td>${Number.isFinite(perfRank) ? perfRank : "—"}</td><td>${statusLabel(status)}</td></tr>`;
+        }).join("");
+      })()}
       </tbody>
       </table></div>
     </div>
