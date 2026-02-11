@@ -131,6 +131,8 @@ function canonicalRoundId(value) {
   if (m) return `ROUND_${m[1]}`;
   if (raw === 'PRE_RANK' || raw === 'PRERANKING') return 'PRERANK';
   if (raw === 'FINALS') return 'FINAL';
+  if (/^R[1-6]$/.test(raw)) return `ROUND_${raw.slice(1)}`;
+  if (raw === 'RF' || raw === 'RFINAL') return 'FINAL';
   return raw;
 }
 
@@ -508,7 +510,8 @@ function renderProfile(contestantId) {
 function renderVotes() {
   const root = document.getElementById("votes");
   const roundsWithVotes = ROUND_ORDER.filter(r => state.data.votes_live.some(v => v.round_id === r));
-  if (!roundsWithVotes.includes(state.votesRound)) state.votesRound = roundsWithVotes[0] || state.latestRound;
+  const canonicalSelected = canonicalRoundId(state.votesRound);
+  state.votesRound = ROUND_ORDER.includes(canonicalSelected) ? canonicalSelected : (roundsWithVotes[0] || state.latestRound);
 
   const nominees = state.data.round_status.filter(r => r.round_id === state.votesRound && r.status === "nominee").map(r => r.contestant_id);
   const targets = nominees.length ? nominees : [...new Set(state.data.votes_live.filter(v => v.round_id === state.votesRound).map(v => v.contestant_id))];
@@ -527,7 +530,7 @@ function renderVotes() {
       ${rows.length ? rows.map(r => {
         const pct = totalVotes > 0 ? (r.votes / totalVotes) * 100 : 0;
         return `<div class="vote-row"><div><strong>${r.name}</strong> — ${r.votes} votes (${pct.toFixed(1)}%)</div><div class="bar"><span style="width:${pct}%"></span></div></div>`;
-      }).join("") : "<p>No vote data for this round yet.</p>"}
+      }).join("") : `<p>No vote data for this round yet.</p>${roundsWithVotes.length ? `<p class="small">Available vote rounds: ${roundsWithVotes.map(r => ROUND_LABELS[r]).join(', ')}</p>` : ''}`}
       <p class="small">Total votes: ${totalVotes} · Last refresh: ${new Date().toLocaleString("fr-FR")}</p>
     </div>`;
 
