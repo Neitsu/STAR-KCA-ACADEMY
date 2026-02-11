@@ -174,6 +174,43 @@ async function loadData() {
   }
 }
 
+
+function normalizeData() {
+  state.data.round_status = Array.isArray(state.data.round_status) ? state.data.round_status : [];
+  state.data.scores = Array.isArray(state.data.scores) ? state.data.scores : [];
+  state.data.judge_rankings = Array.isArray(state.data.judge_rankings) ? state.data.judge_rankings : [];
+  state.data.submissions = Array.isArray(state.data.submissions) ? state.data.submissions : [];
+  state.data.votes_live = Array.isArray(state.data.votes_live) ? state.data.votes_live : [];
+  const raw = Array.isArray(state.data.contestants) ? state.data.contestants : [];
+  const byId = new Map();
+  raw.forEach((c) => {
+    const id = String(c.id || '').trim().toLowerCase().replace(/\s+/g, '_');
+    if (!id) return;
+    byId.set(id, {
+      id,
+      name: c.name || PRETTY[id] || id,
+      photo_url: c.photo_url || `assets/${id}.jpg`,
+      country: c.country || 'TBD',
+      bio: c.bio || 'Bio TBD',
+      instagram: c.instagram || '',
+      pronouns: c.pronouns || ''
+    });
+  });
+  if (!byId.size) {
+    CANDIDATE_NAMES.forEach((id) => byId.set(id, {
+      id,
+      name: PRETTY[id] || id,
+      photo_url: `assets/${id}.jpg`,
+      country: 'TBD',
+      bio: 'Bio TBD',
+      instagram: '',
+      pronouns: ''
+    }));
+  }
+  state.data.contestants = [...byId.values()];
+}
+
+
 function setupNav() {
   const tabs = ["contestants", "rankings", "votes"];
   document.getElementById("nav").innerHTML = tabs.map(t => `<a class="nav-link" href="#${t}">${t[0].toUpperCase() + t.slice(1)}</a>`).join("");
@@ -252,7 +289,7 @@ function sortedContestants() {
     if (Number.isFinite(ar) && Number.isFinite(br)) return ar - br;
     if (Number.isFinite(ar)) return -1;
     if (Number.isFinite(br)) return 1;
-    return a.name.localeCompare(b.name);
+    return String(a.name || PRETTY[a.id] || a.id).localeCompare(String(b.name || PRETTY[b.id] || b.id));
   });
 }
 
@@ -482,6 +519,7 @@ function renderVotes() {
   clearTimeout(state.votesTimer);
   state.votesTimer = setTimeout(async () => {
     await loadData();
+    normalizeData();
     const officialByRound = getOfficialRankingByRound();
     state.latestRound = getLatestRound(officialByRound);
     renderContestants();
@@ -493,6 +531,7 @@ function renderVotes() {
 async function boot() {
   setupNav();
   await loadData();
+  normalizeData();
   const officialByRound = getOfficialRankingByRound();
   state.latestRound = getLatestRound(officialByRound);
   state.votesRound = state.latestRound;
