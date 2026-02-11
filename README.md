@@ -1,51 +1,94 @@
 # Star KCA Academy — Static Site (GitHub Pages)
 
-Version actuelle centrée sur 3 vues uniquement:
-- **Contestants**
-- **Profile** (fiche candidat)
-- **Rankings** (table trajectoire PRERANK → FINAL)
+Le site est maintenant centré sur :
+- **Contestants** (auto triés sur le dernier classement officiel)
+- **Profile** (fiche individuelle + performances + évolution)
+- **Rankings** (trajectoire complète par round + graphique global)
+- **Votes** (0 par défaut tant qu'aucune donnée réelle n'est fournie)
 
-## Déploiement (ultra simple)
+## Déploiement (très simple)
 
 1. Push le repo sur GitHub.
-2. Ouvre **Settings → Pages**.
-3. Choisis **Deploy from a branch**.
-4. Sélectionne ta branche (ex: `main`) + dossier `/root`.
-5. Ouvre l'URL GitHub Pages.
+2. `Settings` → `Pages`.
+3. `Deploy from a branch`.
+4. Branche `main` (ou autre) + dossier `/root`.
+5. Ouvrir l'URL GitHub Pages.
 
-Aucun build requis: c'est un site statique (`index.html`).
+Aucun build requis (`index.html` statique).
 
 ## Configuration Google Sheets
 
-Dans `index.html`, configure `CONFIG.SHEET_ID`.
+Dans `index.html`, renseigner :
 
-Le site lit les onglets:
-- contestants
-- rounds
-- submissions
-- scores
-- judge_rankings
-- round_status
-- votes_live
+```js
+const CONFIG = {
+  SHEET_ID: "TON_SHEET_ID",
+  SHEETS: {
+    contestants: "contestants",
+    rounds: "rounds",
+    submissions: "submissions",
+    scores: "scores",
+    judge_rankings: "judge_rankings",
+    round_status: "round_status",
+    votes_live: "votes_live"
+  }
+}
+```
 
-Même si certains onglets ne sont pas affichés dans le menu, ils sont gardés pour compatibilité future.
+## Comment modifier le classement (important)
 
-## Point important sur les statuts
+Le site prend le classement officiel via **2 options** :
 
-Les statuts candidats sont lus uniquement depuis l'onglet `round_status`.
+1. **Option prioritaire** : onglet `judge_rankings` avec `judge_name = official`
+   - Colonnes : `round_id, judge_name, contestant_id, rank`
+   - Exemple : `ROUND_2, official, yza, 1`
 
-- Si un statut n'existe pas pour un candidat/round, le site affiche **TBD**.
-- Le site **n'invente plus de statuts par défaut** (pas de safe/eliminated auto).
+2. **Option de secours** : onglet `scores`
+   - Colonnes : `round_id, contestant_id, total`
+   - Le site trie automatiquement les `total` pour produire le rank.
 
-Valeurs statut attendues:
+👉 Si tu veux un contrôle total et clair : utilise l'option 1 (`judge_rankings` + `official`).
+
+## Comment modifier les statuts des candidats
+
+Onglet : `round_status`
+
+Colonnes :
+- `round_id`
+- `contestant_id`
+- `status`
+
+Statuts supportés :
 - `safe`
 - `nominee`
 - `saved_judges`
 - `saved_public`
 - `eliminated`
 
-## Sans Google Sheet
+Règle du site :
+- aucun statut inventé
+- si absent → affichage `TBD`
 
-Si `SHEET_ID` n'est pas configuré, le site utilise un fallback local de démonstration.
-Ce fallback ne fournit pas de statuts de round (donc affichage `TBD`), pour éviter tout statut arbitraire.
+Les cartes Contestants affichent automatiquement les statuts du **dernier round disponible** (selon ranking/status data).
+
+## Votes (sans valeurs inventées)
+
+Le site lit les votes uniquement depuis `votes_live` :
+- `round_id, contestant_id, votes_count, last_updated`
+
+Si aucune donnée n'existe, les valeurs restent à `0` / vide.
+
+### Option A — manuel
+Tu mets à jour `votes_live` à la main.
+
+### Option B — Google Form (recommandé)
+1. Formulaire Google pour collecter les votes.
+2. Réponses liées à un Google Sheet.
+3. Agréger les réponses vers `votes_live` (Apps Script ou formule/pivot).
+4. Le site se rafraîchit automatiquement.
+
+## Notes
+
+- Le fallback local sert seulement de démo visuelle (pas de faux classements/statuts/votes).
+- Le tableau Rankings n'affiche plus de `#5 · score` : uniquement les rangs par round.
 
