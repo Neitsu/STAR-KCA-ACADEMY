@@ -122,6 +122,18 @@ const ROUND_LABELS = { PRERANK: "Prerank", ROUND_1: "R1", ROUND_2: "R2", ROUND_3
 const CANDIDATE_NAMES = ["yza","hope","lea","megara","asli","chanel","heaven","manuee","hwa_young","mimi","eria","panida","kelsy","suhaa","johi","sun","kora","brahmini","katie","donghyun","lizy","kyo"];
 const PRETTY = { yza:"Yza", hope:"Hope", lea:"Lea", megara:"Megara", asli:"Asli", chanel:"Chanel", heaven:"Heaven", manuee:"Manuee", hwa_young:"Hwa Young", mimi:"Mimi", eria:"Eria", panida:"Panida", kelsy:"Kelsy", suhaa:"Suhaa", johi:"Johi", sun:"Sun", kora:"Kora", brahmini:"Brahmini", katie:"Katie", donghyun:"Donghyun", lizy:"Lizy", kyo:"Kyo" };
 
+
+function canonicalRoundId(value) {
+  const raw = String(value || '').trim().toUpperCase().replace(/\s+/g, '_').replace(/-/g, '_');
+  if (!raw) return '';
+  if (raw in ROUND_LABELS) return raw;
+  const m = raw.match(/^ROUND_?(\d+)$/);
+  if (m) return `ROUND_${m[1]}`;
+  if (raw === 'PRE_RANK' || raw === 'PRERANKING') return 'PRERANK';
+  if (raw === 'FINALS') return 'FINAL';
+  return raw;
+}
+
 const state = {
   data: { contestants: [], rounds: [], submissions: [], scores: [], judge_rankings: [], round_status: [], votes_live: [] },
   latestRound: "PRERANK",
@@ -181,6 +193,14 @@ function normalizeData() {
   state.data.judge_rankings = Array.isArray(state.data.judge_rankings) ? state.data.judge_rankings : [];
   state.data.submissions = Array.isArray(state.data.submissions) ? state.data.submissions : [];
   state.data.votes_live = Array.isArray(state.data.votes_live) ? state.data.votes_live : [];
+
+  const normId = (v) => String(v || '').trim().toLowerCase().replace(/\s+/g, '_');
+
+  state.data.round_status = state.data.round_status.map(r => ({ ...r, round_id: canonicalRoundId(r.round_id), contestant_id: normId(r.contestant_id) }));
+  state.data.scores = state.data.scores.map(r => ({ ...r, round_id: canonicalRoundId(r.round_id), contestant_id: normId(r.contestant_id) }));
+  state.data.judge_rankings = state.data.judge_rankings.map(r => ({ ...r, round_id: canonicalRoundId(r.round_id), contestant_id: normId(r.contestant_id) }));
+  state.data.submissions = state.data.submissions.map(r => ({ ...r, round_id: canonicalRoundId(r.round_id), contestant_id: normId(r.contestant_id) }));
+  state.data.votes_live = state.data.votes_live.map(r => ({ ...r, round_id: canonicalRoundId(r.round_id), contestant_id: normId(r.contestant_id) }));
   const raw = Array.isArray(state.data.contestants) ? state.data.contestants : [];
   const byId = new Map();
   raw.forEach((c) => {
@@ -534,7 +554,8 @@ async function boot() {
   normalizeData();
   const officialByRound = getOfficialRankingByRound();
   state.latestRound = getLatestRound(officialByRound);
-  state.votesRound = state.latestRound;
+  const roundsWithVotes = ROUND_ORDER.filter(r => state.data.votes_live.some(v => v.round_id === r));
+  state.votesRound = roundsWithVotes[0] || state.latestRound;
 
   renderContestants();
   renderRankings();
