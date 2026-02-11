@@ -1,68 +1,51 @@
-# Star KCA Academy / SIEL — Static Website (GitHub Pages)
+# Star KCA Academy — Static Site (GitHub Pages)
 
-Site statique (HTML/CSS/JS + Chart.js) pour gérer un concours vocal en ligne avec:
-- contestants + profils
-- rankings officiels et par juge
-- scoring rubric /100
-- performances
-- votes live-ish (public/admin)
-- admin soft mode
+Version actuelle centrée sur 3 vues uniquement:
+- **Contestants**
+- **Profile** (fiche candidat)
+- **Rankings** (table trajectoire PRERANK → FINAL)
 
-## 1) Déploiement ultra simple (GitHub Pages)
+## Déploiement (ultra simple)
 
-1. Push ce repo sur GitHub.
-2. Va dans **Settings → Pages**.
-3. Source: **Deploy from a branch**.
-4. Branch: `main` (ou ta branche de prod), dossier `/root`.
-5. Ouvre l'URL GitHub Pages après le déploiement.
+1. Push le repo sur GitHub.
+2. Ouvre **Settings → Pages**.
+3. Choisis **Deploy from a branch**.
+4. Sélectionne ta branche (ex: `main`) + dossier `/root`.
+5. Ouvre l'URL GitHub Pages.
 
-> Aucun build requis. Le site fonctionne directement avec `index.html`.
+Aucun build requis: c'est un site statique (`index.html`).
 
-## 2) Config Google Sheets
+## Configuration Google Sheets
 
-Dans `index.html`, modifie la constante:
+Dans `index.html`, configure `CONFIG.SHEET_ID`.
 
-```js
-const CONFIG = {
-  SHEET_ID: "PASTE_YOUR_GOOGLE_SHEET_ID",
-  ADMIN_KEY: "kca-admin",
-  SHEETS: {
-    contestants: "contestants",
-    rounds: "rounds",
-    submissions: "submissions",
-    scores: "scores",
-    judge_rankings: "judge_rankings",
-    round_status: "round_status",
-    votes_live: "votes_live"
-  }
-}
-```
+Le site lit les onglets:
+- contestants
+- rounds
+- submissions
+- scores
+- judge_rankings
+- round_status
+- votes_live
 
-### Publication Google Sheets
-- Crée un Google Sheet nommé `DATABASE`.
-- Crée les onglets avec les noms exacts ci-dessus.
-- Remplis les colonnes d'après `templates/google-sheet-template.md`.
-- Fais **Share → Anyone with the link (Viewer)**.
-- Le site utilise l'endpoint GViz en lecture seule.
+Même si certains onglets ne sont pas affichés dans le menu, ils sont gardés pour compatibilité future.
 
-## 3) Mode public/admin votes
+## Point important sur les statuts
 
-- Public: valeurs arrondies de votes.
-- Admin: valeurs exactes.
+Les statuts candidats sont lus uniquement depuis l'onglet `round_status`.
 
-Activer admin:
-- URL: `?adminKey=kca-admin`
-- ou depuis `/admin`, bouton “Enable admin in this browser”.
+- Si un statut n'existe pas pour un candidat/round, le site affiche **TBD**.
+- Le site **n'invente plus de statuts par défaut** (pas de safe/eliminated auto).
 
-> Soft protection seulement (suffisant pour un projet fan/statique).
+Valeurs statut attendues:
+- `safe`
+- `nominee`
+- `saved_judges`
+- `saved_public`
+- `eliminated`
 
-## 4) Mise à jour des données
+## Sans Google Sheet
 
-- Tu mets à jour ton Google Sheet.
-- Le site recharge les votes toutes les 30 secondes.
-- Les autres pages se mettent à jour au prochain chargement (ou navigation après refresh).
-
-## 5) Si tu n'as pas encore de Sheet
-
-Le site inclut des données de fallback (22 candidats + rounds + exemples), ce qui permet d'avoir une démo immédiate.
+Si `SHEET_ID` n'est pas configuré, le site utilise un fallback local de démonstration.
+Ce fallback ne fournit pas de statuts de round (donc affichage `TBD`), pour éviter tout statut arbitraire.
 
