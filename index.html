@@ -104,7 +104,7 @@
 
 <script>
 const CONFIG = {
-  SHEET_ID: "PASTE_YOUR_GOOGLE_SHEET_ID",
+  SHEET_ID: "1wllhbdbdIJM3uTI-WnJFE5eJ8zb_scgik5k94Yegc1s",
   SHEETS: {
     contestants: "contestants",
     rounds: "rounds",
@@ -317,7 +317,7 @@ function renderRankings() {
   root.innerHTML = `
     <div class="card">
       <h2>Rankings · Trajectory</h2>
-      <p class="small">Table shows official rank evolution by round (no fake scores).</p>
+      <p class="small">Table shows official rank evolution by round.</p>
       <div class="table-wrap">
         <table>
           <thead>
@@ -464,7 +464,6 @@ function renderVotes() {
   root.innerHTML = `
     <div class="card">
       <h2>Votes</h2>
-      <p class="small">Source: sheet tab <code>votes_live</code>. If no data is provided, values stay at 0. No random values.</p>
       <div class="filters">
         <select id="votesRoundSelect">${ROUND_ORDER.map(r => `<option value="${r}" ${r===state.votesRound?"selected":""}>${ROUND_LABELS[r]}</option>`).join("")}</select>
       </div>
@@ -473,16 +472,6 @@ function renderVotes() {
         return `<div class="vote-row"><div><strong>${r.name}</strong> — ${r.votes} votes (${pct.toFixed(1)}%)</div><div class="bar"><span style="width:${pct}%"></span></div></div>`;
       }).join("") : "<p>No vote data for this round yet.</p>"}
       <p class="small">Total votes: ${totalVotes} · Last refresh: ${new Date().toLocaleString("fr-FR")}</p>
-    </div>
-    <div class="card">
-      <h3>How to feed votes</h3>
-      <ol>
-        <li>Create a Google Form (1 vote = 1 response) with fields <code>round_id</code> and <code>contestant_id</code>.</li>
-        <li>Link form responses to a Google Sheet.</li>
-        <li>Aggregate counts into the <code>votes_live</code> tab with columns: <code>round_id, contestant_id, votes_count, last_updated</code>.</li>
-        <li>Publish the sheet read-only and set <code>CONFIG.SHEET_ID</code>.</li>
-      </ol>
-      <p class="small">Simple alternative: update <code>votes_live</code> manually in Google Sheets.</p>
     </div>`;
 
   document.getElementById("votesRoundSelect").addEventListener("change", (e) => {
