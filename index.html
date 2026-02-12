@@ -124,7 +124,8 @@ const CONFIG = {
     ROUND_5: "R5",
     ROUND_6: "R6",
     FINAL: "FINAL"
-  }
+  },
+  VOTE_FORM_URL: "https://docs.google.com/forms/d/e/1FAIpQLSdRAvtdk_e2yVjhhLJmvh6UJhMd4tw6OIzBHkbyLaau7tt8cQ/viewform?usp=header"
 };
 
 const ROUND_ORDER = ["PRERANK", "ROUND_1", "ROUND_2", "ROUND_3", "ROUND_4", "ROUND_5", "ROUND_6", "FINAL"];
@@ -891,7 +892,9 @@ function renderVotes() {
       <h2>Votes</h2>
       <div class="filters">
         <select id="votesRoundSelect">${ROUND_ORDER.map(r => `<option value="${r}" ${r===state.votesRound?"selected":""}>${ROUND_LABELS[r]}</option>`).join("")}</select>
+        ${CONFIG.VOTE_FORM_URL ? `<a class="btn" target="_blank" rel="noopener noreferrer" href="${CONFIG.VOTE_FORM_URL}">Vote now</a>` : ""}
       </div>
+      ${CONFIG.VOTE_FORM_URL ? `<p class="small">Use the vote form to submit your save vote for this round.</p>` : ""}
       ${rows.length ? rows.map(r => {
         const pct = totalVotes > 0 ? (r.votes / totalVotes) * 100 : 0;
         return `<div class="vote-row"><div><strong>${r.name}</strong> — ${r.votes} votes (${pct.toFixed(1)}%)</div><div class="bar"><span style="width:${pct}%"></span></div></div>`;
