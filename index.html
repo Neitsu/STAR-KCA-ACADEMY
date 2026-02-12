@@ -114,7 +114,17 @@ const CONFIG = {
     round_status: "round_status",
     votes_live: "votes_live"
   },
-  REFRESH_MS: 30000
+  REFRESH_MS: 30000,
+  ROUND_TABS: {
+    PRERANK: "PRERANK",
+    ROUND_1: "R1",
+    ROUND_2: "R2",
+    ROUND_3: "R3",
+    ROUND_4: "R4",
+    ROUND_5: "R5",
+    ROUND_6: "R6",
+    FINAL: "FINAL"
+  }
 };
 
 const ROUND_ORDER = ["PRERANK", "ROUND_1", "ROUND_2", "ROUND_3", "ROUND_4", "ROUND_5", "ROUND_6", "FINAL"];
@@ -136,6 +146,121 @@ function canonicalRoundId(value) {
   if (/^R[1-6]$/.test(raw)) return `ROUND_${raw.slice(1)}`;
   if (raw === 'RF' || raw === 'RFINAL') return 'FINAL';
   return raw;
+}
+
+
+function normalizeHeaderKey(key) {
+  return String(key || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]/g, '');
+}
+
+function toSlug(value) {
+  return String(value || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+}
+
+function pickValue(row, aliases) {
+  const keyMap = {};
+  Object.keys(row || {}).forEach(k => { keyMap[normalizeHeaderKey(k)] = row[k]; });
+  for (const alias of aliases) {
+    const v = keyMap[normalizeHeaderKey(alias)];
+    if (v !== undefined && v !== null && String(v).trim() !== '') return String(v).trim();
+  }
+  return '';
+}
+
+function toFiniteNumber(value) {
+  if (value === null || value === undefined || value === '') return null;
+  const n = Number(String(value).replace(',', '.'));
+  return Number.isFinite(n) ? n : null;
+}
+
+async function fetchOptionalSheetTab(sheetName) {
+  try { return await fetchSheetTab(sheetName); } catch { return []; }
+}
+
+async function loadDataFromRoundTabs() {
+  const contestantsMap = new Map();
+  const submissions = [];
+  const scores = [];
+  const judge_rankings = [];
+
+  for (const roundId of ROUND_ORDER) {
+    const tabName = CONFIG.ROUND_TABS?.[roundId] || ROUND_LABELS[roundId];
+    let rows = [];
+    try {
+      rows = await fetchSheetTab(tabName);
+    } catch {
+      continue;
+    }
+
+    rows.forEach((row) => {
+      const name = pickValue(row, ['name', 'candidate', 'contestant', 'nom', 'candidat']);
+      if (!name) return;
+      const contestantId = toSlug(pickValue(row, ['id', 'contestant_id']) || name);
+      const instagram = pickValue(row, ['instagram', 'instagram_handle', 'username', 'ig', 'insta']);
+      const performance = pickValue(row, ['performance', 'song', 'prestation']);
+      const performanceLink = pickValue(row, ['performance_link', 'link', 'url', 'youtube_url', 'youtube', 'bandlab_url']);
+      const officialRank = toFiniteNumber(pickValue(row, ['official_rank', 'officialrank', 'rank_official', 'official', 'rank']));
+      const perfScore = toFiniteNumber(pickValue(row, ['performance_score', 'performancescore', 'creator_score', 'score', 'total']));
+
+      if (!contestantsMap.has(contestantId)) {
+        contestantsMap.set(contestantId, {
+          id: contestantId,
+          name,
+          photo_url: `assets/${contestantId}.jpg`,
+          country: 'TBD',
+          bio: 'Bio TBD',
+          instagram: instagram || '',
+          pronouns: ''
+        });
+      } else if (instagram && !contestantsMap.get(contestantId).instagram) {
+        contestantsMap.get(contestantId).instagram = instagram;
+      }
+
+      if (Number.isFinite(officialRank)) {
+        judge_rankings.push({ round_id: roundId, judge_name: 'official', contestant_id: contestantId, rank: officialRank });
+      }
+
+      const judges = [
+        ['Neitsu', ['neitsu']],
+        ['Bibiblu', ['bibiblu']],
+        ['Kaina', ['kaina']],
+        ['Hauras', ['hauras']],
+        ['Cal', ['cal']],
+        ['Aya', ['aya']]
+      ];
+      judges.forEach(([judge, aliases]) => {
+        const r = toFiniteNumber(pickValue(row, aliases));
+        if (Number.isFinite(r)) judge_rankings.push({ round_id: roundId, judge_name: judge, contestant_id: contestantId, rank: r });
+      });
+
+      if (Number.isFinite(perfScore)) {
+        scores.push({ round_id: roundId, contestant_id: contestantId, total: perfScore });
+      }
+
+      if (performance || performanceLink) {
+        submissions.push({
+          round_id: roundId,
+          contestant_id: contestantId,
+          song_title: performance || '',
+          group_song: '',
+          bandlab_url: '',
+          youtube_url: performanceLink || '',
+          notes: ''
+        });
+      }
+    });
+  }
+
+  const contestants = [...contestantsMap.values()];
+  return {
+    contestants,
+    rounds: ROUND_ORDER.map(r => ({ round_id: r, round_name: ROUND_LABELS[r], start_date: '', end_date: '' })),
+    submissions,
+    scores,
+    judge_rankings,
+    round_status: await fetchOptionalSheetTab(CONFIG.SHEETS.round_status),
+    votes_live: await fetchOptionalSheetTab(CONFIG.SHEETS.votes_live)
+  };
 }
 
 const state = {
@@ -186,8 +311,16 @@ async function loadData() {
   try {
     const entries = await Promise.all(Object.entries(CONFIG.SHEETS).map(async ([k, v]) => [k, await fetchSheetTab(v)]));
     state.data = Object.fromEntries(entries);
+    if (!Array.isArray(state.data.contestants) || state.data.contestants.length === 0) {
+      state.data = await loadDataFromRoundTabs();
+    }
   } catch {
-    state.data = fallbackData();
+    try {
+      state.data = await loadDataFromRoundTabs();
+      if (!state.data.contestants?.length) state.data = fallbackData();
+    } catch {
+      state.data = fallbackData();
+    }
   }
 }
 

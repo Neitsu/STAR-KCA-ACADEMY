@@ -92,3 +92,19 @@ Tu mets à jour `votes_live` à la main.
 - Le fallback local sert seulement de démo visuelle (pas de faux classements/statuts/votes).
 - Le tableau Rankings n'affiche plus de `#5 · score` : uniquement les rangs par round.
 
+
+## Nouveau format: 1 onglet par round
+
+Le site peut aussi lire un Google Sheet organisé par onglets round (`PRERANK`, `R1`, `R2`, ...).
+
+Si les onglets standards (`contestants`, `scores`, etc.) sont absents/vides, le site passe automatiquement en mode round-tabs.
+
+Champs reconnus (noms flexibles) dans chaque onglet round:
+- nom candidat (`name` / `candidate` / `contestant`)
+- instagram (`instagram` / `username` / `ig`)
+- ranking officiel (`official_rank` / `official`)
+- rankings juges (`neitsu`, `bibiblu`, `kaina`, `hauras`, `cal`, `aya`)
+- performance score (`performance_score` / `score`)
+- performance + lien (`performance`, `link` / `youtube_url`)
+
+Tu peux adapter les noms d'onglets via `CONFIG.ROUND_TABS` dans `index.html`.
