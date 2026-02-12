@@ -3,9 +3,6 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-  <meta http-equiv="Pragma" content="no-cache" />
-  <meta http-equiv="Expires" content="0" />
   <title>Star KCA Academy</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
@@ -68,28 +65,6 @@
     .contestant-card:hover { transform: translateY(-2px); }
     .contestant-card img { width: 100%; height: 165px; object-fit: cover; display: block; }
     .contestant-card .body { padding: .68rem; }
-    /* Backward-compat fallback: force old star-mode markup to render as classic cards. */
-    .contestant-card.star-card {
-      border: 1px solid var(--line) !important;
-      background: #0d1526 !important;
-      box-shadow: none !important;
-    }
-    .star-media {
-      height: 165px !important;
-      display: block !important;
-      background: transparent !important;
-      overflow: hidden !important;
-      position: static !important;
-    }
-    .star-media::before { display: none !important; }
-    .star-media img {
-      width: 100% !important;
-      height: 165px !important;
-      object-fit: cover !important;
-      clip-path: none !important;
-      border: 0 !important;
-      position: static !important;
-    }
     .pill { display: inline-block; margin-top: .32rem; padding: .16rem .52rem; border-radius: 999px; font-size: .72rem; border: 1px solid transparent; }
     .safe { background: rgba(34,197,94,.16); border-color: rgba(34,197,94,.45); }
     .nominee { background: rgba(245,158,11,.16); border-color: rgba(245,158,11,.42); }
@@ -139,26 +114,15 @@ const CONFIG = {
     round_status: "round_status",
     votes_live: "votes_live"
   },
-  REFRESH_MS: 30000,
-  ROUND_TABS: {
-    PRERANK: "PRERANK",
-    ROUND_1: "R1",
-    ROUND_2: "R2",
-    ROUND_3: "R3",
-    ROUND_4: "R4",
-    ROUND_5: "R5",
-    ROUND_6: "R6",
-    FINAL: "FINAL"
-  },
-  VOTE_FORM_URL: "https://docs.google.com/forms/d/e/1FAIpQLSdRAvtdk_e2yVjhhLJmvh6UJhMd4tw6OIzBHkbyLaau7tt8cQ/viewform?usp=header"
+  ROUND_TABS: { PRERANK: "PRERANK", ROUND_1: "R1", ROUND_2: "R2", ROUND_3: "R3", ROUND_4: "R4", ROUND_5: "R5", ROUND_6: "R6", FINAL: "FINAL" },
+  VOTE_FORM_URL: "https://docs.google.com/forms/d/e/1FAIpQLSdRAvtdk_e2yVjhhLJmvh6UJhMd4tw6OIzBHkbyLaau7tt8cQ/viewform?usp=header",
+  REFRESH_MS: 30000
 };
 
 const ROUND_ORDER = ["PRERANK", "ROUND_1", "ROUND_2", "ROUND_3", "ROUND_4", "ROUND_5", "ROUND_6", "FINAL"];
 const ROUND_LABELS = { PRERANK: "Prerank", ROUND_1: "R1", ROUND_2: "R2", ROUND_3: "R3", ROUND_4: "R4", ROUND_5: "R5", ROUND_6: "R6", FINAL: "Final" };
-const CANDIDATE_NAMES = ["yza","hope","lea","megara","asli","chanel","heaven","manuee","hwa_young","mimi","eria","panida","kelsy","suhaa","johi","sun","kora","brahmini","katie","donghyun","lizy","kyo"];
-const PRETTY = { yza:"Yza", hope:"Hope", lea:"Lea", megara:"Megara", asli:"Asli", chanel:"Chanel", heaven:"Heaven", manuee:"Manuee", hwa_young:"Hwa Young", mimi:"Mimi", eria:"Eria", panida:"Panida", kelsy:"Kelsy", suhaa:"Suhaa", johi:"Johi", sun:"Sun", kora:"Kora", brahmini:"Brahmini", katie:"Katie", donghyun:"Donghyun", lizy:"Lizy", kyo:"Kyo" };
-
 const JUDGE_NAMES = ["Neitsu", "Bibiblu", "Kaina", "Hauras", "Cal", "Aya"];
+const CANDIDATE_NAMES = ["yza","hope","lea","megara","asli","chanel","heaven","manuee","hwa_young","mimi","eria","panida","kelsy","suhaa","johi","sun","kora","brahmini","katie","donghyun","lizy","kyo"];
 
 const PRERANK_MANUAL_ROWS = [
   { name: 'Asli', instagram: '@aslcvrs', official_rank: 5, score: 89 },
@@ -210,473 +174,295 @@ const R1_MANUAL_ROWS = [
   { name: 'Yza', instagram: '@yzavliss', performance: 'UNETHICAL', link: '' }
 ];
 
+let rankingChart = null;
+let profileChart = null;
+
+const state = {
+  data: { contestants: [], rounds: [], submissions: [], scores: [], judge_rankings: [], round_status: [], votes_live: [] },
+  latestRound: "PRERANK",
+  rankingView: "official",
+  votesRound: "PRERANK",
+  votesTimer: null
+};
+
+function normId(v) {
+  return String(v || "").toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+}
 
 function canonicalRoundId(value) {
   const raw = String(value || '').trim().toUpperCase().replace(/\s+/g, '_').replace(/-/g, '_');
   if (!raw) return '';
-  if (raw in ROUND_LABELS) return raw;
-  const m = raw.match(/^ROUND_?(\d+)$/);
-  if (m) return `ROUND_${m[1]}`;
-  if (raw === 'PRE_RANK' || raw === 'PRERANKING') return 'PRERANK';
-  if (raw === 'FINALS') return 'FINAL';
+  if (ROUND_ORDER.includes(raw)) return raw;
   if (/^R[1-6]$/.test(raw)) return `ROUND_${raw.slice(1)}`;
-  if (raw === 'RF' || raw === 'RFINAL') return 'FINAL';
+  if (raw === 'PRE_RANK' || raw === 'PRERANKING') return 'PRERANK';
+  if (raw === 'ROUND1') return 'ROUND_1';
+  if (raw === 'ROUND2') return 'ROUND_2';
+  if (raw === 'ROUND3') return 'ROUND_3';
+  if (raw === 'ROUND4') return 'ROUND_4';
+  if (raw === 'ROUND5') return 'ROUND_5';
+  if (raw === 'ROUND6') return 'ROUND_6';
   return raw;
 }
 
-
-function normalizedToken(value) {
-  return String(value || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]/g, '');
+function normalizeJudgeName(v) {
+  return String(v || '').trim().toLowerCase();
 }
 
-function resolveContestantIdByName(name) {
-  const aliases = {
-    chgnel: 'chanel',
-    chanel: 'chanel',
-    hwayoung: 'hwa_young',
-    manuee: 'manuee',
-    sunda: 'suhaa'
-  };
-  const token = normalizedToken(name);
-  if (!token) return '';
-  if (aliases[token]) return aliases[token];
-
-  const fromLoaded = state.data.contestants.find(c => normalizedToken(c.name) == token);
-  if (fromLoaded) return fromLoaded.id;
-
-  for (const id of CANDIDATE_NAMES) {
-    if (normalizedToken(PRETTY[id]) === token || normalizedToken(id) === token.replace(/_/g,'')) return id;
-  }
-  return toSlug(name);
+function getContestantName(id) {
+  return state.data.contestants.find(c => c.id === id)?.name || id;
 }
 
-function applyManualPrerankSeed() {
-  const hasOfficialPrerank = state.data.judge_rankings.some(r => r.round_id === 'PRERANK' && normalizeJudgeName(r.judge_name) === 'official');
-  const hasScorePrerank = state.data.scores.some(s => s.round_id === 'PRERANK' && Number.isFinite(Number(s.total)));
-
-  PRERANK_MANUAL_ROWS.forEach((row) => {
-    const id = resolveContestantIdByName(row.name);
-    if (!id) return;
-
-    let contestant = state.data.contestants.find(c => c.id === id);
-    if (!contestant) {
-      contestant = { id, name: row.name, photo_url: `assets/${id}.jpg`, country: 'TBD', bio: 'Bio TBD', instagram: '', pronouns: '' };
-      state.data.contestants.push(contestant);
-    }
-    if (!contestant.instagram && row.instagram) contestant.instagram = row.instagram;
-
-    if (!hasOfficialPrerank) {
-      state.data.judge_rankings.push({ round_id: 'PRERANK', judge_name: 'official', contestant_id: id, rank: row.official_rank });
-    }
-    if (!hasScorePrerank) {
-      state.data.scores.push({ round_id: 'PRERANK', contestant_id: id, total: row.score });
-    }
-  });
-}
-
-function applyManualR1Seed() {
-  const hasR1Submissions = state.data.submissions.some(s => s.round_id === 'ROUND_1' && (String(s.song_title || '').trim() || String(s.youtube_url || '').trim() || String(s.bandlab_url || '').trim()));
-
-  R1_MANUAL_ROWS.forEach((row) => {
-    const id = resolveContestantIdByName(row.name);
-    if (!id) return;
-
-    let contestant = state.data.contestants.find(c => c.id === id);
-    if (!contestant) {
-      contestant = { id, name: row.name, photo_url: `assets/${id}.jpg`, country: 'TBD', bio: 'Bio TBD', instagram: '', pronouns: '' };
-      state.data.contestants.push(contestant);
-    }
-    if (!contestant.instagram && row.instagram) contestant.instagram = row.instagram;
-
-    if (!hasR1Submissions && (row.performance || row.link)) {
-      state.data.submissions.push({
-        round_id: 'ROUND_1',
-        contestant_id: id,
-        song_title: row.performance || '',
-        group_song: '',
-        bandlab_url: '',
-        youtube_url: row.link || '',
-        notes: ''
-      });
-    }
-  });
-}
-
-function enforcePrerankSafeStatus() {
-  const contestantIds = state.data.contestants.length
-    ? state.data.contestants.map(c => c.id).filter(Boolean)
-    : [...CANDIDATE_NAMES];
-
-  state.data.round_status = state.data.round_status.filter(r => r.round_id !== "PRERANK");
-  contestantIds.forEach((contestantId) => {
-    state.data.round_status.push({ round_id: "PRERANK", contestant_id: contestantId, status: "safe" });
-  });
-}
-
-function normalizeHeaderKey(key) {
-  return String(key || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]/g, '');
-}
-
-function toSlug(value) {
-  return String(value || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
-}
-
-function pickValue(row, aliases) {
-  const keyMap = {};
-  Object.keys(row || {}).forEach(k => { keyMap[normalizeHeaderKey(k)] = row[k]; });
-  for (const alias of aliases) {
-    const v = keyMap[normalizeHeaderKey(alias)];
-    if (v !== undefined && v !== null && String(v).trim() !== '') return String(v).trim();
-  }
-  return '';
-}
-
-function toFiniteNumber(value) {
-  if (value === null || value === undefined || value === '') return null;
-  const n = Number(String(value).replace(',', '.'));
-  return Number.isFinite(n) ? n : null;
+async function fetchSheetTab(sheetName) {
+  const url = `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?sheet=${encodeURIComponent(sheetName)}&tqx=out:json`;
+  const txt = await fetch(url).then(r => r.text());
+  const m = txt.match(/google\.visualization\.Query\.setResponse\((.*)\);/s);
+  if (!m) throw new Error(`Invalid gviz payload for ${sheetName}`);
+  const json = JSON.parse(m[1]);
+  const cols = json.table.cols.map(c => c.label || c.id || '');
+  return json.table.rows.map(r => Object.fromEntries(cols.map((c, i) => [c, r.c[i]?.v ?? ''])));
 }
 
 async function fetchOptionalSheetTab(sheetName) {
   try { return await fetchSheetTab(sheetName); } catch { return []; }
 }
 
+function keyNorm(k) { return String(k || '').toLowerCase().replace(/[^a-z0-9]/g, ''); }
+function pickValue(row, aliases) {
+  const keys = Object.keys(row);
+  for (const a of aliases) {
+    const n = keyNorm(a);
+    const real = keys.find(k => keyNorm(k) === n);
+    if (real != null) return row[real];
+  }
+  return '';
+}
+
 async function loadDataFromRoundTabs() {
-  const contestantsMap = new Map();
-  const submissions = [];
-  const scores = [];
-  const judge_rankings = [];
-
-  for (const roundId of ROUND_ORDER) {
-    const tabName = CONFIG.ROUND_TABS?.[roundId] || ROUND_LABELS[roundId];
-    let rows = [];
-    try {
-      rows = await fetchSheetTab(tabName);
-    } catch {
-      continue;
-    }
-
-    rows.forEach((row) => {
-      const name = pickValue(row, ['name', 'candidate', 'contestant', 'nom', 'candidat']);
-      if (!name) return;
-      const contestantId = toSlug(pickValue(row, ['id', 'contestant_id']) || name);
-      const instagram = pickValue(row, ['instagram', 'instagram_handle', 'username', 'ig', 'insta']);
-      const performance = pickValue(row, ['performance', 'song', 'prestation']);
-      const performanceLink = pickValue(row, ['performance_link', 'link', 'url', 'youtube_url', 'youtube', 'bandlab_url']);
-      const officialRank = toFiniteNumber(pickValue(row, ['official_rank', 'officialrank', 'rank_official', 'official', 'rank']));
-      const perfScore = toFiniteNumber(pickValue(row, ['performance_score', 'performancescore', 'creator_score', 'score', 'total']));
-
-      if (!contestantsMap.has(contestantId)) {
-        contestantsMap.set(contestantId, {
-          id: contestantId,
-          name,
-          photo_url: `assets/${contestantId}.jpg`,
-          country: 'TBD',
-          bio: 'Bio TBD',
-          instagram: instagram || '',
-          pronouns: ''
-        });
-      } else if (instagram && !contestantsMap.get(contestantId).instagram) {
-        contestantsMap.get(contestantId).instagram = instagram;
-      }
-
-      if (Number.isFinite(officialRank)) {
-        judge_rankings.push({ round_id: roundId, judge_name: 'official', contestant_id: contestantId, rank: officialRank });
-      }
-
-      const judges = [
-        ['Neitsu', ['neitsu']],
-        ['Bibiblu', ['bibiblu']],
-        ['Kaina', ['kaina']],
-        ['Hauras', ['hauras']],
-        ['Cal', ['cal']],
-        ['Aya', ['aya']]
-      ];
-      judges.forEach(([judge, aliases]) => {
-        const r = toFiniteNumber(pickValue(row, aliases));
-        if (Number.isFinite(r)) judge_rankings.push({ round_id: roundId, judge_name: judge, contestant_id: contestantId, rank: r });
-      });
-
-      if (Number.isFinite(perfScore)) {
-        scores.push({ round_id: roundId, contestant_id: contestantId, total: perfScore });
-      }
-
-      if (performance || performanceLink) {
-        submissions.push({
-          round_id: roundId,
-          contestant_id: contestantId,
-          song_title: performance || '',
-          group_song: '',
-          bandlab_url: '',
-          youtube_url: performanceLink || '',
-          notes: ''
-        });
-      }
-    });
+  const rowsByRound = {};
+  for (const [rid, tab] of Object.entries(CONFIG.ROUND_TABS)) {
+    rowsByRound[rid] = await fetchOptionalSheetTab(tab);
   }
 
-  const contestants = [...contestantsMap.values()];
-  return {
-    contestants,
-    rounds: ROUND_ORDER.map(r => ({ round_id: r, round_name: ROUND_LABELS[r], start_date: '', end_date: '' })),
-    submissions,
-    scores,
-    judge_rankings,
-    round_status: await fetchOptionalSheetTab(CONFIG.SHEETS.round_status),
-    votes_live: await fetchOptionalSheetTab(CONFIG.SHEETS.votes_live)
-  };
-}
+  const contestantsMap = new Map();
+  const judge_rankings = [];
+  const scores = [];
+  const submissions = [];
 
-const state = {
-  data: { contestants: [], rounds: [], submissions: [], scores: [], judge_rankings: [], round_status: [], votes_live: [] },
-  latestRound: "PRERANK",
-  profileChart: null,
-  rankingsChart: null,
-  votesRound: "PRERANK",
-  votesTimer: null,
-  rankingView: "official"
-};
+  Object.entries(rowsByRound).forEach(([round_id, rows]) => {
+    rows.forEach((row) => {
+      const name = String(pickValue(row, ['name', 'contestant', 'candidate']) || '').trim();
+      if (!name) return;
+      const id = normId(name);
+      const instagram = String(pickValue(row, ['instagram', 'instagram_handle', 'username']) || '').trim();
+      const performance = String(pickValue(row, ['performance', 'song', 'song_title']) || '').trim();
+      const link = String(pickValue(row, ['link', 'performance_link', 'youtube_url', 'url']) || '').trim();
+      const officialRank = Number(pickValue(row, ['official_rank', 'rank', 'official ranking']));
+      const perfScore = Number(pickValue(row, ['performance_score', 'score', 'creator_score', 'total']));
 
-async function fetchSheetTab(sheetName) {
-  if (!CONFIG.SHEET_ID || CONFIG.SHEET_ID.includes("PASTE")) throw new Error("No sheet id configured");
-  const url = `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?sheet=${encodeURIComponent(sheetName)}&tqx=out:json`;
-  const res = await fetch(url);
-  const text = await res.text();
-  const payload = JSON.parse(text.substring(47, text.length - 2));
-  const cols = payload.table.cols.map(c => c.label);
-  return payload.table.rows.map(r => {
-    const obj = {};
-    cols.forEach((col, i) => obj[col] = r.c[i]?.v ?? "");
-    return obj;
+      if (!contestantsMap.has(id)) contestantsMap.set(id, { id, name, photo_url: `assets/${id}.jpg`, country: '', bio: '', instagram, pronouns: '' });
+      if (instagram && !contestantsMap.get(id).instagram) contestantsMap.get(id).instagram = instagram;
+
+      if (Number.isFinite(officialRank)) judge_rankings.push({ round_id, judge_name: 'official', contestant_id: id, rank: officialRank });
+      if (Number.isFinite(perfScore)) scores.push({ round_id, contestant_id: id, total: perfScore });
+      if (performance || link) submissions.push({ round_id, contestant_id: id, song_title: performance, group_song: '', bandlab_url: '', youtube_url: link, notes: '' });
+
+      JUDGE_NAMES.forEach(jn => {
+        const val = Number(pickValue(row, [jn, `${jn}_rank`, `${jn} rank`]));
+        if (Number.isFinite(val)) judge_rankings.push({ round_id, judge_name: jn, contestant_id: id, rank: val });
+      });
+    });
   });
-}
 
-function fallbackData() {
-  return {
-    contestants: CANDIDATE_NAMES.map((id) => ({
-      id,
-      name: PRETTY[id],
-      photo_url: `assets/${id}.jpg`,
-      country: "TBD",
-      bio: "Bio to be filled.",
-      instagram: "",
-      pronouns: ""
-    })),
-    rounds: ROUND_ORDER.map(r => ({ round_id: r, round_name: ROUND_LABELS[r], start_date: "", end_date: "" })),
-    submissions: [],
-    scores: [],
-    judge_rankings: [],
-    round_status: [],
-    votes_live: []
-  };
+  return { contestants: [...contestantsMap.values()], rounds: [], submissions, scores, judge_rankings, round_status: [], votes_live: [] };
 }
 
 async function loadData() {
-  try {
-    const entries = await Promise.all(Object.entries(CONFIG.SHEETS).map(async ([k, v]) => [k, await fetchSheetTab(v)]));
-    state.data = Object.fromEntries(entries);
-    if (!Array.isArray(state.data.contestants) || state.data.contestants.length === 0) {
-      state.data = await loadDataFromRoundTabs();
-    }
-  } catch {
-    try {
-      state.data = await loadDataFromRoundTabs();
-      if (!state.data.contestants?.length) state.data = fallbackData();
-    } catch {
-      state.data = fallbackData();
-    }
+  const standard = {
+    contestants: await fetchOptionalSheetTab(CONFIG.SHEETS.contestants),
+    rounds: await fetchOptionalSheetTab(CONFIG.SHEETS.rounds),
+    submissions: await fetchOptionalSheetTab(CONFIG.SHEETS.submissions),
+    scores: await fetchOptionalSheetTab(CONFIG.SHEETS.scores),
+    judge_rankings: await fetchOptionalSheetTab(CONFIG.SHEETS.judge_rankings),
+    round_status: await fetchOptionalSheetTab(CONFIG.SHEETS.round_status),
+    votes_live: await fetchOptionalSheetTab(CONFIG.SHEETS.votes_live)
+  };
+
+  const hasStandard = [standard.contestants, standard.scores, standard.judge_rankings, standard.round_status, standard.submissions].some(a => a.length);
+  if (hasStandard) {
+    state.data = standard;
+  } else {
+    state.data = await loadDataFromRoundTabs();
+    state.data.votes_live = await fetchOptionalSheetTab(CONFIG.SHEETS.votes_live);
   }
 }
-
 
 function normalizeData() {
-  state.data.round_status = Array.isArray(state.data.round_status) ? state.data.round_status : [];
-  state.data.scores = Array.isArray(state.data.scores) ? state.data.scores : [];
-  state.data.judge_rankings = Array.isArray(state.data.judge_rankings) ? state.data.judge_rankings : [];
-  state.data.submissions = Array.isArray(state.data.submissions) ? state.data.submissions : [];
-  state.data.votes_live = Array.isArray(state.data.votes_live) ? state.data.votes_live : [];
+  const d = state.data;
+  d.contestants = Array.isArray(d.contestants) ? d.contestants : [];
+  d.rounds = Array.isArray(d.rounds) ? d.rounds : [];
+  d.submissions = Array.isArray(d.submissions) ? d.submissions : [];
+  d.scores = Array.isArray(d.scores) ? d.scores : [];
+  d.judge_rankings = Array.isArray(d.judge_rankings) ? d.judge_rankings : [];
+  d.round_status = Array.isArray(d.round_status) ? d.round_status : [];
+  d.votes_live = Array.isArray(d.votes_live) ? d.votes_live : [];
 
-  const normId = (v) => String(v || '').trim().toLowerCase().replace(/\s+/g, '_');
+  d.contestants = d.contestants.map(r => ({
+    id: normId(r.id || r.contestant_id || r.name),
+    name: String(r.name || '').trim(),
+    photo_url: String(r.photo_url || `assets/${normId(r.id || r.name)}.jpg`),
+    country: String(r.country || '').trim(),
+    bio: String(r.bio || '').trim(),
+    instagram: String(r.instagram || '').trim(),
+    pronouns: String(r.pronouns || '').trim()
+  })).filter(c => c.id);
 
-  state.data.round_status = state.data.round_status.map(r => ({ ...r, round_id: canonicalRoundId(r.round_id), contestant_id: normId(r.contestant_id) }));
-  state.data.scores = state.data.scores.map(r => ({ ...r, round_id: canonicalRoundId(r.round_id), contestant_id: normId(r.contestant_id) }));
-  state.data.judge_rankings = state.data.judge_rankings.map(r => ({ ...r, round_id: canonicalRoundId(r.round_id), contestant_id: normId(r.contestant_id) }));
-  state.data.submissions = state.data.submissions.map(r => ({ ...r, round_id: canonicalRoundId(r.round_id), contestant_id: normId(r.contestant_id) }));
-  state.data.votes_live = state.data.votes_live.map(r => ({ ...r, round_id: canonicalRoundId(r.round_id), contestant_id: normId(r.contestant_id) }));
-  const raw = Array.isArray(state.data.contestants) ? state.data.contestants : [];
-  const byId = new Map();
-  raw.forEach((c) => {
-    const id = String(c.id || '').trim().toLowerCase().replace(/\s+/g, '_');
-    if (!id) return;
-    byId.set(id, {
-      id,
-      name: c.name || PRETTY[id] || id,
-      photo_url: c.photo_url || `assets/${id}.jpg`,
-      country: c.country || 'TBD',
-      bio: c.bio || 'Bio TBD',
-      instagram: c.instagram || '',
-      pronouns: c.pronouns || ''
-    });
+  d.submissions = d.submissions.map(r => ({ ...r, round_id: canonicalRoundId(r.round_id), contestant_id: normId(r.contestant_id) }));
+  d.scores = d.scores.map(r => ({ ...r, round_id: canonicalRoundId(r.round_id), contestant_id: normId(r.contestant_id), total: Number(r.total) }));
+  d.judge_rankings = d.judge_rankings.map(r => ({ ...r, round_id: canonicalRoundId(r.round_id), contestant_id: normId(r.contestant_id), rank: Number(r.rank), judge_name: String(r.judge_name || '').trim() }));
+  d.round_status = d.round_status.map(r => ({ ...r, round_id: canonicalRoundId(r.round_id), contestant_id: normId(r.contestant_id), status: String(r.status || '').trim().toLowerCase() }));
+  d.votes_live = d.votes_live.map(r => ({ ...r, round_id: canonicalRoundId(r.round_id), contestant_id: normId(r.contestant_id), votes_count: Number(r.votes_count || 0) }));
+}
+
+function resolveContestantIdByName(name) {
+  const slug = normId(name);
+  const byId = state.data.contestants.find(c => c.id === slug);
+  if (byId) return byId.id;
+  const normalized = String(name || '').toLowerCase().replace(/\s+/g, ' ').trim();
+  const byName = state.data.contestants.find(c => String(c.name || '').toLowerCase().replace(/\s+/g, ' ').trim() === normalized);
+  if (byName) return byName.id;
+  return slug;
+}
+
+function applyManualPrerankSeed() {
+  const hasOfficialPrerank = state.data.judge_rankings.some(r => r.round_id === 'PRERANK' && normalizeJudgeName(r.judge_name) === 'official');
+  const hasScorePrerank = state.data.scores.some(r => r.round_id === 'PRERANK' && Number.isFinite(Number(r.total)));
+
+  PRERANK_MANUAL_ROWS.forEach((row) => {
+    const id = resolveContestantIdByName(row.name);
+    let c = state.data.contestants.find(x => x.id === id);
+    if (!c) {
+      c = { id, name: row.name, photo_url: `assets/${id}.jpg`, country: '', bio: '', instagram: '', pronouns: '' };
+      state.data.contestants.push(c);
+    }
+    if (!c.instagram && row.instagram) c.instagram = row.instagram;
+
+    if (!hasOfficialPrerank) state.data.judge_rankings.push({ round_id: 'PRERANK', judge_name: 'official', contestant_id: id, rank: row.official_rank });
+    if (!hasScorePrerank) state.data.scores.push({ round_id: 'PRERANK', contestant_id: id, total: row.score });
   });
-  if (!byId.size) {
-    CANDIDATE_NAMES.forEach((id) => byId.set(id, {
-      id,
-      name: PRETTY[id] || id,
-      photo_url: `assets/${id}.jpg`,
-      country: 'TBD',
-      bio: 'Bio TBD',
-      instagram: '',
-      pronouns: ''
-    }));
-  }
-  state.data.contestants = [...byId.values()];
 }
 
+function applyManualR1Seed() {
+  const hasR1Submissions = state.data.submissions.some(r => r.round_id === 'ROUND_1' && (String(r.song_title || '').trim() || String(r.youtube_url || '').trim() || String(r.bandlab_url || '').trim()));
 
-function setupNav() {
-  const tabs = ["contestants", "rankings", "votes"];
-  document.getElementById("nav").innerHTML = tabs.map(t => `<a class="nav-link" href="#${t}">${t[0].toUpperCase() + t.slice(1)}</a>`).join("");
+  R1_MANUAL_ROWS.forEach((row) => {
+    const id = resolveContestantIdByName(row.name);
+    let c = state.data.contestants.find(x => x.id === id);
+    if (!c) {
+      c = { id, name: row.name, photo_url: `assets/${id}.jpg`, country: '', bio: '', instagram: '', pronouns: '' };
+      state.data.contestants.push(c);
+    }
+    if (!c.instagram && row.instagram) c.instagram = row.instagram;
+
+    if (!hasR1Submissions && (row.performance || row.link)) {
+      state.data.submissions.push({ round_id: 'ROUND_1', contestant_id: id, song_title: row.performance || '', group_song: '', bandlab_url: '', youtube_url: row.link || '', notes: '' });
+    }
+  });
 }
 
-function setPage(hash) {
-  const target = hash.startsWith("#profile/") ? "profile" : (hash.replace("#", "") || "contestants");
-  document.querySelectorAll(".page").forEach(p => p.classList.toggle("active", p.id === target));
-  document.querySelectorAll(".nav-link").forEach(a => a.classList.toggle("active", a.getAttribute("href") === `#${target}`));
-  if (target === "profile") renderProfile(hash.split("/")[1]);
+function enforcePrerankSafeStatus() {
+  const ids = state.data.contestants.length ? state.data.contestants.map(c => c.id).filter(Boolean) : [...CANDIDATE_NAMES];
+  state.data.round_status = state.data.round_status.filter(r => r.round_id !== 'PRERANK');
+  ids.forEach(id => state.data.round_status.push({ round_id: 'PRERANK', contestant_id: id, status: 'safe' }));
 }
 
-function getContestantName(id) {
-  return state.data.contestants.find(c => c.id === id)?.name || PRETTY[id] || id;
+function getStatus(roundId, contestantId) {
+  return state.data.round_status.find(r => r.round_id === roundId && r.contestant_id === contestantId)?.status || '';
 }
+function statusClass(status) { return status || 'tbd'; }
+function statusLabel(status) { return status ? status.replace('_', ' ') : 'TBD'; }
 
 function getOfficialRankingByRound() {
-  const result = {};
-  ROUND_ORDER.forEach(r => result[r] = {});
-
-  const officialRows = state.data.judge_rankings.filter(r => String(r.judge_name || "").toLowerCase() === "official");
-  if (officialRows.length) {
-    ROUND_ORDER.forEach(round => {
-      const rows = officialRows.filter(r => r.round_id === round).map(r => ({ id: r.contestant_id, rank: Number(r.rank) })).filter(r => Number.isFinite(r.rank));
-      rows.forEach(row => result[round][row.id] = row.rank);
-    });
-    return result;
-  }
+  const out = Object.fromEntries(ROUND_ORDER.map(r => [r, {}]));
+  state.data.judge_rankings
+    .filter(r => normalizeJudgeName(r.judge_name) === 'official')
+    .forEach(r => { if (Number.isFinite(r.rank)) out[r.round_id][r.contestant_id] = r.rank; });
 
   ROUND_ORDER.forEach(round => {
-    const rows = state.data.scores
-      .filter(s => s.round_id === round)
-      .map(s => ({ id: s.contestant_id, total: Number(s.total) }))
-      .filter(s => Number.isFinite(s.total))
-      .sort((a, b) => b.total - a.total);
-    rows.forEach((row, idx) => result[round][row.id] = idx + 1);
+    if (Object.keys(out[round]).length) return;
+    const list = state.data.scores.filter(s => s.round_id === round && Number.isFinite(s.total)).sort((a, b) => b.total - a.total);
+    list.forEach((s, i) => out[round][s.contestant_id] = i + 1);
   });
-
-  return result;
-}
-
-
-function normalizeJudgeName(value) {
-  return String(value || '').trim().toLowerCase();
+  return out;
 }
 
 function getJudgeRankingByRound(judgeName) {
-  const result = {};
-  ROUND_ORDER.forEach(r => result[r] = {});
-  const target = normalizeJudgeName(judgeName);
-  const rows = state.data.judge_rankings.filter(r => normalizeJudgeName(r.judge_name) === target);
-  ROUND_ORDER.forEach(round => {
-    rows
-      .filter(r => r.round_id === round)
-      .map(r => ({ id: r.contestant_id, rank: Number(r.rank) }))
-      .filter(r => Number.isFinite(r.rank))
-      .forEach(r => { result[round][r.id] = r.rank; });
-  });
-  return result;
+  const key = normalizeJudgeName(judgeName);
+  const out = Object.fromEntries(ROUND_ORDER.map(r => [r, {}]));
+  state.data.judge_rankings.filter(r => normalizeJudgeName(r.judge_name) === key).forEach(r => { if (Number.isFinite(r.rank)) out[r.round_id][r.contestant_id] = r.rank; });
+  return out;
 }
 
 function getPerformanceScoreByRound() {
-  const result = {};
-  ROUND_ORDER.forEach(r => result[r] = {});
-  ROUND_ORDER.forEach(round => {
-    state.data.scores
-      .filter(s => s.round_id === round)
-      .forEach(s => {
-        const total = Number(s.total);
-        if (Number.isFinite(total)) result[round][s.contestant_id] = total;
-      });
-  });
-  return result;
+  const out = Object.fromEntries(ROUND_ORDER.map(r => [r, {}]));
+  state.data.scores.forEach(s => { if (Number.isFinite(s.total)) out[s.round_id][s.contestant_id] = s.total; });
+  return out;
 }
 
-function getPerformanceRankingByRound() {
-  const byScore = getPerformanceScoreByRound();
-  const result = {};
-  ROUND_ORDER.forEach(r => result[r] = {});
+function getPerformanceRankByRound() {
+  const scoreMap = getPerformanceScoreByRound();
+  const out = Object.fromEntries(ROUND_ORDER.map(r => [r, {}]));
   ROUND_ORDER.forEach(round => {
-    Object.entries(byScore[round])
-      .map(([id, score]) => ({ id, score }))
-      .sort((a, b) => b.score - a.score)
-      .forEach((row, idx) => { result[round][row.id] = idx + 1; });
+    const rows = Object.entries(scoreMap[round]).sort((a, b) => b[1] - a[1]);
+    rows.forEach(([id], i) => out[round][id] = i + 1);
   });
-  return result;
+  return out;
+}
+
+function getRankingViewOptions() {
+  return [
+    { value: 'official', label: 'Official ranking' },
+    ...JUDGE_NAMES.map(j => ({ value: `judge:${j}`, label: j })),
+    { value: 'performance_score', label: 'Performance score' }
+  ];
 }
 
 function getRankingMapByView(view) {
   if (view === 'official') return getOfficialRankingByRound();
   if (view === 'performance_score') return getPerformanceScoreByRound();
-  return getJudgeRankingByRound(view.replace('judge:', ''));
-}
-
-function getRankingViewOptions() {
-  const options = [{ value: 'official', label: 'Official ranking' }];
-  JUDGE_NAMES.forEach(name => options.push({ value: `judge:${name}`, label: `Judge · ${name}` }));
-  options.push({ value: 'performance_score', label: 'Performance score' });
-  return options;
+  if (view.startsWith('judge:')) return getJudgeRankingByRound(view.split(':')[1]);
+  return getOfficialRankingByRound();
 }
 
 function getLatestRound(officialByRound) {
   for (let i = ROUND_ORDER.length - 1; i >= 0; i--) {
     const round = ROUND_ORDER[i];
-    const hasRanking = Object.keys(officialByRound[round] || {}).length > 0;
+    const hasOfficial = Object.keys(officialByRound[round] || {}).length > 0;
     const hasStatus = state.data.round_status.some(r => r.round_id === round);
-    if (hasRanking || hasStatus) return round;
+    if (hasOfficial || hasStatus) return round;
   }
-  return "PRERANK";
-}
-
-function getStatus(roundId, contestantId) {
-  return state.data.round_status.find(r => r.round_id === roundId && r.contestant_id === contestantId)?.status || "";
-}
-
-function statusLabel(status) {
-  return status ? status.replace("_", " ") : "TBD";
-}
-
-function statusClass(status) {
-  return status || "tbd";
+  return 'PRERANK';
 }
 
 function sortedContestants() {
   const officialByRound = getOfficialRankingByRound();
-  const currentRanks = officialByRound[state.latestRound] || {};
+  const current = officialByRound[state.latestRound] || {};
   return [...state.data.contestants].sort((a, b) => {
     const aStatus = getStatus(state.latestRound, a.id);
     const bStatus = getStatus(state.latestRound, b.id);
-    const aElim = aStatus === "eliminated" ? 1 : 0;
-    const bElim = bStatus === "eliminated" ? 1 : 0;
+    const aElim = aStatus === 'eliminated' ? 1 : 0;
+    const bElim = bStatus === 'eliminated' ? 1 : 0;
     if (aElim !== bElim) return aElim - bElim;
 
-    const ar = currentRanks[a.id];
-    const br = currentRanks[b.id];
+    const ar = current[a.id], br = current[b.id];
     if (Number.isFinite(ar) && Number.isFinite(br)) return ar - br;
     if (Number.isFinite(ar)) return -1;
     if (Number.isFinite(br)) return 1;
-    return String(a.name || PRETTY[a.id] || a.id).localeCompare(String(b.name || PRETTY[b.id] || b.id));
+    return String(a.name || '').localeCompare(String(b.name || ''));
   });
 }
 
 function renderContestants() {
-  const root = document.getElementById("contestants");
+  const root = document.getElementById('contestants');
   root.innerHTML = `
     <div class="card">
       <h2>Contestants</h2>
@@ -697,101 +483,91 @@ function renderContestants() {
     </div>`;
 
   const draw = () => {
-    const q = document.getElementById("searchContestant").value.toLowerCase().trim();
-    const f = document.getElementById("statusFilter").value;
+    const q = document.getElementById('searchContestant').value.toLowerCase().trim();
+    const f = document.getElementById('statusFilter').value;
+
     const list = sortedContestants().filter(c => c.name.toLowerCase().includes(q)).filter(c => {
       const status = getStatus(state.latestRound, c.id);
-      if (f === "all") return true;
-      if (f === "tbd") return !status;
+      if (f === 'all') return true;
+      if (f === 'tbd') return !status;
       return status === f;
     });
 
-    document.getElementById("contestantsGrid").innerHTML = list.map(c => {
+    document.getElementById('contestantsGrid').innerHTML = list.map(c => {
       const status = getStatus(state.latestRound, c.id);
       return `<article class="contestant-card" onclick="location.hash='#profile/${c.id}'">
-        <img src="${c.photo_url}" alt="${c.name}" onerror="this.src='https://placehold.co/400x300?text=${c.name}'" />
-        <div class="body"><strong>${c.name}</strong><div class="small">${c.country || "TBD"}</div><span class="pill ${statusClass(status)}">${statusLabel(status)}</span></div>
+        <img src="${c.photo_url}" alt="${c.name}" onerror="this.src='https://placehold.co/400x300?text=${encodeURIComponent(c.name)}'" />
+        <div class="body"><strong>${c.name}</strong><div class="small">${c.country || 'TBD'}</div><span class="pill ${statusClass(status)}">${statusLabel(status)}</span></div>
       </article>`;
-    }).join("") || `<p class="small">No contestants found.</p>`;
+    }).join('') || `<p class="small">No contestants found.</p>`;
   };
 
-  document.getElementById("searchContestant").addEventListener("input", draw);
-  document.getElementById("statusFilter").addEventListener("change", draw);
+  document.getElementById('searchContestant').addEventListener('input', draw);
+  document.getElementById('statusFilter').addEventListener('change', draw);
   draw();
 }
 
 function renderRankings() {
-  const rankingMap = getRankingMapByView(state.rankingView);
-  const root = document.getElementById("rankings");
+  const root = document.getElementById('rankings');
   const viewOptions = getRankingViewOptions();
-  const isPerformanceMode = state.rankingView === 'performance_score';
+  const rankingMap = getRankingMapByView(state.rankingView);
+  const isPerformance = state.rankingView === 'performance_score';
 
-  const contestants = [...state.data.contestants].sort((a, b) => {
-    const av = rankingMap[state.latestRound][a.id];
-    const bv = rankingMap[state.latestRound][b.id];
-    const aNum = Number.isFinite(av);
-    const bNum = Number.isFinite(bv);
-    if (aNum && bNum) return isPerformanceMode ? (bv - av) : (av - bv);
-    if (aNum) return -1;
-    if (bNum) return 1;
-    return String(a.name || '').localeCompare(String(b.name || ''));
+  const list = [...state.data.contestants].sort((a, b) => {
+    const av = rankingMap[state.latestRound]?.[a.id];
+    const bv = rankingMap[state.latestRound]?.[b.id];
+    if (Number.isFinite(av) && Number.isFinite(bv)) return isPerformance ? bv - av : av - bv;
+    if (Number.isFinite(av)) return -1;
+    if (Number.isFinite(bv)) return 1;
+    return a.name.localeCompare(b.name);
   });
 
-  const rowsForNominations = {
-    nominee: state.data.round_status.filter(r => r.round_id === state.latestRound && r.status === "nominee"),
-    saved_judges: state.data.round_status.filter(r => r.round_id === state.latestRound && r.status === "saved_judges"),
-    saved_public: state.data.round_status.filter(r => r.round_id === state.latestRound && r.status === "saved_public"),
-    eliminated: state.data.round_status.filter(r => r.round_id === state.latestRound && r.status === "eliminated")
+  const nominations = {
+    nominee: state.data.round_status.filter(r => r.round_id === state.latestRound && r.status === 'nominee'),
+    saved_judges: state.data.round_status.filter(r => r.round_id === state.latestRound && r.status === 'saved_judges'),
+    saved_public: state.data.round_status.filter(r => r.round_id === state.latestRound && r.status === 'saved_public'),
+    eliminated: state.data.round_status.filter(r => r.round_id === state.latestRound && r.status === 'eliminated')
   };
-  const nameList = (arr) => arr.map(r => getContestantName(r.contestant_id)).join(", ") || "TBD";
-  const firstColLabel = isPerformanceMode ? 'Points' : 'Rank';
 
   root.innerHTML = `
     <div class="card">
-      <h2>Rankings · Trajectory</h2>
+      <h2>Rankings</h2>
       <div class="filters">
-        <select id="rankingViewSelect">${viewOptions.map(opt => `<option value="${opt.value}" ${opt.value===state.rankingView?"selected":""}>${opt.label}</option>`).join("")}</select>
+        <select id="rankingViewSelect">${viewOptions.map(o => `<option value="${o.value}" ${o.value===state.rankingView?'selected':''}>${o.label}</option>`).join('')}</select>
       </div>
+      <p class="small">Table shows rank trajectory by round. In "Performance score" mode, values are points.</p>
       <div class="table-wrap">
         <table>
           <thead>
             <tr>
-              <th>${firstColLabel}</th>
+              <th>${isPerformance ? 'Pos' : 'Rank'}</th>
               <th>Name</th>
-              ${ROUND_ORDER.map(r => `<th><span class="chip">${ROUND_LABELS[r]}</span></th>`).join("")}
+              ${ROUND_ORDER.map(r => `<th>${ROUND_LABELS[r]}</th>`).join('')}
             </tr>
           </thead>
           <tbody>
-            ${contestants.map((c, idx) => {
-              const currentVal = rankingMap[state.latestRound][c.id];
-              const displayCurrent = Number.isFinite(currentVal)
-                ? (isPerformanceMode ? (Math.round(currentVal * 10) / 10) : currentVal)
-                : "—";
-              return `<tr>
-                <td>${displayCurrent}</td>
-                <td>${c.name}</td>
+            ${list.map((c, idx) => `
+              <tr>
+                <td>${idx + 1}</td>
+                <td><a href="#profile/${c.id}">${c.name}</a></td>
                 ${ROUND_ORDER.map(r => {
-                  const val = rankingMap[r][c.id];
-                  if (!Number.isFinite(val)) return `<td>—</td>`;
-                  return `<td>${isPerformanceMode ? (Math.round(val * 10) / 10) : val}</td>`;
-                }).join("")}
-              </tr>`;
-            }).join("")}
+                  const v = rankingMap[r]?.[c.id];
+                  if (!Number.isFinite(v)) return '<td>—</td>';
+                  return `<td>${isPerformance ? v.toFixed(1).replace(/\.0$/, '') : v}</td>`;
+                }).join('')}
+              </tr>`).join('')}
           </tbody>
         </table>
       </div>
-    </div>
-    <div class="card">
       <h3>Nominations (${ROUND_LABELS[state.latestRound]})</h3>
-      <p><strong>Nominated:</strong> ${nameList(rowsForNominations.nominee)}</p>
-      <p><strong>Saved by judges:</strong> ${nameList(rowsForNominations.saved_judges)}</p>
-      <p><strong>Saved by public:</strong> ${nameList(rowsForNominations.saved_public)}</p>
-      <p><strong>Eliminated:</strong> ${nameList(rowsForNominations.eliminated)}</p>
+      <p class="small">Nominee: ${nominations.nominee.map(x => getContestantName(x.contestant_id)).join(', ') || '—'}</p>
+      <p class="small">Saved judges: ${nominations.saved_judges.map(x => getContestantName(x.contestant_id)).join(', ') || '—'}</p>
+      <p class="small">Saved public: ${nominations.saved_public.map(x => getContestantName(x.contestant_id)).join(', ') || '—'}</p>
+      <p class="small">Eliminated: ${nominations.eliminated.map(x => getContestantName(x.contestant_id)).join(', ') || '—'}</p>
     </div>
     <div class="card">
-      <h3>Global trajectory chart</h3>
-      <p class="small">${isPerformanceMode ? 'All contestants are shown. Higher score is better.' : 'All contestants are shown. Lower rank is better (1 = top).'}</p>
-      <canvas id="allContestantsChart" height="120"></canvas>
+      <h3>Global evolution chart</h3>
+      <canvas id="rankingChart" height="120"></canvas>
     </div>`;
 
   document.getElementById('rankingViewSelect').addEventListener('change', (e) => {
@@ -799,183 +575,218 @@ function renderRankings() {
     renderRankings();
   });
 
-  const datasets = contestants.map((c, idx) => ({
-    label: c.name,
-    data: ROUND_ORDER.map(r => rankingMap[r][c.id] ?? null),
-    borderColor: `hsl(${(idx * 33) % 360} 82% 66%)`,
-    backgroundColor: "transparent",
-    borderWidth: 1.8,
-    pointRadius: 1.8,
-    tension: .2,
-    spanGaps: true
-  }));
-
-  const allValues = datasets.flatMap(d => d.data).filter(v => Number.isFinite(v));
-  const maxY = allValues.length ? Math.max(...allValues) : (isPerformanceMode ? 100 : Math.max(22, state.data.contestants.length));
-
-  if (state.rankingsChart) state.rankingsChart.destroy();
-  state.rankingsChart = new Chart(document.getElementById("allContestantsChart"), {
-    type: "line",
-    data: { labels: ROUND_ORDER.map(r => ROUND_LABELS[r]), datasets },
+  if (rankingChart) rankingChart.destroy();
+  const ctx = document.getElementById('rankingChart');
+  rankingChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: ROUND_ORDER.map(r => ROUND_LABELS[r]),
+      datasets: state.data.contestants.map(c => ({
+        label: c.name,
+        data: ROUND_ORDER.map(r => {
+          const v = rankingMap[r]?.[c.id];
+          return Number.isFinite(v) ? v : null;
+        }),
+        borderWidth: 1.2,
+        pointRadius: 0,
+        tension: .25,
+        spanGaps: true
+      }))
+    },
     options: {
-      plugins: { legend: { labels: { color: "#eef3ff", boxWidth: 10, font: { size: 10 } } } },
-      scales: {
-        x: { ticks: { color: "#9aa6c2" } },
-        y: isPerformanceMode
-          ? { min: 0, max: Math.ceil(maxY + 5), ticks: { color: "#9aa6c2" } }
-          : { reverse: true, min: 1, max: Math.max(22, state.data.contestants.length), ticks: { color: "#9aa6c2", stepSize: 1 } }
-      }
+      plugins: { legend: { display: false } },
+      scales: isPerformance
+        ? { x: { ticks: { color: '#9aa6c2' } }, y: { ticks: { color: '#9aa6c2' } } }
+        : { x: { ticks: { color: '#9aa6c2' } }, y: { reverse: true, min: 1, max: Math.max(22, state.data.contestants.length), ticks: { color: '#9aa6c2', stepSize: 1 } } }
     }
   });
 }
 
 function renderProfile(contestantId) {
-  const c = state.data.contestants.find(x => x.id === contestantId) || state.data.contestants[0];
-  if (!c) return;
+  const c = state.data.contestants.find(x => x.id === contestantId);
+  const root = document.getElementById('profile');
+  if (!c) { root.innerHTML = `<div class="card"><p>Contestant not found.</p></div>`; return; }
 
-  const officialByRound = getOfficialRankingByRound();
-  const scores = state.data.scores.filter(s => s.contestant_id === c.id);
-  const submissions = state.data.submissions.filter(s => s.contestant_id === c.id);
+  const official = getOfficialRankingByRound();
+  const judges = {
+    neitsu: getJudgeRankingByRound('Neitsu'), bibiblu: getJudgeRankingByRound('Bibiblu'),
+    kaina: getJudgeRankingByRound('Kaina'), hauras: getJudgeRankingByRound('Hauras'),
+    cal: getJudgeRankingByRound('Cal'), aya: getJudgeRankingByRound('Aya')
+  };
+  const perfScore = getPerformanceScoreByRound();
+  const perfRank = getPerformanceRankByRound();
 
-  document.getElementById("profile").innerHTML = `
-    <div class="card"><a class="btn" href="#contestants">← Back to contestants</a></div>
-    <div class="card row two">
-      <img class="profile-img" src="${c.photo_url}" alt="${c.name}" onerror="this.src='https://placehold.co/400x420?text=${c.name}'" />
-      <div>
-        <h2>${c.name}</h2>
-        ${c.bio ? `<p>${c.bio}</p>` : ""}
-        <p class="small">${[c.country && c.country!=="TBD" ? `Country: ${c.country}` : "", c.pronouns ? `Pronouns: ${c.pronouns}` : "", c.instagram ? `Instagram: ${c.instagram}` : ""].filter(Boolean).join(" · ")}</p>
+  const submissions = state.data.submissions.filter(s => s.contestant_id === c.id).sort((a,b) => ROUND_ORDER.indexOf(a.round_id) - ROUND_ORDER.indexOf(b.round_id));
+
+  const meta = [
+    c.country ? `Country: ${c.country}` : '',
+    c.pronouns ? `Pronouns: ${c.pronouns}` : '',
+    c.instagram ? `Instagram: ${c.instagram}` : ''
+  ].filter(Boolean).join(' · ');
+
+  root.innerHTML = `
+    <div class="card">
+      <a class="btn" href="#contestants">← Back to contestants</a>
+      <div class="row two" style="margin-top:.8rem">
+        <div>
+          <img class="profile-img" src="${c.photo_url}" alt="${c.name}" onerror="this.src='https://placehold.co/400x500?text=${encodeURIComponent(c.name)}'" />
+        </div>
+        <div>
+          <h2>${c.name}</h2>
+          ${c.bio ? `<p>${c.bio}</p>` : ''}
+          ${meta ? `<p class="small">${meta}</p>` : ''}
+
+          <h3>Rounds overview</h3>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Round</th><th>Official</th><th>Neitsu</th><th>Bibiblu</th><th>Kaina</th><th>Hauras</th><th>Cal</th><th>Aya</th><th>Performance score</th><th>Performance rank</th><th>Status</th></tr></thead>
+              <tbody>
+                ${ROUND_ORDER.map(r => `
+                  <tr>
+                    <td>${ROUND_LABELS[r]}</td>
+                    <td>${official[r]?.[c.id] ?? '—'}</td>
+                    <td>${judges.neitsu[r]?.[c.id] ?? '—'}</td>
+                    <td>${judges.bibiblu[r]?.[c.id] ?? '—'}</td>
+                    <td>${judges.kaina[r]?.[c.id] ?? '—'}</td>
+                    <td>${judges.hauras[r]?.[c.id] ?? '—'}</td>
+                    <td>${judges.cal[r]?.[c.id] ?? '—'}</td>
+                    <td>${judges.aya[r]?.[c.id] ?? '—'}</td>
+                    <td>${Number.isFinite(perfScore[r]?.[c.id]) ? perfScore[r][c.id] : '—'}</td>
+                    <td>${perfRank[r]?.[c.id] ?? '—'}</td>
+                    <td>${statusLabel(getStatus(r, c.id))}</td>
+                  </tr>`).join('')}
+              </tbody>
+            </table>
+          </div>
+
+          <h3>Performances</h3>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Round</th><th>Song</th><th>Links</th></tr></thead>
+              <tbody>
+                ${submissions.map(s => `<tr><td>${ROUND_LABELS[s.round_id] || s.round_id}</td><td>${s.song_title || s.group_song || 'TBD'}</td><td>${s.youtube_url ? `<a target="_blank" href="${s.youtube_url}">Link to the Performance</a>` : '—'}${s.bandlab_url ? ` · <a target="_blank" href="${s.bandlab_url}">BandLab</a>` : ''}</td></tr>`).join('') || `<tr><td colspan="3">No performance links yet.</td></tr>`}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
     </div>
     <div class="card">
-      <h3>Rounds overview</h3>
-      <div class="table-wrap"><table>
-      <thead><tr><th>Round</th><th>Official</th><th>Neitsu</th><th>Bibiblu</th><th>Kaina</th><th>Hauras</th><th>Cal</th><th>Aya</th><th>Performance score</th><th>Performance rank</th><th>Status</th></tr></thead>
-      <tbody>
-      ${(() => {
-        const perfScoreByRound = getPerformanceScoreByRound();
-        const perfRankByRound = getPerformanceRankingByRound();
-        const judges = {
-          neitsu: getJudgeRankingByRound('Neitsu'),
-          bibiblu: getJudgeRankingByRound('Bibiblu'),
-          kaina: getJudgeRankingByRound('Kaina'),
-          hauras: getJudgeRankingByRound('Hauras'),
-          cal: getJudgeRankingByRound('Cal'),
-          aya: getJudgeRankingByRound('Aya')
-        };
-        return ROUND_ORDER.map(r => {
-          const rank = officialByRound[r][c.id];
-          const status = getStatus(r, c.id);
-          const perfScore = perfScoreByRound[r][c.id];
-          const perfRank = perfRankByRound[r][c.id];
-          return `<tr><td>${ROUND_LABELS[r]}</td><td>${Number.isFinite(rank) ? rank : "—"}</td><td>${judges.neitsu[r][c.id] ?? "—"}</td><td>${judges.bibiblu[r][c.id] ?? "—"}</td><td>${judges.kaina[r][c.id] ?? "—"}</td><td>${judges.hauras[r][c.id] ?? "—"}</td><td>${judges.cal[r][c.id] ?? "—"}</td><td>${judges.aya[r][c.id] ?? "—"}</td><td>${Number.isFinite(perfScore) ? perfScore : "—"}</td><td>${Number.isFinite(perfRank) ? perfRank : "—"}</td><td>${statusLabel(status)}</td></tr>`;
-        }).join("");
-      })()}
-      </tbody>
-      </table></div>
-    </div>
-    <div class="card">
-      <h3>Performances</h3>
-      <div class="table-wrap"><table>
-      <thead><tr><th>Round</th><th>Song</th><th>Links</th></tr></thead>
-      <tbody>
-      ${submissions.map(s => `<tr><td>${ROUND_LABELS[s.round_id] || s.round_id}</td><td>${s.song_title || s.group_song || "TBD"}</td><td>${s.youtube_url ? `<a target="_blank" href="${s.youtube_url}">Link to the Performance</a>` : "—"}${s.bandlab_url ? ` · <a target="_blank" href="${s.bandlab_url}">BandLab</a>` : ""}</td></tr>`).join("") || `<tr><td colspan="3">No performance links yet.</td></tr>`}
-      </tbody>
-      </table></div>
-    </div>
-    <div class="card"><h3>Individual trajectory chart</h3><canvas id="profileChart" height="110"></canvas></div>`;
+      <h3>Individual evolution chart (official rank)</h3>
+      <canvas id="profileChart" height="100"></canvas>
+    </div>`;
 
-  if (state.profileChart) state.profileChart.destroy();
-  state.profileChart = new Chart(document.getElementById("profileChart"), {
-    type: "line",
+  if (profileChart) profileChart.destroy();
+  profileChart = new Chart(document.getElementById('profileChart'), {
+    type: 'line',
     data: {
       labels: ROUND_ORDER.map(r => ROUND_LABELS[r]),
       datasets: [{
-        label: `${c.name} official rank`,
-        data: ROUND_ORDER.map(r => officialByRound[r][c.id] ?? null),
-        borderColor: "#8b5cf6",
-        backgroundColor: "rgba(139,92,246,.2)",
+        label: c.name,
+        data: ROUND_ORDER.map(r => official[r]?.[c.id] ?? null),
+        borderColor: '#8b5cf6',
+        backgroundColor: 'rgba(139,92,246,.2)',
+        borderWidth: 2,
         tension: .25,
         spanGaps: true
       }]
     },
     options: {
-      plugins: { legend: { labels: { color: "#eef3ff" } } },
-      scales: {
-        x: { ticks: { color: "#9aa6c2" } },
-        y: { reverse: true, min: 1, max: Math.max(22, state.data.contestants.length), ticks: { color: "#9aa6c2", stepSize: 1 } }
-      }
+      plugins: { legend: { labels: { color: '#eef3ff' } } },
+      scales: { x: { ticks: { color: '#9aa6c2' } }, y: { reverse: true, min: 1, max: Math.max(22, state.data.contestants.length), ticks: { color: '#9aa6c2', stepSize: 1 } } }
     }
   });
 }
 
 function renderVotes() {
-  const root = document.getElementById("votes");
+  const root = document.getElementById('votes');
   const roundsWithVotes = ROUND_ORDER.filter(r => state.data.votes_live.some(v => v.round_id === r));
-  const canonicalSelected = canonicalRoundId(state.votesRound);
-  state.votesRound = ROUND_ORDER.includes(canonicalSelected) ? canonicalSelected : (roundsWithVotes[0] || state.latestRound);
+  const selected = canonicalRoundId(state.votesRound);
+  state.votesRound = ROUND_ORDER.includes(selected) ? selected : (roundsWithVotes[0] || state.latestRound);
 
-  const nominees = state.data.round_status.filter(r => r.round_id === state.votesRound && r.status === "nominee").map(r => r.contestant_id);
+  const nominees = state.data.round_status.filter(r => r.round_id === state.votesRound && r.status === 'nominee').map(r => r.contestant_id);
   const targets = nominees.length ? nominees : [...new Set(state.data.votes_live.filter(v => v.round_id === state.votesRound).map(v => v.contestant_id))];
+
   const rows = targets.map(id => {
     const record = state.data.votes_live.find(v => v.round_id === state.votesRound && v.contestant_id === id);
-    return { id, name: getContestantName(id), votes: Number(record?.votes_count || 0), updated: record?.last_updated || "-" };
+    return { id, name: getContestantName(id), votes: Number(record?.votes_count || 0), updated: record?.last_updated || '-' };
   }).sort((a, b) => b.votes - a.votes);
+
   const totalVotes = rows.reduce((sum, r) => sum + r.votes, 0);
 
   root.innerHTML = `
     <div class="card">
       <h2>Votes</h2>
       <div class="filters">
-        <select id="votesRoundSelect">${ROUND_ORDER.map(r => `<option value="${r}" ${r===state.votesRound?"selected":""}>${ROUND_LABELS[r]}</option>`).join("")}</select>
-        ${CONFIG.VOTE_FORM_URL ? `<a class="btn" target="_blank" rel="noopener noreferrer" href="${CONFIG.VOTE_FORM_URL}">Vote now</a>` : ""}
+        <select id="votesRoundSelect">${ROUND_ORDER.map(r => `<option value="${r}" ${r===state.votesRound?'selected':''}>${ROUND_LABELS[r]}</option>`).join('')}</select>
+        ${CONFIG.VOTE_FORM_URL ? `<a class="btn" target="_blank" rel="noopener noreferrer" href="${CONFIG.VOTE_FORM_URL}">Vote now</a>` : ''}
       </div>
-      ${CONFIG.VOTE_FORM_URL ? `<p class="small">Use the vote form to submit your save vote for this round.</p>` : ""}
       ${rows.length ? rows.map(r => {
         const pct = totalVotes > 0 ? (r.votes / totalVotes) * 100 : 0;
         return `<div class="vote-row"><div><strong>${r.name}</strong> — ${r.votes} votes (${pct.toFixed(1)}%)</div><div class="bar"><span style="width:${pct}%"></span></div></div>`;
-      }).join("") : `<p>No vote data for this round yet.</p>${roundsWithVotes.length ? `<p class="small">Available vote rounds: ${roundsWithVotes.map(r => ROUND_LABELS[r]).join(', ')}</p>` : ''}`}
-      <p class="small">Total votes: ${totalVotes} · Last refresh: ${new Date().toLocaleString("fr-FR")}</p>
+      }).join('') : `<p>No vote data for this round yet.</p>${roundsWithVotes.length ? `<p class="small">Available vote rounds: ${roundsWithVotes.map(r => ROUND_LABELS[r]).join(', ')}</p>` : ''}`}
+      <p class="small">Total votes: ${totalVotes} · Last refresh: ${new Date().toLocaleString('fr-FR')}</p>
     </div>`;
 
-  document.getElementById("votesRoundSelect").addEventListener("change", (e) => {
+  document.getElementById('votesRoundSelect').addEventListener('change', (e) => {
     state.votesRound = e.target.value;
     renderVotes();
   });
 
   clearTimeout(state.votesTimer);
   state.votesTimer = setTimeout(async () => {
-    await loadData();
-    normalizeData();
-    applyManualPrerankSeed();
-    applyManualR1Seed();
-    enforcePrerankSafeStatus();
-    const officialByRound = getOfficialRankingByRound();
-    state.latestRound = getLatestRound(officialByRound);
+    await hydrate();
     renderContestants();
     renderRankings();
     renderVotes();
   }, CONFIG.REFRESH_MS);
 }
 
-async function boot() {
-  setupNav();
+function setupNav() {
+  const nav = document.getElementById('nav');
+  const tabs = ['contestants', 'rankings', 'votes'];
+  nav.innerHTML = tabs.map(t => `<a class="nav-link" href="#${t}">${t[0].toUpperCase() + t.slice(1)}</a>`).join('');
+
+  const onHash = () => {
+    const hash = location.hash || '#contestants';
+    const [page] = hash.slice(1).split('/');
+
+    document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
+    if (page === 'profile') {
+      document.getElementById('profile').classList.add('active');
+      renderProfile(hash.split('/')[1]);
+    } else {
+      const target = document.getElementById(page) ? page : 'contestants';
+      document.getElementById(target).classList.add('active');
+    }
+
+    document.querySelectorAll('.nav-link').forEach(a => a.classList.toggle('active', a.getAttribute('href') === `#${page}`));
+  };
+
+  window.addEventListener('hashchange', onHash);
+  onHash();
+}
+
+async function hydrate() {
   await loadData();
   normalizeData();
   applyManualPrerankSeed();
   applyManualR1Seed();
   enforcePrerankSafeStatus();
+
   const officialByRound = getOfficialRankingByRound();
   state.latestRound = getLatestRound(officialByRound);
   const roundsWithVotes = ROUND_ORDER.filter(r => state.data.votes_live.some(v => v.round_id === r));
   state.votesRound = roundsWithVotes[0] || state.latestRound;
+}
 
+async function boot() {
+  setupNav();
+  await hydrate();
   renderContestants();
   renderRankings();
   renderVotes();
-
-  setPage(location.hash || "#contestants");
-  window.addEventListener("hashchange", () => setPage(location.hash));
+  if (!location.hash) location.hash = '#contestants';
 }
 
 boot();
