@@ -60,11 +60,28 @@
     .contestants-grid { display: grid; gap: .8rem; grid-template-columns: repeat(auto-fill, minmax(178px, 1fr)); }
     .contestant-card {
       border: 1px solid var(--line); border-radius: 12px; overflow: hidden; cursor: pointer; background: #0d1526;
-      transition: transform .12s ease;
+      transition: transform .16s ease, box-shadow .16s ease;
     }
     .contestant-card:hover { transform: translateY(-2px); }
-    .contestant-card img { width: 100%; height: 165px; object-fit: cover; display: block; }
     .contestant-card .body { padding: .68rem; }
+
+    .photo-shell { width: 100%; height: 176px; display: grid; place-items: center; position: relative; overflow: hidden; }
+    .photo-shell img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+    .contestant-card--star {
+      background: linear-gradient(180deg, #24160d 0%, #0d1526 44%, #0d1526 100%);
+      border-color: rgba(245, 192, 79, .38);
+      box-shadow: 0 0 0 1px rgba(255, 191, 82, .08) inset;
+    }
+    .contestant-card--star:hover { box-shadow: 0 10px 24px rgba(255, 170, 40, .18); }
+    .contestant-card--star .photo-shell { background: radial-gradient(circle at 50% 28%, rgba(255,200,110,.42), rgba(255,170,60,.08) 56%, transparent 76%); }
+    .contestant-card--star .photo-shell img {
+      width: 88%; height: 88%;
+      clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 93%, 50% 70%, 21% 93%, 32% 57%, 2% 35%, 39% 35%);
+      border: 2px solid rgba(255, 214, 130, .72);
+      box-shadow: 0 0 26px rgba(255, 189, 74, .26);
+      background: #111;
+    }
     .pill { display: inline-block; margin-top: .32rem; padding: .16rem .52rem; border-radius: 999px; font-size: .72rem; border: 1px solid transparent; }
     .safe { background: rgba(34,197,94,.16); border-color: rgba(34,197,94,.45); }
     .nominee { background: rgba(245,158,11,.16); border-color: rgba(245,158,11,.42); }
@@ -409,7 +426,8 @@ const state = {
   rankingsChart: null,
   votesRound: "PRERANK",
   votesTimer: null,
-  rankingView: "official"
+  rankingView: "official",
+  contestantCardStyle: "star"
 };
 
 async function fetchSheetTab(sheetName) {
@@ -667,6 +685,10 @@ function renderContestants() {
           <option value="eliminated">eliminated</option>
           <option value="tbd">TBD</option>
         </select>
+        <select id="contestantCardStyle">
+          <option value="star" ${state.contestantCardStyle === "star" ? "selected" : ""}>Star style</option>
+          <option value="classic" ${state.contestantCardStyle === "classic" ? "selected" : ""}>Classic style</option>
+        </select>
       </div>
       <div id="contestantsGrid" class="contestants-grid"></div>
     </div>`;
@@ -683,8 +705,9 @@ function renderContestants() {
 
     document.getElementById("contestantsGrid").innerHTML = list.map(c => {
       const status = getStatus(state.latestRound, c.id);
-      return `<article class="contestant-card" onclick="location.hash='#profile/${c.id}'">
-        <img src="${c.photo_url}" alt="${c.name}" onerror="this.src='https://placehold.co/400x300?text=${c.name}'" />
+      const styleClass = state.contestantCardStyle === "classic" ? "contestant-card--classic" : "contestant-card--star";
+      return `<article class="contestant-card ${styleClass}" onclick="location.hash='#profile/${c.id}'">
+        <div class="photo-shell"><img src="${c.photo_url}" alt="${c.name}" onerror="this.src='https://placehold.co/400x300?text=${c.name}'" /></div>
         <div class="body"><strong>${c.name}</strong><div class="small">${c.country || "TBD"}</div><span class="pill ${statusClass(status)}">${statusLabel(status)}</span></div>
       </article>`;
     }).join("") || `<p class="small">No contestants found.</p>`;
@@ -692,6 +715,7 @@ function renderContestants() {
 
   document.getElementById("searchContestant").addEventListener("input", draw);
   document.getElementById("statusFilter").addEventListener("change", draw);
+  document.getElementById("contestantCardStyle").addEventListener("change", (e) => { state.contestantCardStyle = e.target.value; draw(); });
   draw();
 }
 
