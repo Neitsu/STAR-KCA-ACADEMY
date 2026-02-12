@@ -134,6 +134,31 @@ const PRETTY = { yza:"Yza", hope:"Hope", lea:"Lea", megara:"Megara", asli:"Asli"
 
 const JUDGE_NAMES = ["Neitsu", "Bibiblu", "Kaina", "Hauras", "Cal", "Aya"];
 
+const PRERANK_MANUAL_ROWS = [
+  { name: 'Asli', instagram: '@aslcvrs', official_rank: 5, score: 89 },
+  { name: 'Brahmini', instagram: '@brahmini.vc', official_rank: 18, score: 71 },
+  { name: 'Chanel', instagram: '@chgnelx_cover', official_rank: 6, score: 86.5 },
+  { name: 'Donghyun', instagram: '@dongnhyu', official_rank: 20, score: 67.5 },
+  { name: 'Eria', instagram: '@oyesoowa', official_rank: 11, score: 82.5 },
+  { name: 'Heaven', instagram: '@heavens.venture', official_rank: 7, score: 86 },
+  { name: 'Hope', instagram: '@ihopeexoo', official_rank: 2, score: 94 },
+  { name: 'Hwa Young', instagram: '@hwa_young.kca', official_rank: 9, score: 86 },
+  { name: 'Johi', instagram: '@hgn_johi', official_rank: 15, score: 76.5 },
+  { name: 'Katie', instagram: '@katiesmelodies', official_rank: 19, score: 71 },
+  { name: 'Kelsy', instagram: '@kelsyuniverse', official_rank: 13, score: 80.5 },
+  { name: 'Kora', instagram: '@kora_chu0_o', official_rank: 17, score: 75 },
+  { name: 'Kyo', instagram: '@kykycovgh', official_rank: 22, score: 60.5 },
+  { name: 'Lea', instagram: '@jwleakca', official_rank: 3, score: 91.5 },
+  { name: 'Lizy', instagram: '@lizy.off', official_rank: 21, score: 62.5 },
+  { name: 'Manuee', instagram: '@_kcamanu', official_rank: 8, score: 86 },
+  { name: 'Megara', instagram: '@_megnfique', official_rank: 4, score: 90 },
+  { name: 'Mimi', instagram: 'Iwannabemimimi', official_rank: 10, score: 85.5 },
+  { name: 'Panida', instagram: '@1stPanidaW', official_rank: 12, score: 82 },
+  { name: 'Suhaa', instagram: '@_soobieb00bie_', official_rank: 14, score: 70.5 },
+  { name: 'Sun', instagram: '@sun._.kca', official_rank: 16, score: 76.5 },
+  { name: 'Yza', instagram: '@yzavliss', official_rank: 1, score: 97.5 }
+];
+
 
 function canonicalRoundId(value) {
   const raw = String(value || '').trim().toUpperCase().replace(/\s+/g, '_').replace(/-/g, '_');
@@ -148,6 +173,55 @@ function canonicalRoundId(value) {
   return raw;
 }
 
+
+function normalizedToken(value) {
+  return String(value || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]/g, '');
+}
+
+function resolveContestantIdByName(name) {
+  const aliases = {
+    chgnel: 'chanel',
+    chanel: 'chanel',
+    hwayoung: 'hwa_young',
+    manuee: 'manuee',
+    sunda: 'suhaa'
+  };
+  const token = normalizedToken(name);
+  if (!token) return '';
+  if (aliases[token]) return aliases[token];
+
+  const fromLoaded = state.data.contestants.find(c => normalizedToken(c.name) == token);
+  if (fromLoaded) return fromLoaded.id;
+
+  for (const id of CANDIDATE_NAMES) {
+    if (normalizedToken(PRETTY[id]) === token || normalizedToken(id) === token.replace(/_/g,'')) return id;
+  }
+  return toSlug(name);
+}
+
+function applyManualPrerankSeed() {
+  const hasOfficialPrerank = state.data.judge_rankings.some(r => r.round_id === 'PRERANK' && normalizeJudgeName(r.judge_name) === 'official');
+  const hasScorePrerank = state.data.scores.some(s => s.round_id === 'PRERANK' && Number.isFinite(Number(s.total)));
+
+  PRERANK_MANUAL_ROWS.forEach((row) => {
+    const id = resolveContestantIdByName(row.name);
+    if (!id) return;
+
+    let contestant = state.data.contestants.find(c => c.id === id);
+    if (!contestant) {
+      contestant = { id, name: row.name, photo_url: `assets/${id}.jpg`, country: 'TBD', bio: 'Bio TBD', instagram: '', pronouns: '' };
+      state.data.contestants.push(contestant);
+    }
+    if (!contestant.instagram && row.instagram) contestant.instagram = row.instagram;
+
+    if (!hasOfficialPrerank) {
+      state.data.judge_rankings.push({ round_id: 'PRERANK', judge_name: 'official', contestant_id: id, rank: row.official_rank });
+    }
+    if (!hasScorePrerank) {
+      state.data.scores.push({ round_id: 'PRERANK', contestant_id: id, total: row.score });
+    }
+  });
+}
 
 function normalizeHeaderKey(key) {
   return String(key || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]/g, '');
@@ -761,6 +835,7 @@ function renderVotes() {
   state.votesTimer = setTimeout(async () => {
     await loadData();
     normalizeData();
+    applyManualPrerankSeed();
     const officialByRound = getOfficialRankingByRound();
     state.latestRound = getLatestRound(officialByRound);
     renderContestants();
@@ -773,6 +848,7 @@ async function boot() {
   setupNav();
   await loadData();
   normalizeData();
+  applyManualPrerankSeed();
   const officialByRound = getOfficialRankingByRound();
   state.latestRound = getLatestRound(officialByRound);
   const roundsWithVotes = ROUND_ORDER.filter(r => state.data.votes_live.some(v => v.round_id === r));

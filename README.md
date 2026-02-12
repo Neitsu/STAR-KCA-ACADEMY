@@ -108,3 +108,10 @@ Champs reconnus (noms flexibles) dans chaque onglet round:
 - performance + lien (`performance`, `link` / `youtube_url`)
 
 Tu peux adapter les noms d'onglets via `CONFIG.ROUND_TABS` dans `index.html`.
+
+## Seed PRERANK (screenshot)
+
+Le site contient un seed PRERANK basé sur le tableau fourni (official rank + score + instagram)
+qui s'applique uniquement si les données PRERANK officielles ne sont pas encore présentes dans le Sheet.
+
+Dès que tu remplis PRERANK dans ton Google Sheet avec les colonnes correspondantes, les valeurs du Sheet prennent la priorité.
