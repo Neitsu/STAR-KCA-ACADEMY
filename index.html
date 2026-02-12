@@ -842,7 +842,7 @@ function renderProfile(contestantId) {
       <div class="table-wrap"><table>
       <thead><tr><th>Round</th><th>Song</th><th>Links</th></tr></thead>
       <tbody>
-      ${submissions.map(s => `<tr><td>${ROUND_LABELS[s.round_id] || s.round_id}</td><td>${s.song_title || s.group_song || "TBD"}</td><td>${s.youtube_url ? `<a target="_blank" href="${s.youtube_url}">YouTube</a>` : "—"}${s.bandlab_url ? ` · <a target="_blank" href="${s.bandlab_url}">BandLab</a>` : ""}</td></tr>`).join("") || `<tr><td colspan="3">No performance links yet.</td></tr>`}
+      ${submissions.map(s => `<tr><td>${ROUND_LABELS[s.round_id] || s.round_id}</td><td>${s.song_title || s.group_song || "TBD"}</td><td>${s.youtube_url ? `<a target="_blank" href="${s.youtube_url}">Link to the Performance</a>` : "—"}${s.bandlab_url ? ` · <a target="_blank" href="${s.bandlab_url}">BandLab</a>` : ""}</td></tr>`).join("") || `<tr><td colspan="3">No performance links yet.</td></tr>`}
       </tbody>
       </table></div>
     </div>
