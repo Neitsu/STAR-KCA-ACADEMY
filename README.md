@@ -115,3 +115,5 @@ Le site contient un seed PRERANK basé sur le tableau fourni (official rank + sc
 qui s'applique uniquement si les données PRERANK officielles ne sont pas encore présentes dans le Sheet.
 
 Dès que tu remplis PRERANK dans ton Google Sheet avec les colonnes correspondantes, les valeurs du Sheet prennent la priorité.
+
+Le site contient aussi un seed temporaire `ROUND_1` (performances + liens + instagram) basé sur ton screenshot, appliqué seulement si les submissions R1 sont absentes du Sheet.

@@ -159,6 +159,31 @@ const PRERANK_MANUAL_ROWS = [
   { name: 'Yza', instagram: '@yzavliss', official_rank: 1, score: 97.5 }
 ];
 
+const R1_MANUAL_ROWS = [
+  { name: 'Asli', instagram: '@aslcvrs', performance: 'GABRIELA', link: '' },
+  { name: 'Brahmini', instagram: '@brahmini.vc', performance: 'SHEESH', link: '' },
+  { name: 'Chanel', instagram: '@chanelx_cover', performance: 'SUPERSCAR', link: '' },
+  { name: 'Donghyun', instagram: '@dongnhyu', performance: 'FAMOUS', link: 'https://www.instagram.com/reel/DUnyzUHMfTZ/?igsh=NHF4N2lwc29pZm5o' },
+  { name: 'Eria', instagram: '@oyesoowa', performance: 'GREEDY', link: '' },
+  { name: 'Heaven', instagram: '@heavens.venture', performance: 'ABRACADABRA', link: '' },
+  { name: 'Hope', instagram: 'ihopeexo', performance: 'MIDNIGHT SUN', link: 'https://www.instagram.com/reel/DUnzEkfDEV9/?igsh=MTA5ajlpcDQ3a3YzdQ==' },
+  { name: 'Hwa Young', instagram: '@hwa_young.kca', performance: 'GABRIELA', link: '' },
+  { name: 'Johi', instagram: '@han_johi', performance: 'SHEESH', link: '' },
+  { name: 'Katie', instagram: '@katiesmelodies', performance: 'GREEDY', link: '' },
+  { name: 'Kelsy', instagram: '@kelsyuniverse', performance: 'GABRIELA', link: '' },
+  { name: 'Kora', instagram: '@kora_chu0_o', performance: 'GABRIELA', link: '' },
+  { name: 'Kyo', instagram: '@kykycovgh', performance: 'SODA POP', link: '' },
+  { name: 'Lea', instagram: '@jwleakca', performance: 'SUPERSCAR', link: 'https://www.instagram.com/reel/DUk5QK2DC8K/?igsh=atMyZHRkcGt6NGRv' },
+  { name: 'Lizy', instagram: '@lizy.off', performance: 'GREEDY', link: '' },
+  { name: 'Manuee', instagram: '@_kcamanu', performance: 'ABRACADABRA', link: 'https://www.instagram.com/reel/DUk44qyDCbp/?igsh=MTQ4nBxiU3ZXUzdw==' },
+  { name: 'Megara', instagram: '@_megnifique', performance: 'UNETHICAL', link: '' },
+  { name: 'Mimi', instagram: 'Iwannabemimimi', performance: 'SUPERSCAR', link: 'https://www.instagram.com/reel/DUk4g-9DHa5/?igsh=OTJkdm9qa3g1c3B3' },
+  { name: 'Panida', instagram: '@1stPanidaW', performance: 'WHERE IS MY HUSBAND', link: '' },
+  { name: 'Suhaa', instagram: '@_soobieboobie_', performance: 'FAMOUS', link: 'https://www.instagram.com/reel/DUnzQByiHZk/?igsh=MWs4cWJqZWt2ZWN6' },
+  { name: 'Sun', instagram: '@sun._.kca', performance: 'MIDNIGHT SUN', link: 'https://www.instagram.com/reel/DUnyIsiLqH/?igsh=MWhodXg0cjIyeWpVNg==' },
+  { name: 'Yza', instagram: '@yzavliss', performance: 'UNETHICAL', link: '' }
+];
+
 
 function canonicalRoundId(value) {
   const raw = String(value || '').trim().toUpperCase().replace(/\s+/g, '_').replace(/-/g, '_');
@@ -219,6 +244,34 @@ function applyManualPrerankSeed() {
     }
     if (!hasScorePrerank) {
       state.data.scores.push({ round_id: 'PRERANK', contestant_id: id, total: row.score });
+    }
+  });
+}
+
+function applyManualR1Seed() {
+  const hasR1Submissions = state.data.submissions.some(s => s.round_id === 'ROUND_1' && (String(s.song_title || '').trim() || String(s.youtube_url || '').trim() || String(s.bandlab_url || '').trim()));
+
+  R1_MANUAL_ROWS.forEach((row) => {
+    const id = resolveContestantIdByName(row.name);
+    if (!id) return;
+
+    let contestant = state.data.contestants.find(c => c.id === id);
+    if (!contestant) {
+      contestant = { id, name: row.name, photo_url: `assets/${id}.jpg`, country: 'TBD', bio: 'Bio TBD', instagram: '', pronouns: '' };
+      state.data.contestants.push(contestant);
+    }
+    if (!contestant.instagram && row.instagram) contestant.instagram = row.instagram;
+
+    if (!hasR1Submissions && (row.performance || row.link)) {
+      state.data.submissions.push({
+        round_id: 'ROUND_1',
+        contestant_id: id,
+        song_title: row.performance || '',
+        group_song: '',
+        bandlab_url: '',
+        youtube_url: row.link || '',
+        notes: ''
+      });
     }
   });
 }
@@ -856,6 +909,7 @@ function renderVotes() {
     await loadData();
     normalizeData();
     applyManualPrerankSeed();
+    applyManualR1Seed();
     const officialByRound = getOfficialRankingByRound();
     state.latestRound = getLatestRound(officialByRound);
     renderContestants();
@@ -869,6 +923,7 @@ async function boot() {
   await loadData();
   normalizeData();
   applyManualPrerankSeed();
+  applyManualR1Seed();
   const officialByRound = getOfficialRankingByRound();
   state.latestRound = getLatestRound(officialByRound);
   const roundsWithVotes = ROUND_ORDER.filter(r => state.data.votes_live.some(v => v.round_id === r));
