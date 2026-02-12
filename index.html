@@ -277,6 +277,17 @@ function applyManualR1Seed() {
   });
 }
 
+function enforcePrerankSafeStatus() {
+  const contestantIds = state.data.contestants.length
+    ? state.data.contestants.map(c => c.id).filter(Boolean)
+    : [...CANDIDATE_NAMES];
+
+  state.data.round_status = state.data.round_status.filter(r => r.round_id !== "PRERANK");
+  contestantIds.forEach((contestantId) => {
+    state.data.round_status.push({ round_id: "PRERANK", contestant_id: contestantId, status: "safe" });
+  });
+}
+
 function normalizeHeaderKey(key) {
   return String(key || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]/g, '');
 }
@@ -913,6 +924,7 @@ function renderVotes() {
     normalizeData();
     applyManualPrerankSeed();
     applyManualR1Seed();
+    enforcePrerankSafeStatus();
     const officialByRound = getOfficialRankingByRound();
     state.latestRound = getLatestRound(officialByRound);
     renderContestants();
@@ -927,6 +939,7 @@ async function boot() {
   normalizeData();
   applyManualPrerankSeed();
   applyManualR1Seed();
+  enforcePrerankSafeStatus();
   const officialByRound = getOfficialRankingByRound();
   state.latestRound = getLatestRound(officialByRound);
   const roundsWithVotes = ROUND_ORDER.filter(r => state.data.votes_live.some(v => v.round_id === r));
