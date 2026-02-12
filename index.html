@@ -533,7 +533,7 @@ function getPerformanceRankingByRound() {
 
 function getRankingMapByView(view) {
   if (view === 'official') return getOfficialRankingByRound();
-  if (view === 'performance_score') return getPerformanceRankingByRound();
+  if (view === 'performance_score') return getPerformanceScoreByRound();
   return getJudgeRankingByRound(view.replace('judge:', ''));
 }
 
@@ -632,10 +632,20 @@ function renderContestants() {
 
 function renderRankings() {
   const rankingMap = getRankingMapByView(state.rankingView);
-  const officialByRound = getOfficialRankingByRound();
-  const contestants = sortedContestants();
   const root = document.getElementById("rankings");
   const viewOptions = getRankingViewOptions();
+  const isPerformanceMode = state.rankingView === 'performance_score';
+
+  const contestants = [...state.data.contestants].sort((a, b) => {
+    const av = rankingMap[state.latestRound][a.id];
+    const bv = rankingMap[state.latestRound][b.id];
+    const aNum = Number.isFinite(av);
+    const bNum = Number.isFinite(bv);
+    if (aNum && bNum) return isPerformanceMode ? (bv - av) : (av - bv);
+    if (aNum) return -1;
+    if (bNum) return 1;
+    return String(a.name || '').localeCompare(String(b.name || ''));
+  });
 
   const rowsForNominations = {
     nominee: state.data.round_status.filter(r => r.round_id === state.latestRound && r.status === "nominee"),
@@ -644,6 +654,7 @@ function renderRankings() {
     eliminated: state.data.round_status.filter(r => r.round_id === state.latestRound && r.status === "eliminated")
   };
   const nameList = (arr) => arr.map(r => getContestantName(r.contestant_id)).join(", ") || "TBD";
+  const firstColLabel = isPerformanceMode ? 'Points' : 'Rank';
 
   root.innerHTML = `
     <div class="card">
@@ -655,20 +666,24 @@ function renderRankings() {
         <table>
           <thead>
             <tr>
-              <th>Rank</th>
+              <th>${firstColLabel}</th>
               <th>Name</th>
               ${ROUND_ORDER.map(r => `<th><span class="chip">${ROUND_LABELS[r]}</span></th>`).join("")}
             </tr>
           </thead>
           <tbody>
             ${contestants.map((c, idx) => {
-              const currentRank = rankingMap[state.latestRound][c.id];
+              const currentVal = rankingMap[state.latestRound][c.id];
+              const displayCurrent = Number.isFinite(currentVal)
+                ? (isPerformanceMode ? (Math.round(currentVal * 10) / 10) : currentVal)
+                : "—";
               return `<tr>
-                <td>${Number.isFinite(currentRank) ? currentRank : idx + 1}</td>
+                <td>${displayCurrent}</td>
                 <td>${c.name}</td>
                 ${ROUND_ORDER.map(r => {
                   const val = rankingMap[r][c.id];
-                  return `<td>${Number.isFinite(val) ? val : "—"}</td>`;
+                  if (!Number.isFinite(val)) return `<td>—</td>`;
+                  return `<td>${isPerformanceMode ? (Math.round(val * 10) / 10) : val}</td>`;
                 }).join("")}
               </tr>`;
             }).join("")}
@@ -685,7 +700,7 @@ function renderRankings() {
     </div>
     <div class="card">
       <h3>Global trajectory chart</h3>
-      <p class="small">All contestants are shown. Lower rank is better (1 = top).</p>
+      <p class="small">${isPerformanceMode ? 'All contestants are shown. Higher score is better.' : 'All contestants are shown. Lower rank is better (1 = top).'}</p>
       <canvas id="allContestantsChart" height="120"></canvas>
     </div>`;
 
@@ -705,6 +720,9 @@ function renderRankings() {
     spanGaps: true
   }));
 
+  const allValues = datasets.flatMap(d => d.data).filter(v => Number.isFinite(v));
+  const maxY = allValues.length ? Math.max(...allValues) : (isPerformanceMode ? 100 : Math.max(22, state.data.contestants.length));
+
   if (state.rankingsChart) state.rankingsChart.destroy();
   state.rankingsChart = new Chart(document.getElementById("allContestantsChart"), {
     type: "line",
@@ -713,7 +731,9 @@ function renderRankings() {
       plugins: { legend: { labels: { color: "#eef3ff", boxWidth: 10, font: { size: 10 } } } },
       scales: {
         x: { ticks: { color: "#9aa6c2" } },
-        y: { reverse: true, min: 1, max: Math.max(22, state.data.contestants.length), ticks: { color: "#9aa6c2", stepSize: 1 } }
+        y: isPerformanceMode
+          ? { min: 0, max: Math.ceil(maxY + 5), ticks: { color: "#9aa6c2" } }
+          : { reverse: true, min: 1, max: Math.max(22, state.data.contestants.length), ticks: { color: "#9aa6c2", stepSize: 1 } }
       }
     }
   });
@@ -733,8 +753,8 @@ function renderProfile(contestantId) {
       <img class="profile-img" src="${c.photo_url}" alt="${c.name}" onerror="this.src='https://placehold.co/400x420?text=${c.name}'" />
       <div>
         <h2>${c.name}</h2>
-        <p>${c.bio || "Bio TBD"}</p>
-        <p class="small">Country: ${c.country || "TBD"} · Pronouns: ${c.pronouns || "TBD"} · Instagram: ${c.instagram || "TBD"}</p>
+        ${c.bio ? `<p>${c.bio}</p>` : ""}
+        <p class="small">${[c.country && c.country!=="TBD" ? `Country: ${c.country}` : "", c.pronouns ? `Pronouns: ${c.pronouns}` : "", c.instagram ? `Instagram: ${c.instagram}` : ""].filter(Boolean).join(" · ")}</p>
       </div>
     </div>
     <div class="card">
