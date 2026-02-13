@@ -1,1056 +1,821 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>STAR (KCA) ACADEMY — Rankings</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Star KCA Academy</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    *{box-sizing:border-box}
-    :root{
-      --bg:#070b12;
-      --bg-soft:#111827;
-      --bg-softer:#0b1220;
-      --border:#1f2937;
-      --text:#e5e7eb;
-      --muted:#9ca3af;
-      --accent:#4f46e5;
-      --accent-soft:rgba(79,70,229,.12);
-      --accent-strong:#a855f7;
-      --danger:#ef4444;
-      --gold:#facc15;
-      --up:#22c55e;
-      --down:#f97316;
-      --card-radius:20px;
-      --shadow-soft:0 18px 40px rgba(15,23,42,.7)
+    :root {
+      --bg: #0a0d15;
+      --panel: #121a2b;
+      --panel2: #1a2440;
+      --text: #eef3ff;
+      --muted: #9aa6c2;
+      --line: #2d3d60;
+      --accent: #8b5cf6;
+      --accent2: #ec4899;
+      --radius: 14px;
     }
-
-    body{
-      margin:0;
-      font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;
-      background:radial-gradient(circle at top,#1d2537 0,#020617 55%,#000 100%);
-      color:var(--text);
-      min-height:100vh;
-      -webkit-font-smoothing:antialiased
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      color: var(--text);
+      background: radial-gradient(circle at top, #1f2d4e 0%, #0d1425 45%, #070a12 100%);
     }
-    main{padding:24px 16px 40px}
-    .container{max-width:1400px;margin:0 auto;padding:20px}
-    .logo{
-      font-weight:800;
-      letter-spacing:.12em;
-      text-transform:uppercase;
-      font-size:.9rem;
-      color:var(--muted);
-      display:flex;
-      align-items:center;
-      gap:10px
+    .container { width: min(1160px, 92vw); margin: 0 auto; }
+    header {
+      position: sticky; top: 0; z-index: 30;
+      backdrop-filter: blur(8px);
+      background: rgba(10, 13, 21, .9);
+      border-bottom: 1px solid var(--line);
     }
-    .logo span{
-      display:inline-flex;
-      padding:4px 10px;
-      border-radius:999px;
-      background:linear-gradient(120deg,#a855f7,#4f46e5);
-      color:#0f172a;
-      font-size:.75rem;
-      box-shadow:0 12px 30px rgba(88,28,135,.7)
+    .topbar { min-height: 68px; display: flex; align-items: center; justify-content: space-between; gap: .7rem; flex-wrap: wrap; padding: .8rem 0; }
+    .brand h1 { margin: 0; font-size: 1.02rem; text-transform: uppercase; letter-spacing: .08em; }
+    .brand p { margin: .2rem 0 0; color: var(--muted); font-size: .8rem; }
+    nav { display: flex; gap: .5rem; flex-wrap: wrap; }
+    .nav-link {
+      text-decoration: none; color: var(--text); background: var(--panel);
+      border: 1px solid var(--line); border-radius: 999px; padding: .42rem .74rem; font-size: .84rem;
     }
-    h1{
-      margin:.4rem 0 0;
-      font-size:1.9rem;
-      letter-spacing:.04em;
-      text-transform:uppercase
+    .nav-link.active { background: linear-gradient(120deg, var(--accent), var(--accent2)); border-color: transparent; }
+    main { padding: 1rem 0 2.6rem; }
+    .page { display: none; }
+    .page.active { display: block; }
+    .card {
+      background: linear-gradient(180deg, #19243d 0%, #111827 100%);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 1rem;
+      margin-bottom: 1rem;
     }
-
-    .grid{
-      display:grid;
-      grid-template-columns:2.4fr 1.8fr;
-      gap:24px;
-      margin-top:24px
+    h2, h3 { margin: .2rem 0 .85rem; }
+    .small { color: var(--muted); font-size: .82rem; }
+    .filters { display: flex; flex-wrap: wrap; gap: .55rem; margin-bottom: .85rem; }
+    input, select {
+      border-radius: 10px; border: 1px solid var(--line);
+      background: #0d1527; color: var(--text); padding: .52rem .7rem;
     }
-    @media(max-width:900px){
-      .grid{grid-template-columns:1fr}
+    .contestants-grid { display: grid; gap: .8rem; grid-template-columns: repeat(auto-fill, minmax(178px, 1fr)); }
+    .contestant-card {
+      border: 1px solid var(--line); border-radius: 12px; overflow: hidden; cursor: pointer; background: #0d1526;
+      transition: transform .12s ease;
     }
-    .card{
-      background:radial-gradient(circle at top left,#1f2937 0,rgba(15,23,42,.9) 55%,#020617 100%);
-      border-radius:var(--card-radius);
-      border:1px solid rgba(148,163,184,.35);
-      box-shadow:var(--shadow-soft);
-      padding:18px 18px 16px;
-      position:relative;
-      overflow:hidden
-    }
-    .card::before{
-      content:"";
-      position:absolute;
-      inset:-40%;
-      background:radial-gradient(circle at 0 0,rgba(56,189,248,.08),transparent 55%);
-      opacity:.7;
-      pointer-events:none
-    }
-    .card>div,.card>header{position:relative;z-index:1}
-    .card header{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      margin-bottom:12px;
-      gap:12px
-    }
-    .card-title{
-      font-size:.95rem;
-      font-weight:600;
-      letter-spacing:.08em;
-      text-transform:uppercase;
-      color:#e5e7eb
-    }
-    .card-subtitle{
-      font-size:.8rem;
-      color:var(--muted)
-    }
-    .pill{
-      font-size:.7rem;
-      text-transform:uppercase;
-      letter-spacing:.12em;
-      padding:4px 8px;
-      border-radius:999px;
-      background:rgba(15,23,42,.85);
-      border:1px solid rgba(148,163,184,.5);
-      display:inline-flex;
-      align-items:center;
-      gap:4px;
-      color:#e5e7eb
-    }
-    .pill span.dot{
-      width:7px;
-      height:7px;
-      border-radius:999px;
-      background:radial-gradient(circle at 30% 30%,#22c55e 0,#16a34a 40%,#0f766e 100%);
-      box-shadow:0 0 10px rgba(34,197,94,.7)
-    }
-
-    .toolbar{
-      display:flex;
-      flex-wrap:wrap;
-      gap:10px;
-      align-items:center;
-      margin-bottom:8px
-    }
-    .toolbar-left{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
-    .toolbar-right{display:flex;flex-wrap:wrap;gap:8px;margin-left:auto}
-
-    .field{
-      position:relative;
-      display:flex;
-      align-items:center;
-      border-radius:999px;
-      background:rgba(15,23,42,.9);
-      border:1px solid rgba(55,65,81,.9);
-      padding:0 10px;
-      min-height:32px;
-      font-size:.8rem;
-      color:var(--muted);
-      gap:6px
-    }
-    .field input,.field select{
-      background:transparent;
-      border:none;
-      outline:none;
-      color:inherit;
-      font:inherit
-    }
-    .field input::placeholder{color:#6b7280}
-
-    .btn{
-      border-radius:999px;
-      border:1px solid rgba(148,163,184,.7);
-      background:rgba(15,23,42,.9);
-      color:#e5e7eb;
-      padding:6px 12px;
-      font-size:.75rem;
-      font-weight:500;
-      text-transform:uppercase;
-      letter-spacing:.12em;
-      display:inline-flex;
-      align-items:center;
-      gap:6px;
-      cursor:pointer;
-      transition:background .15s ease,border-color .15s ease,transform .1s ease
-    }
-    .btn-primary{
-      background:linear-gradient(135deg,#4f46e5,#7c3aed);
-      border-color:rgba(129,140,248,.9);
-      color:#e5e7eb;
-      box-shadow:0 10px 25px rgba(55,48,163,.7)
-    }
-    .btn:hover{transform:translateY(-1px);border-color:#e5e7eb}
-    .btn-primary:hover{background:linear-gradient(135deg,#6366f1,#a855f7)}
-
-    .table-wrapper{
-      margin-top:10px;
-      border-radius:16px;
-      border:1px solid rgba(31,41,55,.95);
-      background:radial-gradient(circle at top,#020617 0,#020617 50%,#000 100%);
-      overflow-x:auto;
-      overflow-y:hidden;
-    }
-    table{
-      width:100%;
-      border-collapse:collapse;
-      font-size:.8rem;
-      min-width:1100px;
-    }
-    thead{
-      background:linear-gradient(90deg,rgba(15,23,42,.98),rgba(17,24,39,.98));
-      position:relative
-    }
-    thead::after{
-      content:"";
-      position:absolute;
-      inset:0;
-      background:radial-gradient(circle at 0 0,rgba(129,140,248,.18),transparent 55%);
-      opacity:.7;
-      pointer-events:none
-    }
-    thead th{
-      text-align:left;
-      font-weight:500;
-      padding:8px 10px;
-      border-bottom:1px solid rgba(55,65,81,.95);
-      color:var(--muted);
-      text-transform:uppercase;
-      letter-spacing:.12em;
-      font-size:.68rem;
-      white-space:nowrap
-    }
-    thead th.num{ text-align:center; }
-
-    th.sticky-rank{
-      position:sticky;
-      left:0;
-      z-index:5;
-      background:inherit;
-    }
-    th.sticky-col{
-      position:sticky;
-      left:50px;
-      z-index:4;
-      background:inherit;
-      width:125px;
-      max-width:125px;
-    }
-
-    tbody tr{
-      border-bottom:1px solid rgba(31,41,55,.85);
-      background:linear-gradient(90deg,rgba(15,23,42,.92),rgba(15,23,42,.9));
-      cursor:pointer;
-      transition:background .12s ease,transform .06s ease
-    }
-    tbody tr:nth-child(2n){background:linear-gradient(90deg,rgba(15,23,42,.92),rgba(15,23,42,.94))}
-    tbody tr:hover{background:rgba(30,64,175,.35)}
-    tbody tr.selected{
-      background:inherit;
-      transform:none;
-      outline:1px solid rgba(129,140,248,.85);
-      outline-offset:-1px;
-    }
-    tbody tr.row-elim{opacity:0.8;}
-    tbody td{
-      padding:7px 10px;
-      vertical-align:middle
-    }
-    td.rank{
-      width:50px;
-      font-weight:600;
-      color:var(--muted);
-      font-variant-numeric:tabular-nums;
-      text-align:center;
-    }
-    td.rank.sticky-rank{
-      position:sticky;
-      left:0;
-      z-index:3;
-      background:inherit;
-    }
-    td.num{
-      text-align:center;
-      font-variant-numeric:tabular-nums;
-    }
-    td.name{
-      display:flex;
-      align-items:center;
-      gap:8px;
-      font-weight:500;
-      position:relative;
-      z-index:3;
-      white-space:nowrap;
-      min-width:0;
-    }
-    td.name .name-wrap{
-      display:flex;
-      align-items:center;
-      gap:6px;
-      min-width:0;
-      flex:1;
-    }
-    td.name .name-text{
-      overflow:hidden;
-      text-overflow:ellipsis;
-      white-space:nowrap;
-      min-width:0;
-    }
-    td.name.sticky-col{
-      position:sticky;
-      left:50px;
-      background:inherit;
-      box-shadow:8px 0 12px rgba(15,23,42,.9);
-      width:125px;
-      max-width:125px;
-    }
-    .avatar{
-      width:26px;
-      height:26px;
-      border-radius:999px;
-      object-fit:cover;
-      border:1px solid rgba(148,163,184,.75);
-      box-shadow:0 6px 16px rgba(15,23,42,.8)
-    }
-    .chip{
-      display:inline-flex;
-      align-items:center;
-      padding:2px 7px;
-      border-radius:999px;
-      background:rgba(15,23,42,.9);
-      border:1px solid rgba(55,65,81,.9);
-      font-size:.7rem;
-      text-transform:uppercase;
-      letter-spacing:.08em;
-      color:var(--muted)
-    }
-    .chip.elim{
-      border-color:rgba(248,113,113,.7);
-      color:#fecaca;
-      background:rgba(127,29,29,.7)
-    }
-    .delta{
-      font-variant-numeric:tabular-nums;
-      white-space:nowrap;
-      font-size:.75rem;
-      color:var(--muted);
-      margin-left:auto;
-    }
-    .delta.up{color:var(--up)}
-    .delta.down{color:var(--down)}
-
-    .mini{
-      margin-top:14px;
-      font-size:.75rem;
-      color:var(--muted);
-      line-height:1.4
-    }
-
-    .profile{
-      display:flex;
-      flex-direction:column;
-      gap:12px
-    }
-    .profile-main{
-      display:flex;
-      gap:12px;
-      align-items:center
-    }
-    .profile-pic-wrap{
-      position:relative;
-      width:88px;
-      height:88px;
-      border-radius:24px;
-      padding:2px;
-      background:conic-gradient(from 210deg,#4f46e5,#a855f7,#22c55e,#4f46e5);
-      box-shadow:0 18px 45px rgba(15,23,42,.9)
-    }
-    .profile-pic-inner{
-      position:relative;
-      width:100%;
-      height:100%;
-      border-radius:inherit;
-      overflow:hidden;
-      background:radial-gradient(circle at top,#1f2937,#020617)
-    }
-    .profile-pic-inner img{
-      width:100%;
-      height:100%;
-      object-fit:cover
-    }
-    .profile-text h2{
-      margin:0;
-      font-size:1.1rem;
-      letter-spacing:.04em;
-      text-transform:uppercase
-    }
-    .profile-text p{
-      margin:2px 0 0;
-      color:var(--muted);
-      font-size:.8rem
-    }
-    .badge-row{
-      display:flex;
-      flex-wrap:wrap;
-      gap:6px
-    }
-    .badge{
-      font-size:.7rem;
-      padding:3px 7px;
-      border-radius:999px;
-      border:1px solid rgba(55,65,81,.9);
-      background:rgba(15,23,42,.9);
-      color:var(--muted)
-    }
-    .badge.gold{
-      border-color:rgba(250,204,21,.7);
-      color:var(--gold);
-      background:rgba(23,37,84,.9)
-    }
-
-    .chart-wrap{
-      margin-top:6px;
-      border-radius:16px;
-      border:1px solid rgba(31,41,55,.9);
-      background:radial-gradient(circle at top,#020617,#000);
-      padding:10px;
-      height:260px;
-      position:relative
-    }
-    .chart-wrap::before{
-      content:"";
-      position:absolute;
-      inset:0;
-      background:radial-gradient(circle at 20% 0,rgba(59,130,246,.22),transparent 55%);
-      opacity:.7;
-      pointer-events:none
-    }
-    .chart-wrap>canvas{position:relative;z-index:1}
-
-    .sr{
-      position:absolute;
-      width:1px;
-      height:1px;
-      padding:0;
-      margin:-1px;
-      overflow:hidden;
-      clip:rect(0,0,0,0);
-      white-space:nowrap;
-      border:0
-    }
-
-    @media(max-width:650px){
-      h1{font-size:1.35rem}
-      .container{padding:12px}
-      .card{padding:14px}
-      .toolbar{gap:8px}
-      .field{min-height:30px}
-      table{
-        font-size:.78rem;
-        min-width:980px;
-      }
-      .profile-main{align-items:flex-start}
-      #chartLine{height:320px !important}
-    }
+    .contestant-card:hover { transform: translateY(-2px); }
+    .contestant-card img { width: 100%; height: 165px; object-fit: cover; display: block; }
+    .contestant-card .body { padding: .68rem; }
+    .pill { display: inline-block; margin-top: .32rem; padding: .16rem .52rem; border-radius: 999px; font-size: .72rem; border: 1px solid transparent; }
+    .safe { background: rgba(34,197,94,.16); border-color: rgba(34,197,94,.45); }
+    .nominee { background: rgba(245,158,11,.16); border-color: rgba(245,158,11,.42); }
+    .saved_judges, .saved_public { background: rgba(59,130,246,.16); border-color: rgba(59,130,246,.42); }
+    .eliminated { background: rgba(239,68,68,.16); border-color: rgba(239,68,68,.42); }
+    .tbd { background: rgba(148,163,184,.16); border-color: rgba(148,163,184,.42); }
+    .row { display: grid; grid-template-columns: 1fr; gap: 1rem; }
+    @media (min-width: 840px) { .row.two { grid-template-columns: 280px 1fr; } }
+    .profile-img { width: 100%; max-width: 260px; border-radius: 12px; border: 1px solid var(--line); }
+    .btn { text-decoration: none; color: var(--text); border: 1px solid var(--line); background: var(--panel2); border-radius: 10px; padding: .42rem .7rem; display: inline-block; }
+    .table-wrap { overflow: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: .88rem; }
+    th, td { border-bottom: 1px solid var(--line); padding: .5rem .36rem; text-align: left; white-space: nowrap; }
+    .table-wrap a { color: var(--text); text-decoration: underline; text-underline-offset: 2px; }
+    .table-wrap a:visited { color: var(--text); }
+    .chip { display: inline-block; border: 1px solid var(--line); border-radius: 999px; padding: .18rem .52rem; font-size: .74rem; background: rgba(99,102,241,.12); }
+    .vote-row { margin-bottom: .72rem; }
+    .bar { width: 100%; height: 12px; border: 1px solid var(--line); background: #091224; border-radius: 999px; overflow: hidden; }
+    .bar > span { display: block; height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); }
   </style>
 </head>
 <body>
-  <main>
-    <header class="container">
-      <div class="logo">
-        <span>STAR (KCA) ACADEMY</span>
-        ROUNDS DASHBOARD
+<header>
+  <div class="container topbar">
+    <div class="brand">
+      <h1>Star KCA Academy</h1>
+      <p>Contestants · Rankings · Votes</p>
+    </div>
+    <nav id="nav"></nav>
+  </div>
+</header>
+
+<main class="container">
+  <section id="contestants" class="page active"></section>
+  <section id="profile" class="page"></section>
+  <section id="rankings" class="page"></section>
+  <section id="votes" class="page"></section>
+</main>
+
+<script>
+const CONFIG = {
+  SHEET_ID: "1wllhbdbdIJM3uTI-WnJFE5eJ8zb_scgik5k94Yegc1s",
+  SHEETS: {
+    contestants: "contestants",
+    rounds: "rounds",
+    submissions: "submissions",
+    scores: "scores",
+    judge_rankings: "judge_rankings",
+    round_status: "round_status",
+    votes_live: "votes_live"
+  },
+  ROUND_TABS: { PRERANK: "PRERANK", ROUND_1: "R1", ROUND_2: "R2", ROUND_3: "R3", ROUND_4: "R4", ROUND_5: "R5", ROUND_6: "R6", FINAL: "FINAL" },
+  VOTE_FORM_URL: "https://docs.google.com/forms/d/e/1FAIpQLSdRAvtdk_e2yVjhhLJmvh6UJhMd4tw6OIzBHkbyLaau7tt8cQ/viewform?usp=header",
+  REFRESH_MS: 30000
+};
+
+const ROUND_ORDER = ["PRERANK", "ROUND_1", "ROUND_2", "ROUND_3", "ROUND_4", "ROUND_5", "ROUND_6", "FINAL"];
+const ROUND_LABELS = { PRERANK: "Prerank", ROUND_1: "R1", ROUND_2: "R2", ROUND_3: "R3", ROUND_4: "R4", ROUND_5: "R5", ROUND_6: "R6", FINAL: "Final" };
+const JUDGE_NAMES = ["Neitsu", "Bibiblu", "Kaina", "Hauras", "Cal", "Aya"];
+const CANDIDATE_NAMES = ["yza","hope","lea","megara","asli","chanel","heaven","manuee","hwa_young","mimi","eria","panida","kelsy","suhaa","johi","sun","kora","brahmini","katie","donghyun","lizy","kyo"];
+
+const PRERANK_MANUAL_ROWS = [
+  { name: 'Asli', instagram: '@aslcvrs', official_rank: 5, score: 89 },
+  { name: 'Brahmini', instagram: '@brahmini.vc', official_rank: 18, score: 71 },
+  { name: 'Chanel', instagram: '@chgnelx_cover', official_rank: 6, score: 86.5 },
+  { name: 'Donghyun', instagram: '@dongnhyu', official_rank: 20, score: 67.5 },
+  { name: 'Eria', instagram: '@oyesoowa', official_rank: 11, score: 82.5 },
+  { name: 'Heaven', instagram: '@heavens.venture', official_rank: 7, score: 86 },
+  { name: 'Hope', instagram: '@ihopeexoo', official_rank: 2, score: 94 },
+  { name: 'Hwa Young', instagram: '@hwa_young.kca', official_rank: 9, score: 86 },
+  { name: 'Johi', instagram: '@hgn_johi', official_rank: 15, score: 76.5 },
+  { name: 'Katie', instagram: '@katiesmelodies', official_rank: 19, score: 71 },
+  { name: 'Kelsy', instagram: '@kelsyuniverse', official_rank: 13, score: 80.5 },
+  { name: 'Kora', instagram: '@kora_chu0_o', official_rank: 17, score: 75 },
+  { name: 'Kyo', instagram: '@kykycovgh', official_rank: 22, score: 60.5 },
+  { name: 'Lea', instagram: '@jwleakca', official_rank: 3, score: 91.5 },
+  { name: 'Lizy', instagram: '@lizy.off', official_rank: 21, score: 62.5 },
+  { name: 'Manuee', instagram: '@_kcamanu', official_rank: 8, score: 86 },
+  { name: 'Megara', instagram: '@_megnfique', official_rank: 4, score: 90 },
+  { name: 'Mimi', instagram: 'Iwannabemimimi', official_rank: 10, score: 85.5 },
+  { name: 'Panida', instagram: '@1stPanidaW', official_rank: 12, score: 82 },
+  { name: 'Suhaa', instagram: '@_soobieb00bie_', official_rank: 14, score: 78.5 },
+  { name: 'Sun', instagram: '@sun._.kca', official_rank: 16, score: 76.5 },
+  { name: 'Yza', instagram: '@yzavliss', official_rank: 1, score: 97.5 }
+];
+
+const R1_MANUAL_ROWS = [
+  { name: 'Asli', instagram: '@aslcvrs', performance: 'GABRIELA', link: 'https://www.instagram.com/reel/DUp7RDxDMeP/?utm_source=ig_web_copy_link&igsh=MzRlODBiNWFlZA==' },
+  { name: 'Brahmini', instagram: '@brahmini.vc', performance: 'SHEESH', link: 'https://www.instagram.com/reel/DUqCB2MjOau/?utm_source=ig_web_copy_link&igsh=MzRlODBiNWFlZA==' },
+  { name: 'Chanel', instagram: '@chanelx_cover', performance: 'SUPERSCAR', link: 'https://www.instagram.com/reel/DUqCUs0DHSE/?utm_source=ig_web_copy_link&igsh=MzRlODBiNWFlZA==' },
+  { name: 'Donghyun', instagram: '@dongnhyu', performance: 'FAMOUS', link: 'https://www.instagram.com/reel/DUnyzUHjMTz/?igsh=NHF4N21wc29pZm5o' },
+  { name: 'Eria', instagram: '@oyesoowa', performance: 'GREEDY', link: 'https://www.instagram.com/reel/DUqVKrcjNH9/?utm_source=ig_web_copy_link&igsh=MzRlODBiNWFlZA==' },
+  { name: 'Heaven', instagram: '@heavens.venture', performance: 'ABRACADABRA', link: 'https://www.instagram.com/reel/DUqCHvDjP_E/?utm_source=ig_web_copy_link&igsh=MzRlODBiNWFlZA==' },
+  { name: 'Hope', instagram: 'ihopeexo', performance: 'MIDNIGHT SUN', link: 'https://www.instagram.com/reel/DUnzEkfDEv9/?igsh=MTA5ajlpcDQ3a3YzdQ==' },
+  { name: 'Hwa Young', instagram: '@hwa_young.kca', performance: 'GABRIELA', link: '' },
+  { name: 'Johi', instagram: '@han_johi', performance: 'SHEESH', link: 'https://www.instagram.com/reel/DUqBvFkDDK8/?utm_source=ig_web_copy_link&igsh=MzRlODBiNWFlZA==' },
+  { name: 'Katie', instagram: '@katiesmelodies', performance: 'GREEDY', link: 'https://www.instagram.com/reel/DUqBeD_DKXj/?utm_source=ig_web_copy_link&igsh=MzRlODBiNWFlZA==' },
+  { name: 'Kelsy', instagram: '@kelsyuniverse', performance: 'GABRIELA', link: 'https://www.instagram.com/reel/DUp7AYdDBbv/?utm_source=ig_web_copy_link&igsh=MzRlODBiNWFlZA==' },
+  { name: 'Kora', instagram: '@kora_chu0_o', performance: 'GABRIELA', link: 'https://www.instagram.com/reel/DUp7LKHDN14/?utm_source=ig_web_copy_link&igsh=MzRlODBiNWFlZA==' },
+  { name: 'Kyo', instagram: '@kykycovgh', performance: 'SODA POP', link: 'https://www.instagram.com/reel/DUqVftqDK8C/?utm_source=ig_web_copy_link&igsh=MzRlODBiNWFlZA==' },
+  { name: 'Lea', instagram: '@jwleakca', performance: 'SUPERSCAR', link: 'https://www.instagram.com/reel/DUk5QK2DC8K/?igsh=aTMyZHRkcGt6NGRv' },
+  { name: 'Lizy', instagram: '@lizy.off', performance: 'GREEDY', link: 'https://www.instagram.com/reel/DUqB1jsjA7A/?utm_source=ig_web_copy_link&igsh=MzRlODBiNWFlZA==' },
+  { name: 'Manuee', instagram: '@_kcamanu', performance: 'ABRACADABRA', link: 'https://www.instagram.com/reel/DUk44gyDCbp/?igsh=MTQ4anBxajU3ZXUzdw==' },
+  { name: 'Megara', instagram: '@_megnifique', performance: 'UNETHICAL', link: 'https://www.instagram.com/reel/DUqBk_XjJmk/?utm_source=ig_web_copy_link&igsh=MzRlODBiNWFlZA==' },
+  { name: 'Mimi', instagram: 'Iwannabemimimi', performance: 'SUPERSCAR', link: 'https://www.instagram.com/reel/DUk4g-9DHa5/?igsh=OTJkdm9qa3g1c3B3' },
+  { name: 'Panida', instagram: '@1stPanidaW', performance: 'WHERE IS MY HUSBAND', link: 'https://www.instagram.com/reel/DUp79mfDM5e/?utm_source=ig_web_copy_link&igsh=MzRlODBiNWFlZA==' },
+  { name: 'Suhaa', instagram: '@_soobieboobie_', performance: 'FAMOUS', link: 'https://www.instagram.com/reel/DUnzQByjHZk/?igsh=MWs4cWJqZWt2ZWN6' },
+  { name: 'Sun', instagram: '@sun._.kca', performance: 'MIDNIGHT SUN', link: 'https://www.instagram.com/reel/DUnylisjLqH/?igsh=MWhodXg0cjlyeWpvNg==' },
+  { name: 'Yza', instagram: '@yzavliss', performance: 'UNETHICAL', link: '' }
+];
+
+let rankingChart = null;
+let profileChart = null;
+
+const state = {
+  data: { contestants: [], rounds: [], submissions: [], scores: [], judge_rankings: [], round_status: [], votes_live: [] },
+  latestRound: "PRERANK",
+  rankingView: "official",
+  votesRound: "PRERANK",
+  votesTimer: null
+};
+
+function normId(v) {
+  return String(v || "").toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+}
+
+function canonicalRoundId(value) {
+  const raw = String(value || '').trim().toUpperCase().replace(/\s+/g, '_').replace(/-/g, '_');
+  if (!raw) return '';
+  if (ROUND_ORDER.includes(raw)) return raw;
+  if (/^R[1-6]$/.test(raw)) return `ROUND_${raw.slice(1)}`;
+  if (raw === 'PRE_RANK' || raw === 'PRERANKING') return 'PRERANK';
+  if (raw === 'ROUND1') return 'ROUND_1';
+  if (raw === 'ROUND2') return 'ROUND_2';
+  if (raw === 'ROUND3') return 'ROUND_3';
+  if (raw === 'ROUND4') return 'ROUND_4';
+  if (raw === 'ROUND5') return 'ROUND_5';
+  if (raw === 'ROUND6') return 'ROUND_6';
+  return raw;
+}
+
+function normalizeJudgeName(v) {
+  return String(v || '').trim().toLowerCase();
+}
+
+function getContestantName(id) {
+  return state.data.contestants.find(c => c.id === id)?.name || id;
+}
+
+function colorForIndex(i) {
+  const hue = (i * 47) % 360;
+  return `hsl(${hue} 85% 62%)`;
+}
+
+function handleImageFallback(img) {
+  img.onerror = null;
+  img.src = 'assets/placeholder.jpg';
+}
+
+async function fetchSheetTab(sheetName) {
+  const url = `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?sheet=${encodeURIComponent(sheetName)}&tqx=out:json`;
+  const txt = await fetch(url).then(r => r.text());
+  const m = txt.match(/google\.visualization\.Query\.setResponse\((.*)\);/s);
+  if (!m) throw new Error(`Invalid gviz payload for ${sheetName}`);
+  const json = JSON.parse(m[1]);
+  const cols = json.table.cols.map(c => c.label || c.id || '');
+  return json.table.rows.map(r => Object.fromEntries(cols.map((c, i) => [c, r.c[i]?.v ?? ''])));
+}
+
+async function fetchOptionalSheetTab(sheetName) {
+  try { return await fetchSheetTab(sheetName); } catch { return []; }
+}
+
+function keyNorm(k) { return String(k || '').toLowerCase().replace(/[^a-z0-9]/g, ''); }
+function pickValue(row, aliases) {
+  const keys = Object.keys(row);
+  for (const a of aliases) {
+    const n = keyNorm(a);
+    const real = keys.find(k => keyNorm(k) === n);
+    if (real != null) return row[real];
+  }
+  return '';
+}
+
+async function loadDataFromRoundTabs() {
+  const rowsByRound = {};
+  for (const [rid, tab] of Object.entries(CONFIG.ROUND_TABS)) {
+    rowsByRound[rid] = await fetchOptionalSheetTab(tab);
+  }
+
+  const contestantsMap = new Map();
+  const judge_rankings = [];
+  const scores = [];
+  const submissions = [];
+
+  Object.entries(rowsByRound).forEach(([round_id, rows]) => {
+    rows.forEach((row) => {
+      const name = String(pickValue(row, ['name', 'contestant', 'candidate']) || '').trim();
+      if (!name) return;
+      const id = normId(name);
+      const instagram = String(pickValue(row, ['instagram', 'instagram_handle', 'username']) || '').trim();
+      const performance = String(pickValue(row, ['performance', 'song', 'song_title']) || '').trim();
+      const link = String(pickValue(row, ['link', 'performance_link', 'youtube_url', 'url']) || '').trim();
+      const officialRank = Number(pickValue(row, ['official_rank', 'rank', 'official ranking']));
+      const perfScore = Number(pickValue(row, ['performance_score', 'score', 'creator_score', 'total']));
+
+      if (!contestantsMap.has(id)) contestantsMap.set(id, { id, name, photo_url: `assets/${id}.png`, country: '', bio: '', instagram, pronouns: '' });
+      if (instagram && !contestantsMap.get(id).instagram) contestantsMap.get(id).instagram = instagram;
+
+      if (Number.isFinite(officialRank)) judge_rankings.push({ round_id, judge_name: 'official', contestant_id: id, rank: officialRank });
+      if (Number.isFinite(perfScore)) scores.push({ round_id, contestant_id: id, total: perfScore });
+      if (performance || link) submissions.push({ round_id, contestant_id: id, song_title: performance, group_song: '', bandlab_url: '', youtube_url: link, notes: '' });
+
+      JUDGE_NAMES.forEach(jn => {
+        const val = Number(pickValue(row, [jn, `${jn}_rank`, `${jn} rank`]));
+        if (Number.isFinite(val)) judge_rankings.push({ round_id, judge_name: jn, contestant_id: id, rank: val });
+      });
+    });
+  });
+
+  return { contestants: [...contestantsMap.values()], rounds: [], submissions, scores, judge_rankings, round_status: [], votes_live: [] };
+}
+
+async function loadData() {
+  const standard = {
+    contestants: await fetchOptionalSheetTab(CONFIG.SHEETS.contestants),
+    rounds: await fetchOptionalSheetTab(CONFIG.SHEETS.rounds),
+    submissions: await fetchOptionalSheetTab(CONFIG.SHEETS.submissions),
+    scores: await fetchOptionalSheetTab(CONFIG.SHEETS.scores),
+    judge_rankings: await fetchOptionalSheetTab(CONFIG.SHEETS.judge_rankings),
+    round_status: await fetchOptionalSheetTab(CONFIG.SHEETS.round_status),
+    votes_live: await fetchOptionalSheetTab(CONFIG.SHEETS.votes_live)
+  };
+
+  const hasStandard = [standard.contestants, standard.scores, standard.judge_rankings, standard.round_status, standard.submissions].some(a => a.length);
+  if (hasStandard) {
+    state.data = standard;
+  } else {
+    state.data = await loadDataFromRoundTabs();
+    state.data.votes_live = await fetchOptionalSheetTab(CONFIG.SHEETS.votes_live);
+  }
+}
+
+function normalizeData() {
+  const d = state.data;
+  d.contestants = Array.isArray(d.contestants) ? d.contestants : [];
+  d.rounds = Array.isArray(d.rounds) ? d.rounds : [];
+  d.submissions = Array.isArray(d.submissions) ? d.submissions : [];
+  d.scores = Array.isArray(d.scores) ? d.scores : [];
+  d.judge_rankings = Array.isArray(d.judge_rankings) ? d.judge_rankings : [];
+  d.round_status = Array.isArray(d.round_status) ? d.round_status : [];
+  d.votes_live = Array.isArray(d.votes_live) ? d.votes_live : [];
+
+  d.contestants = d.contestants.map(r => ({
+    id: normId(r.id || r.contestant_id || r.name),
+    name: String(r.name || '').trim(),
+    photo_url: String(r.photo_url || `assets/${normId(r.id || r.name)}.png`),
+    country: String(r.country || '').trim(),
+    bio: String(r.bio || '').trim(),
+    instagram: String(r.instagram || '').trim(),
+    pronouns: String(r.pronouns || '').trim()
+  })).filter(c => c.id);
+
+  d.submissions = d.submissions.map(r => ({ ...r, round_id: canonicalRoundId(r.round_id), contestant_id: normId(r.contestant_id) }));
+  d.scores = d.scores.map(r => ({ ...r, round_id: canonicalRoundId(r.round_id), contestant_id: normId(r.contestant_id), total: Number(r.total) }));
+  d.judge_rankings = d.judge_rankings.map(r => ({ ...r, round_id: canonicalRoundId(r.round_id), contestant_id: normId(r.contestant_id), rank: Number(r.rank), judge_name: String(r.judge_name || '').trim() }));
+  d.round_status = d.round_status.map(r => ({ ...r, round_id: canonicalRoundId(r.round_id), contestant_id: normId(r.contestant_id), status: String(r.status || '').trim().toLowerCase() }));
+  d.votes_live = d.votes_live.map(r => ({ ...r, round_id: canonicalRoundId(r.round_id), contestant_id: normId(r.contestant_id), votes_count: Number(r.votes_count || 0) }));
+}
+
+function resolveContestantIdByName(name) {
+  const slug = normId(name);
+  const byId = state.data.contestants.find(c => c.id === slug);
+  if (byId) return byId.id;
+  const normalized = String(name || '').toLowerCase().replace(/\s+/g, ' ').trim();
+  const byName = state.data.contestants.find(c => String(c.name || '').toLowerCase().replace(/\s+/g, ' ').trim() === normalized);
+  if (byName) return byName.id;
+  return slug;
+}
+
+function applyManualPrerankSeed() {
+  const hasOfficialPrerank = state.data.judge_rankings.some(r => r.round_id === 'PRERANK' && normalizeJudgeName(r.judge_name) === 'official');
+  const hasScorePrerank = state.data.scores.some(r => r.round_id === 'PRERANK' && Number.isFinite(Number(r.total)));
+
+  PRERANK_MANUAL_ROWS.forEach((row) => {
+    const id = resolveContestantIdByName(row.name);
+    let c = state.data.contestants.find(x => x.id === id);
+    if (!c) {
+      c = { id, name: row.name, photo_url: `assets/${id}.png`, country: '', bio: '', instagram: '', pronouns: '' };
+      state.data.contestants.push(c);
+    }
+    if (!c.instagram && row.instagram) c.instagram = row.instagram;
+
+    if (!hasOfficialPrerank) state.data.judge_rankings.push({ round_id: 'PRERANK', judge_name: 'official', contestant_id: id, rank: row.official_rank });
+    if (!hasScorePrerank) state.data.scores.push({ round_id: 'PRERANK', contestant_id: id, total: row.score });
+  });
+}
+
+function applyManualR1Seed() {
+  const hasR1Submissions = state.data.submissions.some(r => r.round_id === 'ROUND_1' && (String(r.song_title || '').trim() || String(r.youtube_url || '').trim() || String(r.bandlab_url || '').trim()));
+
+  R1_MANUAL_ROWS.forEach((row) => {
+    const id = resolveContestantIdByName(row.name);
+    let c = state.data.contestants.find(x => x.id === id);
+    if (!c) {
+      c = { id, name: row.name, photo_url: `assets/${id}.png`, country: '', bio: '', instagram: '', pronouns: '' };
+      state.data.contestants.push(c);
+    }
+    if (!c.instagram && row.instagram) c.instagram = row.instagram;
+
+    if (!hasR1Submissions && (row.performance || row.link)) {
+      state.data.submissions.push({ round_id: 'ROUND_1', contestant_id: id, song_title: row.performance || '', group_song: '', bandlab_url: '', youtube_url: row.link || '', notes: '' });
+    }
+  });
+}
+
+function enforcePrerankSafeStatus() {
+  const ids = state.data.contestants.length ? state.data.contestants.map(c => c.id).filter(Boolean) : [...CANDIDATE_NAMES];
+  state.data.round_status = state.data.round_status.filter(r => r.round_id !== 'PRERANK');
+  ids.forEach(id => state.data.round_status.push({ round_id: 'PRERANK', contestant_id: id, status: 'safe' }));
+}
+
+function getStatus(roundId, contestantId) {
+  return state.data.round_status.find(r => r.round_id === roundId && r.contestant_id === contestantId)?.status || '';
+}
+function statusClass(status) { return status || 'tbd'; }
+function statusLabel(status) { return status ? status.replace('_', ' ') : 'TBD'; }
+
+function getOfficialRankingByRound() {
+  const out = Object.fromEntries(ROUND_ORDER.map(r => [r, {}]));
+  state.data.judge_rankings
+    .filter(r => normalizeJudgeName(r.judge_name) === 'official')
+    .forEach(r => { if (Number.isFinite(r.rank)) out[r.round_id][r.contestant_id] = r.rank; });
+
+  ROUND_ORDER.forEach(round => {
+    if (Object.keys(out[round]).length) return;
+    const list = state.data.scores.filter(s => s.round_id === round && Number.isFinite(s.total)).sort((a, b) => b.total - a.total);
+    list.forEach((s, i) => out[round][s.contestant_id] = i + 1);
+  });
+  return out;
+}
+
+function getJudgeRankingByRound(judgeName) {
+  const key = normalizeJudgeName(judgeName);
+  const out = Object.fromEntries(ROUND_ORDER.map(r => [r, {}]));
+  state.data.judge_rankings.filter(r => normalizeJudgeName(r.judge_name) === key).forEach(r => { if (Number.isFinite(r.rank)) out[r.round_id][r.contestant_id] = r.rank; });
+  return out;
+}
+
+function getPerformanceScoreByRound() {
+  const out = Object.fromEntries(ROUND_ORDER.map(r => [r, {}]));
+  state.data.scores.forEach(s => { if (Number.isFinite(s.total)) out[s.round_id][s.contestant_id] = s.total; });
+  return out;
+}
+
+function getPerformanceRankByRound() {
+  const scoreMap = getPerformanceScoreByRound();
+  const out = Object.fromEntries(ROUND_ORDER.map(r => [r, {}]));
+  ROUND_ORDER.forEach(round => {
+    const rows = Object.entries(scoreMap[round]).sort((a, b) => b[1] - a[1]);
+    rows.forEach(([id], i) => out[round][id] = i + 1);
+  });
+  return out;
+}
+
+function getRankingViewOptions() {
+  return [
+    { value: 'official', label: 'Official ranking' },
+    ...JUDGE_NAMES.map(j => ({ value: `judge:${j}`, label: j })),
+    { value: 'performance_score', label: 'Performance score' }
+  ];
+}
+
+function getRankingMapByView(view) {
+  if (view === 'official') return getOfficialRankingByRound();
+  if (view === 'performance_score') return getPerformanceScoreByRound();
+  if (view.startsWith('judge:')) return getJudgeRankingByRound(view.split(':')[1]);
+  return getOfficialRankingByRound();
+}
+
+function getLatestRound(officialByRound) {
+  for (let i = ROUND_ORDER.length - 1; i >= 0; i--) {
+    const round = ROUND_ORDER[i];
+    const hasOfficial = Object.keys(officialByRound[round] || {}).length > 0;
+    const hasStatus = state.data.round_status.some(r => r.round_id === round);
+    if (hasOfficial || hasStatus) return round;
+  }
+  return 'PRERANK';
+}
+
+function sortedContestants() {
+  const officialByRound = getOfficialRankingByRound();
+  const current = officialByRound[state.latestRound] || {};
+  return [...state.data.contestants].sort((a, b) => {
+    const aStatus = getStatus(state.latestRound, a.id);
+    const bStatus = getStatus(state.latestRound, b.id);
+    const aElim = aStatus === 'eliminated' ? 1 : 0;
+    const bElim = bStatus === 'eliminated' ? 1 : 0;
+    if (aElim !== bElim) return aElim - bElim;
+
+    const ar = current[a.id], br = current[b.id];
+    if (Number.isFinite(ar) && Number.isFinite(br)) return ar - br;
+    if (Number.isFinite(ar)) return -1;
+    if (Number.isFinite(br)) return 1;
+    return String(a.name || '').localeCompare(String(b.name || ''));
+  });
+}
+
+function renderContestants() {
+  const root = document.getElementById('contestants');
+  const officialByRound = getOfficialRankingByRound();
+  const currentRanks = officialByRound[state.latestRound] || {};
+  root.innerHTML = `
+    <div class="card">
+      <h2>Contestants</h2>
+      <p class="small">Auto-updated from latest available official ranking/status round: <span class="chip">${ROUND_LABELS[state.latestRound]}</span></p>
+      <div class="filters">
+        <input id="searchContestant" placeholder="Search name..." />
+        <select id="statusFilter">
+          <option value="all">All status</option>
+          <option value="safe">safe</option>
+          <option value="nominee">nominee</option>
+          <option value="saved_judges">saved judges</option>
+          <option value="saved_public">saved public</option>
+          <option value="eliminated">eliminated</option>
+          <option value="tbd">TBD</option>
+        </select>
       </div>
-      <h1>STAR (KCA) ACADEMY — RANKINGS</h1>
-    </header>
+      <div id="contestantsGrid" class="contestants-grid"></div>
+    </div>`;
 
-    <div class="container">
-      <div class="grid">
-        <div class="card">
-          <header>
-            <div>
-              <div class="card-title">Top contestants</div>
-              <div class="card-subtitle">Search, choose a stage, and switch ranking source.</div>
-            </div>
-            <div class="pill">
-              <span class="dot"></span>
-              Live ranking
-            </div>
-          </header>
+  const draw = () => {
+    const q = document.getElementById('searchContestant').value.toLowerCase().trim();
+    const f = document.getElementById('statusFilter').value;
 
-          <div class="toolbar">
-            <div class="toolbar-left">
-              <div class="field" style="min-width:190px">
-                <input id="q" type="search" placeholder="Search a contestant..." />
-              </div>
+    const list = sortedContestants().filter(c => c.name.toLowerCase().includes(q)).filter(c => {
+      const status = getStatus(state.latestRound, c.id);
+      if (f === 'all') return true;
+      if (f === 'tbd') return !status;
+      return status === f;
+    });
 
-              <label class="sr" for="prime">Stage</label>
-              <div class="field">
-                <select id="prime" aria-label="Active stage">
-                  <option value="0">PRERANK</option>
-                  <option value="1">ROUND 1</option>
-                  <option value="2">ROUND 2</option>
-                  <option value="3">ROUND 3</option>
-                  <option value="4">ROUND 4</option>
-                  <option value="5">ROUND 5</option>
-                  <option value="6">ROUND 6</option>
-                  <option value="7">FINAL</option>
-                </select>
-              </div>
+    document.getElementById('contestantsGrid').innerHTML = list.map(c => {
+      const status = getStatus(state.latestRound, c.id);
+      return `<article class="contestant-card" onclick="location.hash='#profile/${c.id}'">
+        <img src="${c.photo_url}" alt="${c.name}" onerror="handleImageFallback(this)" />
+        <div class="body"><strong>${c.name}</strong><div class="small">${Number.isFinite(currentRanks[c.id]) ? `Rank ${ROUND_LABELS[state.latestRound]}: #${currentRanks[c.id]}` : `Rank ${ROUND_LABELS[state.latestRound]}: —`}</div><span class="pill ${statusClass(status)}">${statusLabel(status)}</span></div>
+      </article>`;
+    }).join('') || `<p class="small">No contestants found.</p>`;
+  };
 
-              <label class="sr" for="viewSelect">Ranking source</label>
-              <div class="field">
-                <select id="viewSelect" aria-label="Ranking source" class="view-select">
-                  <option value="rank">RANK</option>
-                  <option value="neitsu">NEITSU</option>
-                  <option value="hauras">HAURAS</option>
-                  <option value="bibi_blu">BIBI BLU</option>
-                  <option value="kaina">KAINA</option>
-                  <option value="cal">CAL</option>
-                  <option value="aya">AYA</option>
-                  <option value="score">SCORE</option>
-                </select>
-              </div>
-            </div>
+  document.getElementById('searchContestant').addEventListener('input', draw);
+  document.getElementById('statusFilter').addEventListener('change', draw);
+  draw();
+}
 
-            <div class="toolbar-right">
-              <button id="share" class="btn btn-primary" type="button">COPY LINK</button>
-            </div>
-          </div>
+function renderRankings() {
+  const root = document.getElementById('rankings');
+  const viewOptions = getRankingViewOptions();
+  const rankingMap = getRankingMapByView(state.rankingView);
+  const isPerformance = state.rankingView === 'performance_score';
 
-          <div class="table-wrapper">
-            <table id="top">
-              <thead>
-                <tr>
-                  <th class="sticky-rank">#</th>
-                  <th class="sticky-col">Contestant</th>
-                  <th class="num" data-prime="0">PRERANK</th>
-                  <th class="num" data-prime="1">ROUND 1</th>
-                  <th class="num" data-prime="2">ROUND 2</th>
-                  <th class="num" data-prime="3">ROUND 3</th>
-                  <th class="num" data-prime="4">ROUND 4</th>
-                  <th class="num" data-prime="5">ROUND 5</th>
-                  <th class="num" data-prime="6">ROUND 6</th>
-                  <th class="num" data-prime="7">FINAL</th>
-                  <th class="num">Average</th>
-                </tr>
-              </thead>
-              <tbody id="topBody"></tbody>
+  const list = [...state.data.contestants].sort((a, b) => {
+    const av = rankingMap[state.latestRound]?.[a.id];
+    const bv = rankingMap[state.latestRound]?.[b.id];
+    if (Number.isFinite(av) && Number.isFinite(bv)) return isPerformance ? bv - av : av - bv;
+    if (Number.isFinite(av)) return -1;
+    if (Number.isFinite(bv)) return 1;
+    return a.name.localeCompare(b.name);
+  });
+
+  const nominations = {
+    nominee: state.data.round_status.filter(r => r.round_id === state.latestRound && r.status === 'nominee'),
+    saved_judges: state.data.round_status.filter(r => r.round_id === state.latestRound && r.status === 'saved_judges'),
+    saved_public: state.data.round_status.filter(r => r.round_id === state.latestRound && r.status === 'saved_public'),
+    eliminated: state.data.round_status.filter(r => r.round_id === state.latestRound && r.status === 'eliminated')
+  };
+
+  root.innerHTML = `
+    <div class="card">
+      <h2>Rankings</h2>
+      <div class="filters">
+        <select id="rankingViewSelect">${viewOptions.map(o => `<option value="${o.value}" ${o.value===state.rankingView?'selected':''}>${o.label}</option>`).join('')}</select>
+      </div>
+      <p class="small">Table shows rank trajectory by round. In "Performance score" mode, values are points.</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>${isPerformance ? 'Pos' : 'Rank'}</th>
+              <th>Name</th>
+              ${ROUND_ORDER.map(r => `<th>${ROUND_LABELS[r]}</th>`).join('')}
+            </tr>
+          </thead>
+          <tbody>
+            ${list.map((c, idx) => `
+              <tr>
+                <td>${idx + 1}</td>
+                <td><a href="#profile/${c.id}">${c.name}</a></td>
+                ${ROUND_ORDER.map(r => {
+                  const v = rankingMap[r]?.[c.id];
+                  if (!Number.isFinite(v)) return '<td>—</td>';
+                  return `<td>${isPerformance ? v.toFixed(1).replace(/\.0$/, '') : v}</td>`;
+                }).join('')}
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+      <h3>Nominations (${ROUND_LABELS[state.latestRound]})</h3>
+      <p class="small">Nominee: ${nominations.nominee.map(x => getContestantName(x.contestant_id)).join(', ') || '—'}</p>
+      <p class="small">Saved judges: ${nominations.saved_judges.map(x => getContestantName(x.contestant_id)).join(', ') || '—'}</p>
+      <p class="small">Saved public: ${nominations.saved_public.map(x => getContestantName(x.contestant_id)).join(', ') || '—'}</p>
+      <p class="small">Eliminated: ${nominations.eliminated.map(x => getContestantName(x.contestant_id)).join(', ') || '—'}</p>
+    </div>
+    <div class="card">
+      <h3>Global evolution chart</h3>
+      <canvas id="rankingChart" height="120"></canvas>
+    </div>`;
+
+  document.getElementById('rankingViewSelect').addEventListener('change', (e) => {
+    state.rankingView = e.target.value;
+    renderRankings();
+  });
+
+  if (rankingChart) rankingChart.destroy();
+  const ctx = document.getElementById('rankingChart');
+  rankingChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: ROUND_ORDER.map(r => ROUND_LABELS[r]),
+      datasets: state.data.contestants.map((c, idx) => {
+        const color = colorForIndex(idx);
+        return {
+          label: c.name,
+          data: ROUND_ORDER.map(r => {
+            const v = rankingMap[r]?.[c.id];
+            return Number.isFinite(v) ? v : null;
+          }),
+          borderColor: color,
+          backgroundColor: color,
+          borderWidth: 2,
+          pointRadius: 2,
+          pointHoverRadius: 4,
+          tension: .25,
+          spanGaps: true
+        };
+      })
+    },
+    options: {
+      plugins: {
+        legend: {
+          display: true,
+          position: 'bottom',
+          labels: { color: '#eef3ff', boxWidth: 10, usePointStyle: true, pointStyle: 'line' }
+        }
+      },
+      scales: isPerformance
+        ? { x: { ticks: { color: '#9aa6c2' } }, y: { ticks: { color: '#9aa6c2' }, title: { display: true, text: 'Performance points', color: '#9aa6c2' } } }
+        : { x: { ticks: { color: '#9aa6c2' } }, y: { reverse: true, min: 1, max: Math.max(22, state.data.contestants.length), ticks: { color: '#9aa6c2', stepSize: 1 } } }
+    }
+  });
+}
+
+function renderProfile(contestantId) {
+  const c = state.data.contestants.find(x => x.id === contestantId);
+  const root = document.getElementById('profile');
+  if (!c) { root.innerHTML = `<div class="card"><p>Contestant not found.</p></div>`; return; }
+
+  const official = getOfficialRankingByRound();
+  const judges = {
+    neitsu: getJudgeRankingByRound('Neitsu'), bibiblu: getJudgeRankingByRound('Bibiblu'),
+    kaina: getJudgeRankingByRound('Kaina'), hauras: getJudgeRankingByRound('Hauras'),
+    cal: getJudgeRankingByRound('Cal'), aya: getJudgeRankingByRound('Aya')
+  };
+  const perfScore = getPerformanceScoreByRound();
+  const perfRank = getPerformanceRankByRound();
+
+  const submissions = state.data.submissions.filter(s => s.contestant_id === c.id).sort((a,b) => ROUND_ORDER.indexOf(a.round_id) - ROUND_ORDER.indexOf(b.round_id));
+
+  const meta = [
+    c.country ? `Country: ${c.country}` : '',
+    c.pronouns ? `Pronouns: ${c.pronouns}` : '',
+    c.instagram ? `Instagram: ${c.instagram}` : ''
+  ].filter(Boolean).join(' · ');
+
+  root.innerHTML = `
+    <div class="card">
+      <a class="btn" href="#contestants">← Back to contestants</a>
+      <div class="row two" style="margin-top:.8rem">
+        <div>
+          <img class="profile-img" src="${c.photo_url}" alt="${c.name}" onerror="handleImageFallback(this)" />
+        </div>
+        <div>
+          <h2>${c.name}</h2>
+          ${c.bio ? `<p>${c.bio}</p>` : ''}
+          ${meta ? `<p class="small">${meta}</p>` : ''}
+
+          <h3>Rounds overview</h3>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Round</th><th>Official</th><th>Neitsu</th><th>Bibiblu</th><th>Kaina</th><th>Hauras</th><th>Cal</th><th>Aya</th><th>Performance score</th><th>Performance rank</th><th>Status</th></tr></thead>
+              <tbody>
+                ${ROUND_ORDER.map(r => `
+                  <tr>
+                    <td>${ROUND_LABELS[r]}</td>
+                    <td>${official[r]?.[c.id] ?? '—'}</td>
+                    <td>${judges.neitsu[r]?.[c.id] ?? '—'}</td>
+                    <td>${judges.bibiblu[r]?.[c.id] ?? '—'}</td>
+                    <td>${judges.kaina[r]?.[c.id] ?? '—'}</td>
+                    <td>${judges.hauras[r]?.[c.id] ?? '—'}</td>
+                    <td>${judges.cal[r]?.[c.id] ?? '—'}</td>
+                    <td>${judges.aya[r]?.[c.id] ?? '—'}</td>
+                    <td>${Number.isFinite(perfScore[r]?.[c.id]) ? perfScore[r][c.id] : '—'}</td>
+                    <td>${perfRank[r]?.[c.id] ?? '—'}</td>
+                    <td>${statusLabel(getStatus(r, c.id))}</td>
+                  </tr>`).join('')}
+              </tbody>
             </table>
           </div>
-        </div>
 
-        <div class="card">
-          <header>
-            <div>
-              <div class="card-title">Contestant profile & chart</div>
-              <div class="card-subtitle">Click a contestant to see their trajectory.</div>
-            </div>
-          </header>
-
-          <div class="profile">
-            <div class="profile-main">
-              <div class="profile-pic-wrap">
-                <div class="profile-pic-inner">
-                  <img id="pic" src="assets/placeholder.jpg" alt="Selected contestant" />
-                </div>
-              </div>
-              <div class="profile-text">
-                <h2 id="infoName">No contestant selected</h2>
-                <p id="infoPromo">KCA 2026</p>
-                <div class="badge-row">
-                  <span class="badge gold">Active stage</span>
-                  <span class="badge">RANK / NEITSU / HAURAS / BIBI BLU / KAINA / CAL / AYA / SCORE</span>
-                </div>
-                <p id="infoExtra" style="margin-top:6px;font-size:.8rem;color:var(--muted);max-width:320px;">
-                  Rank, average and elimination status will appear here.
-                </p>
-              </div>
-            </div>
-
-            <div class="chart-wrap">
-              <canvas id="chartLine"></canvas>
-            </div>
+          <h3>Performances</h3>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Round</th><th>Song</th><th>Links</th></tr></thead>
+              <tbody>
+                ${submissions.map(s => `<tr><td>${ROUND_LABELS[s.round_id] || s.round_id}</td><td>${s.song_title || s.group_song || 'TBD'}</td><td>${s.youtube_url ? `<a target="_blank" href="${s.youtube_url}">Link to the Performance</a>` : '—'}${s.bandlab_url ? ` · <a target="_blank" href="${s.bandlab_url}">BandLab</a>` : ''}</td></tr>`).join('') || `<tr><td colspan="3">No performance links yet.</td></tr>`}
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
     </div>
+    <div class="card">
+      <h3>Individual evolution chart (official rank)</h3>
+      <canvas id="profileChart" height="100"></canvas>
+    </div>`;
 
-    <footer class="container">
-      <p class="mini">
-        Δ places = rank difference compared to previous stage (▲ = better, ▼ = worse). Click a contestant to view details.
-      </p>
-    </footer>
-  </main>
-
-  <script>
-    "use strict";
-
-    /*********************************
-     * 1) DATA (hardcoded so it's the same on PC & mobile)
-     *********************************/
-
-    const VIEW_KEYS = ["rank","neitsu","hauras","bibi_blu","kaina","cal","aya","score"];
-    const MAX_PRIME = 7;
-    const labels = ["PRERANK","ROUND 1","ROUND 2","ROUND 3","ROUND 4","ROUND 5","ROUND 6","FINAL"];
-
-    function blankRanks(){
-      const o = {};
-      for(let p=0;p<=MAX_PRIME;p++) o["p"+p] = null;
-      return o;
+  if (profileChart) profileChart.destroy();
+  profileChart = new Chart(document.getElementById('profileChart'), {
+    type: 'line',
+    data: {
+      labels: ROUND_ORDER.map(r => ROUND_LABELS[r]),
+      datasets: [{
+        label: c.name,
+        data: ROUND_ORDER.map(r => official[r]?.[c.id] ?? null),
+        borderColor: '#8b5cf6',
+        backgroundColor: 'rgba(139,92,246,.2)',
+        borderWidth: 2,
+        tension: .25,
+        spanGaps: true
+      }]
+    },
+    options: {
+      plugins: { legend: { labels: { color: '#eef3ff' } } },
+      scales: { x: { ticks: { color: '#9aa6c2' } }, y: { reverse: true, min: 1, max: Math.max(22, state.data.contestants.length), ticks: { color: '#9aa6c2', stepSize: 1 } } }
     }
-
-    // Contestants (single season)
-    const baseEleves = [
-      { id:1, nom: "Heaven", img: "assets/heaven.jpg", eliminatedAt: null },
-      { id:2, nom: "Manuee", img: "assets/manuee.jpg", eliminatedAt: null },
-      { id:3, nom: "Donghyun", img: "assets/donghyun.jpg", eliminatedAt: null },
-      { id:4, nom: "Suhaa", img: "assets/suhaa.jpg", eliminatedAt: null },
-      { id:5, nom: "Asli", img: "assets/asli.jpg", eliminatedAt: null },
-      { id:6, nom: "Hwa Young", img: "assets/hwa_young.jpg", eliminatedAt: null },
-      { id:7, nom: "Kelsy", img: "assets/kelsy.jpg", eliminatedAt: null },
-      { id:8, nom: "Lizy", img: "assets/lizy.jpg", eliminatedAt: null },
-      { id:9, nom: "Eria", img: "assets/eria.jpg", eliminatedAt: null },
-      { id:10, nom: "Sun", img: "assets/sun.jpg", eliminatedAt: null },
-      { id:11, nom: "Johi", img: "assets/johi.jpg", eliminatedAt: null },
-      { id:12, nom: "Kyo", img: "assets/kyo.jpg", eliminatedAt: null },
-      { id:13, nom: "Chanel", img: "assets/chanel.jpg", eliminatedAt: null },
-      { id:14, nom: "Lea", img: "assets/lea.jpg", eliminatedAt: null },
-      { id:15, nom: "Mimi", img: "assets/mimi.jpg", eliminatedAt: null },
-      { id:16, nom: "Megara", img: "assets/megara.jpg", eliminatedAt: null },
-      { id:17, nom: "Yza", img: "assets/yza.jpg", eliminatedAt: null },
-      { id:18, nom: "Panida", img: "assets/panida.jpg", eliminatedAt: null },
-      { id:19, nom: "Brahmini", img: "assets/brahmini.jpg", eliminatedAt: null },
-      { id:20, nom: "Hope", img: "assets/hope.jpg", eliminatedAt: null },
-      { id:21, nom: "Katie", img: "assets/katie.jpg", eliminatedAt: null },
-      { id:22, nom: "Kora", img: "assets/kora.jpg", eliminatedAt: null },
-    ];
-
-    // Build full dataset with empty rankings for each view
-    const eleves = baseEleves.map(e => {
-      const obj = { ...e };
-      VIEW_KEYS.forEach(k => obj[k] = blankRanks());
-      return obj;
-    });
-
-    // Helper: set an ordered ranking list for a given view + stage
-    function setOrder(viewKey, primeNumber, orderedNames){
-      orderedNames.forEach((name, i) => {
-        const e = eleves.find(x => x.nom === name);
-        if (e && e[viewKey]) e[viewKey]["p"+primeNumber] = i + 1;
-      });
-    }
-
-function setValues(viewKey, primeNumber, valuesByName){
-  const key = "p" + primeNumber;
-  eleves.forEach(e => {
-    if(!e || !e[viewKey]) return;
-    const v = valuesByName[e.nom];
-    if(v === undefined || v === null) return;
-    e[viewKey][key] = v;
   });
 }
 
-    // ✅ PRE-RANK data already embedded (so it shows everywhere)
-    setOrder("rank", 0, [
-      "Yza","Hope","Lea","Megara","Asli","Chanel","Heaven","Manuee","Hwa Young","Mimi","Eria","Panida",
-      "Kelsy","Suhaa","Johi","Sun","Kora","Brahmini","Katie","Donghyun","Lizy","Kyo"
-    ]);
+function renderVotes() {
+  const root = document.getElementById('votes');
+  const roundsWithVotes = ROUND_ORDER.filter(r => state.data.votes_live.some(v => v.round_id === r));
+  const selected = canonicalRoundId(state.votesRound);
+  state.votesRound = ROUND_ORDER.includes(selected) ? selected : (roundsWithVotes[0] || state.latestRound);
 
-    // ✅ PRERANK scores (absolute values)
-    setValues("score", 0, {
-      "Asli": 89,
-      "Brahmini": 71,
-      "Chanel": 86.5,
-      "Donghyun": 67.5,
-      "Eria": 82.5,
-      "Heaven": 86,
-      "Hope": 94,
-      "Hwa Young": 86,
-      "Johi": 76.5,
-      "Katie": 71,
-      "Kelsy": 80.5,
-      "Kora": 75,
-      "Kyo": 60.5,
-      "Lea": 91.5,
-      "Lizy": 62.5,
-      "Manuee": 86,
-      "Megara": 90,
-      "Mimi": 85.5,
-      "Panida": 82,
-      "Suhaa": 78.5,
-      "Sun": 76.5,
-      "Yza": 97.5
-    });
+  const nominees = state.data.round_status.filter(r => r.round_id === state.votesRound && r.status === 'nominee').map(r => r.contestant_id);
+  const targets = nominees.length ? nominees : [...new Set(state.data.votes_live.filter(v => v.round_id === state.votesRound).map(v => v.contestant_id))];
 
+  const rows = targets.map(id => {
+    const record = state.data.votes_live.find(v => v.round_id === state.votesRound && v.contestant_id === id);
+    return { id, name: getContestantName(id), votes: Number(record?.votes_count || 0), updated: record?.last_updated || '-' };
+  }).sort((a, b) => b.votes - a.votes);
 
-    // Examples for later:
-    // setOrder("rank", 1, [ "Yza", "Hope", ... ]);        // ROUND 1
-    // setOrder("neitsu", 0, [ "Yza", "Hope", ... ]);      // PRERANK for another source
+  const totalVotes = rows.reduce((sum, r) => sum + r.votes, 0);
 
-    /*********************************
-     * 2) DOM refs + state
-     *********************************/
-    const dom = {
-      q: document.getElementById("q"),
-      prime: document.getElementById("prime"),
-      viewSelect: document.getElementById("viewSelect"),
-      topBody: document.getElementById("topBody"),
-      pic: document.getElementById("pic"),
-      infoName: document.getElementById("infoName"),
-      infoPromo: document.getElementById("infoPromo"),
-      infoExtra: document.getElementById("infoExtra"),
-      share: document.getElementById("share")
-    };
+  root.innerHTML = `
+    <div class="card">
+      <h2>Votes</h2>
+      <div class="filters">
+        <select id="votesRoundSelect">${ROUND_ORDER.map(r => `<option value="${r}" ${r===state.votesRound?'selected':''}>${ROUND_LABELS[r]}</option>`).join('')}</select>
+        ${CONFIG.VOTE_FORM_URL ? `<a class="btn" target="_blank" rel="noopener noreferrer" href="${CONFIG.VOTE_FORM_URL}">Vote now</a>` : ''}
+      </div>
+      ${rows.length ? rows.map(r => {
+        const pct = totalVotes > 0 ? (r.votes / totalVotes) * 100 : 0;
+        return `<div class="vote-row"><div><strong>${r.name}</strong> — ${r.votes} votes (${pct.toFixed(1)}%)</div><div class="bar"><span style="width:${pct}%"></span></div></div>`;
+      }).join('') : `<p>No vote data for this round yet.</p>${roundsWithVotes.length ? `<p class="small">Available vote rounds: ${roundsWithVotes.map(r => ROUND_LABELS[r]).join(', ')}</p>` : ''}`}
+      <p class="small">Total votes: ${totalVotes} · Last refresh: ${new Date().toLocaleString('fr-FR')}</p>
+    </div>`;
 
-    const appState = {
-      view: "rank",
-      selectedId: null
-    };
+  document.getElementById('votesRoundSelect').addEventListener('change', (e) => {
+    state.votesRound = e.target.value;
+    renderVotes();
+  });
 
-    /*********************************
-     * 3) Helpers
-     *********************************/
-    function getLabelList(){ return labels.slice(); }
+  clearTimeout(state.votesTimer);
+  state.votesTimer = setTimeout(async () => {
+    await hydrate();
+    renderContestants();
+    renderRankings();
+    renderVotes();
+  }, CONFIG.REFRESH_MS);
+}
 
-    function mean(nums){
-      if(!nums.length) return null;
-      return nums.reduce((a,b)=>a+b,0)/nums.length;
+function setupNav() {
+  const nav = document.getElementById('nav');
+  const tabs = ['contestants', 'rankings', 'votes'];
+  nav.innerHTML = tabs.map(t => `<a class="nav-link" href="#${t}">${t[0].toUpperCase() + t.slice(1)}</a>`).join('');
+
+  const onHash = () => {
+    const hash = location.hash || '#contestants';
+    const [page] = hash.slice(1).split('/');
+
+    document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
+    if (page === 'profile') {
+      document.getElementById('profile').classList.add('active');
+      renderProfile(hash.split('/')[1]);
+    } else {
+      const target = document.getElementById(page) ? page : 'contestants';
+      document.getElementById(target).classList.add('active');
     }
 
-    function averageUpTo(eleve, view, maxPrime){
-      const vals = [];
-      for(let p=0;p<=maxPrime;p++){
-        const v = eleve[view]["p"+p];
-        if(v != null && v !== "" && !Number.isNaN(+v)) vals.push(+v);
-      }
-      return mean(vals);
-    }
+    document.querySelectorAll('.nav-link').forEach(a => a.classList.toggle('active', a.getAttribute('href') === `#${page}`));
+  };
 
-    function getActivePrimeNumber(){
-      const n = parseInt(dom.prime.value, 10);
-      return Number.isFinite(n) ? n : 0;
-    }
+  window.addEventListener('hashchange', onHash);
+  onHash();
+}
 
-    function computeRows(){
-      const q = (dom.q.value || "").trim().toLowerCase();
-      const view = appState.view;
-      const maxP = getActivePrimeNumber();
+async function hydrate() {
+  await loadData();
+  normalizeData();
+  applyManualPrerankSeed();
+  applyManualR1Seed();
+  enforcePrerankSafeStatus();
 
-      let list = eleves.slice();
+  const officialByRound = getOfficialRankingByRound();
+  state.latestRound = getLatestRound(officialByRound);
+  const roundsWithVotes = ROUND_ORDER.filter(r => state.data.votes_live.some(v => v.round_id === r));
+  state.votesRound = roundsWithVotes[0] || state.latestRound;
+}
 
-      if(q){
-        list = list.filter(e => e.nom.toLowerCase().includes(q));
-      }
+async function boot() {
+  setupNav();
+  await hydrate();
+  renderContestants();
+  renderRankings();
+  renderVotes();
+  if (!location.hash) location.hash = '#contestants';
+}
 
-      const rows = list.map(e => ({ e, avg: averageUpTo(e, view, maxP) }));
-
-      rows.sort((a,b)=>{
-        const av = a.avg;
-        const bv = b.avg;
-        const aHas = av != null;
-        const bHas = bv != null;
-
-        if(aHas && !bHas) return -1;
-        if(!aHas && bHas) return 1;
-
-        if(!aHas && !bHas) return a.e.nom.localeCompare(b.e.nom);
-
-        if(view === "score"){
-          if(bv !== av) return bv - av; // higher score = better
-        }else{
-          if(av !== bv) return av - bv; // lower rank = better
-        }
-        return a.e.nom.localeCompare(b.e.nom);
-      });
-
-      return { rows, maxP, view };
-    }
-
-    function deltaBetween(eleve, view, prime){
-      if(prime <= 0) return null;
-      const a = eleve[view]["p"+prime];
-      const b = eleve[view]["p"+(prime-1)];
-      if(a==null || b==null) return null;
-      const da = +b - +a; // positive means improved if ranks
-      if(view === "score") return (+a - +b); // positive means improved score
-      return da;
-    }
-
-    /*********************************
-     * 4) Render table
-     *********************************/
-    function renderTable(){
-      const { rows, maxP, view } = computeRows();
-      dom.topBody.innerHTML = "";
-
-      rows.forEach((r, idx) => {
-        const e = r.e;
-        const tr = document.createElement("tr");
-        if(appState.selectedId === e.id) tr.classList.add("selected");
-        if(e.eliminatedAt != null) tr.classList.add("row-elim");
-
-        tr.addEventListener("click", () => {
-          appState.selectedId = e.id;
-          renderAll();
-        });
-
-        // Rank #
-        const tdRank = document.createElement("td");
-        tdRank.className = "rank sticky-rank";
-        tdRank.textContent = String(idx + 1);
-        tr.appendChild(tdRank);
-
-        // Name
-        const tdName = document.createElement("td");
-        tdName.className = "name sticky-col";
-
-        const wrap = document.createElement("div");
-        wrap.className = "name-wrap";
-
-        const img = document.createElement("img");
-        img.className = "avatar";
-        img.src = e.img || "assets/placeholder.jpg";
-        img.alt = e.nom;
-
-        const nm = document.createElement("span");
-        nm.className = "name-text";
-        nm.textContent = e.nom;
-
-        wrap.appendChild(img);
-        wrap.appendChild(nm);
-        tdName.appendChild(wrap);
-
-        if(e.eliminatedAt != null){
-          const chip = document.createElement("span");
-          chip.className = "chip elim";
-          chip.textContent = "ELIMINATED";
-          tdName.appendChild(chip);
-        }
-
-        // delta
-        const d = deltaBetween(e, view, maxP);
-        const delta = document.createElement("span");
-        delta.className = "delta";
-        if(d != null && d !== 0){
-          if(d > 0) delta.classList.add("up");
-          if(d < 0) delta.classList.add("down");
-          const arrow = d > 0 ? "▲" : "▼";
-          delta.textContent = `${arrow} ${Math.abs(d)}`;
-        }else{
-          delta.textContent = "";
-        }
-        tdName.appendChild(delta);
-        tr.appendChild(tdName);
-
-        // Stages columns 0..7
-        for(let p=0;p<=MAX_PRIME;p++){
-          const td = document.createElement("td");
-          td.className = "num";
-          const key = "p"+p;
-          const val = e[view][key];
-          td.textContent = (val==null) ? "—" : String(val);
-          tr.appendChild(td);
-        }
-
-        // Average
-        const tdAvg = document.createElement("td");
-        tdAvg.className = "num";
-        const avg = averageUpTo(e, view, maxP);
-        tdAvg.textContent = (avg == null) ? "—" : ((view === "score") ? avg.toFixed(1) : avg.toFixed(2));
-        tr.appendChild(tdAvg);
-
-        dom.topBody.appendChild(tr);
-      });
-
-      highlightActivePrime(maxP);
-    }
-
-    function highlightActivePrime(activeP){
-      document.querySelectorAll("#top thead th[data-prime]").forEach(th => {
-        const p = parseInt(th.getAttribute("data-prime"),10);
-        th.style.color = (p === activeP) ? "var(--gold)" : "var(--muted)";
-      });
-    }
-
-    /*********************************
-     * 5) Profile + chart
-     *********************************/
-    let chart = null;
-
-    function hashStringToHue(str){
-      let h = 0;
-      for(let i=0;i<str.length;i++){
-        h = (h * 31 + str.charCodeAt(i)) >>> 0;
-      }
-      return h % 360;
-    }
-    function colorFromName(name, alpha=0.28){
-      const hue = hashStringToHue(name);
-      return `hsla(${hue}, 80%, 60%, ${alpha})`;
-    }
-
-    function renderProfile(){
-      const e = eleves.find(x => x.id === appState.selectedId);
-      const view = appState.view;
-
-      if(!e){
-        dom.pic.src = "assets/placeholder.jpg";
-        dom.infoName.textContent = "No contestant selected";
-        dom.infoExtra.textContent = "Rank, average and elimination status will appear here.";
-        renderChart(null);
-        return;
-      }
-
-      dom.pic.src = e.img || "assets/placeholder.jpg";
-      dom.infoName.textContent = e.nom;
-
-      const maxP = getActivePrimeNumber();
-      const avg = averageUpTo(e, view, maxP);
-      const cur = e[view]["p"+maxP];
-
-      const status = e.eliminatedAt != null
-        ? (() => {
-            const lbl = labels[Number(e.eliminatedAt)] || ("Stage " + e.eliminatedAt);
-            return `Eliminated at ${lbl}`;
-          })()
-        : "Still in the competition";
-
-      dom.infoExtra.textContent =
-        `Current ${view.toUpperCase()}: ${(cur==null ? "—" : cur)} · Average: ${(avg==null ? "—" : (view==="score" ? avg.toFixed(1) : avg.toFixed(2)))} · ${status}`;
-
-      renderChart(e);
-    }
-
-    function renderChart(selected){
-      if(!window.Chart) return;
-
-      const canvas = document.getElementById("chartLine");
-      if(!canvas) return;
-      const ctx = canvas.getContext("2d");
-
-      const view = appState.view;
-      const lbls = getLabelList();
-
-      const tickColor = getComputedStyle(document.body).getPropertyValue("--muted").trim() || "#9ca3af";
-      const grid = "rgba(148,163,184,.15)";
-
-      const datasets = eleves.map(x => {
-        const isSel = selected && x.id === selected.id;
-
-        // ✅ same color selected / not selected
-        const lineColor = colorFromName(x.nom, 0.32);
-
-        return {
-          label: x.nom,
-          data: lbls.map((_, i) => {
-            const v = x[view]["p" + i];
-            return (v == null ? null : Number(v));
-          }),
-          spanGaps: true,
-          tension: 0.25,
-
-          borderColor: lineColor,
-          pointBackgroundColor: lineColor,
-          pointBorderColor: lineColor,
-
-          borderWidth: isSel ? 3 : 1,
-          pointRadius: isSel ? 2 : 1,
-          pointHoverRadius: isSel ? 3 : 2,
-
-          // selected line on top
-          order: isSel ? 0 : 1
-        };
-      });
-
-      if(chart){ chart.destroy(); chart = null; }
-
-      const yReverse = (view !== "score");
-      const suggestedMin = (view === "score") ? 0 : 1;
-      const suggestedMax = (view === "score") ? 100 : Math.max(2, eleves.length);
-
-      chart = new Chart(ctx, {
-        type: "line",
-        data: { labels: lbls, datasets },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          interaction: { mode: "nearest", intersect: false },
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              enabled: true,
-              callbacks: {
-                label: (item) => `${item.dataset.label}: ${item.formattedValue}`
-              }
-            }
-          },
-          scales: {
-            y: {
-              reverse: yReverse,
-              suggestedMin,
-              suggestedMax,
-              ticks: {
-                color: tickColor,
-                stepSize: (view === "score") ? 10 : 1,
-                precision: 0,
-                callback: (v) => (Number.isFinite(v) ? Math.round(v) : v)
-              },
-              grid: { color: grid }
-            },
-            x: {
-              ticks: { color: tickColor, maxRotation: 0, autoSkip: true },
-              grid: { display: false }
-            }
-          }
-        }
-      });
-    }
-
-    /*********************************
-     * 6) Events
-     *********************************/
-    dom.q.addEventListener("input", () => renderAll(false));
-
-    dom.prime.addEventListener("change", () => renderAll(false));
-
-    dom.viewSelect.value = appState.view;
-    dom.viewSelect.addEventListener("change", () => {
-      const v = dom.viewSelect.value;
-      if(!VIEW_KEYS.includes(v)) return;
-      appState.view = v;
-      renderAll(false);
-    });
-
-    dom.share.addEventListener("click", async () => {
-      // Simple share link (same data because hardcoded)
-      const url = location.href;
-      try{
-        await navigator.clipboard.writeText(url);
-        alert("Link copied!");
-      }catch(err){
-        prompt("Copy this link:", url);
-      }
-    });
-
-    /*********************************
-     * 7) Render all + boot
-     *********************************/
-    function renderAll(){
-      renderTable();
-      renderProfile();
-    }
-
-    // Render immediately (table works without Chart.js)
-    renderAll();
-
-    // Load Chart.js (CDN) to enable the chart
-    if(!window.Chart){
-      const s = document.createElement("script");
-      s.src = "https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js";
-      s.onload = () => renderAll();
-      document.head.appendChild(s);
-    }
-  </script>
+boot();
+</script>
 </body>
 </html>
