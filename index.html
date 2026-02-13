@@ -219,6 +219,18 @@ function colorForIndex(i) {
   return `hsl(${hue} 85% 62%)`;
 }
 
+function handleImageFallback(img, name) {
+  const step = Number(img.dataset.fallbackStep || '0');
+  const src = String(img.getAttribute('src') || '');
+  if (step === 0 && /\.png(\?.*)?$/i.test(src)) {
+    img.dataset.fallbackStep = '1';
+    img.src = src.replace(/\.png(\?.*)?$/i, '.jpg$1');
+    return;
+  }
+  img.onerror = null;
+  img.src = `https://placehold.co/400x300?text=${encodeURIComponent(name || 'Contestant')}`;
+}
+
 async function fetchSheetTab(sheetName) {
   const url = `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?sheet=${encodeURIComponent(sheetName)}&tqx=out:json`;
   const txt = await fetch(url).then(r => r.text());
@@ -505,7 +517,7 @@ function renderContestants() {
     document.getElementById('contestantsGrid').innerHTML = list.map(c => {
       const status = getStatus(state.latestRound, c.id);
       return `<article class="contestant-card" onclick="location.hash='#profile/${c.id}'">
-        <img src="${c.photo_url}" alt="${c.name}" onerror="this.src='https://placehold.co/400x300?text=${encodeURIComponent(c.name)}'" />
+        <img src="${c.photo_url}" alt="${c.name}" onerror="handleImageFallback(this, ${JSON.stringify(c.name)})" />
         <div class="body"><strong>${c.name}</strong><div class="small">${Number.isFinite(currentRanks[c.id]) ? `Rank ${ROUND_LABELS[state.latestRound]}: #${currentRanks[c.id]}` : `Rank ${ROUND_LABELS[state.latestRound]}: —`}</div><span class="pill ${statusClass(status)}">${statusLabel(status)}</span></div>
       </article>`;
     }).join('') || `<p class="small">No contestants found.</p>`;
@@ -650,7 +662,7 @@ function renderProfile(contestantId) {
       <a class="btn" href="#contestants">← Back to contestants</a>
       <div class="row two" style="margin-top:.8rem">
         <div>
-          <img class="profile-img" src="${c.photo_url}" alt="${c.name}" onerror="this.src='https://placehold.co/400x500?text=${encodeURIComponent(c.name)}'" />
+          <img class="profile-img" src="${c.photo_url}" alt="${c.name}" onerror="handleImageFallback(this, ${JSON.stringify(c.name)})" />
         </div>
         <div>
           <h2>${c.name}</h2>
