@@ -187,15 +187,8 @@ const state = {
   votesTimer: null
 };
 
-const ID_ALIASES = { hwayoung: 'hwa_young' };
-
-function canonicalContestantId(id) {
-  return ID_ALIASES[id] || id;
-}
-
 function normId(v) {
-  const base = String(v || "").toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
-  return canonicalContestantId(base);
+  return String(v || "").toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
 }
 
 function canonicalRoundId(value) {
@@ -278,7 +271,7 @@ async function loadDataFromRoundTabs() {
       const officialRank = Number(pickValue(row, ['official_rank', 'rank', 'official ranking']));
       const perfScore = Number(pickValue(row, ['performance_score', 'score', 'creator_score', 'total']));
 
-      if (!contestantsMap.has(id)) contestantsMap.set(id, { id, name, photo_url: `assets/${id}.png`, country: '', bio: '', instagram, pronouns: '' });
+      if (!contestantsMap.has(id)) contestantsMap.set(id, { id, name, photo_url: `assets/${id}.jpg`, country: '', bio: '', instagram, pronouns: '' });
       if (instagram && !contestantsMap.get(id).instagram) contestantsMap.get(id).instagram = instagram;
 
       if (Number.isFinite(officialRank)) judge_rankings.push({ round_id, judge_name: 'official', contestant_id: id, rank: officialRank });
@@ -328,7 +321,7 @@ function normalizeData() {
   d.contestants = d.contestants.map(r => ({
     id: normId(r.id || r.contestant_id || r.name),
     name: String(r.name || '').trim(),
-    photo_url: String(r.photo_url || `assets/${normId(r.id || r.name)}.png`),
+    photo_url: String(r.photo_url || `assets/${normId(r.id || r.name)}.jpg`),
     country: String(r.country || '').trim(),
     bio: String(r.bio || '').trim(),
     instagram: String(r.instagram || '').trim(),
@@ -343,7 +336,7 @@ function normalizeData() {
 }
 
 function resolveContestantIdByName(name) {
-  const slug = canonicalContestantId(normId(name));
+  const slug = normId(name);
   const byId = state.data.contestants.find(c => c.id === slug);
   if (byId) return byId.id;
   const normalized = String(name || '').toLowerCase().replace(/\s+/g, ' ').trim();
@@ -360,7 +353,7 @@ function applyManualPrerankSeed() {
     const id = resolveContestantIdByName(row.name);
     let c = state.data.contestants.find(x => x.id === id);
     if (!c) {
-      c = { id, name: row.name, photo_url: `assets/${id}.png`, country: '', bio: '', instagram: '', pronouns: '' };
+      c = { id, name: row.name, photo_url: `assets/${id}.jpg`, country: '', bio: '', instagram: '', pronouns: '' };
       state.data.contestants.push(c);
     }
     if (!c.instagram && row.instagram) c.instagram = row.instagram;
@@ -377,7 +370,7 @@ function applyManualR1Seed() {
     const id = resolveContestantIdByName(row.name);
     let c = state.data.contestants.find(x => x.id === id);
     if (!c) {
-      c = { id, name: row.name, photo_url: `assets/${id}.png`, country: '', bio: '', instagram: '', pronouns: '' };
+      c = { id, name: row.name, photo_url: `assets/${id}.jpg`, country: '', bio: '', instagram: '', pronouns: '' };
       state.data.contestants.push(c);
     }
     if (!c.instagram && row.instagram) c.instagram = row.instagram;
