@@ -125,6 +125,7 @@ const ROUND_ORDER = ["PRERANK", "ROUND_1", "ROUND_2", "ROUND_3", "ROUND_4", "ROU
 const ROUND_LABELS = { PRERANK: "Prerank", ROUND_1: "R1", ROUND_2: "R2", ROUND_3: "R3", ROUND_4: "R4", ROUND_5: "R5", ROUND_6: "R6", FINAL: "Final" };
 const JUDGE_NAMES = ["Neitsu", "Bibiblu", "Kaina", "Hauras", "Cal", "Aya"];
 const CANDIDATE_NAMES = ["yza","hope","lea","megara","asli","chanel","heaven","manuee","hwa_young","mimi","eria","panida","kelsy","suhaa","johi","sun","kora","brahmini","katie","donghyun","lizy","kyo"];
+const ROUND1_NOMINEES = new Set(['brahmini', 'yza', 'donghyun', 'mimi', 'katie', 'kyo']);
 
 const PRERANK_MANUAL_ROWS = [
   { name: 'Asli', instagram: '@aslcvrs', official_rank: 5, score: 89 },
@@ -385,6 +386,18 @@ function enforcePrerankSafeStatus() {
   const ids = state.data.contestants.length ? state.data.contestants.map(c => c.id).filter(Boolean) : [...CANDIDATE_NAMES];
   state.data.round_status = state.data.round_status.filter(r => r.round_id !== 'PRERANK');
   ids.forEach(id => state.data.round_status.push({ round_id: 'PRERANK', contestant_id: id, status: 'safe' }));
+}
+
+function enforceRound1Statuses() {
+  const ids = state.data.contestants.length ? state.data.contestants.map(c => c.id).filter(Boolean) : [...CANDIDATE_NAMES];
+  state.data.round_status = state.data.round_status.filter(r => r.round_id !== 'ROUND_1');
+  ids.forEach(id => {
+    state.data.round_status.push({
+      round_id: 'ROUND_1',
+      contestant_id: id,
+      status: ROUND1_NOMINEES.has(id) ? 'nominee' : 'safe'
+    });
+  });
 }
 
 function getStatus(roundId, contestantId) {
@@ -799,6 +812,7 @@ async function hydrate() {
   applyManualPrerankSeed();
   applyManualR1Seed();
   enforcePrerankSafeStatus();
+  enforceRound1Statuses();
 
   const officialByRound = getOfficialRankingByRound();
   state.latestRound = getLatestRound(officialByRound);
