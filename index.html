@@ -125,6 +125,7 @@ const ROUND_ORDER = ["PRERANK", "ROUND_1", "ROUND_2", "ROUND_3", "ROUND_4", "ROU
 const ROUND_LABELS = { PRERANK: "Prerank", ROUND_1: "R1", ROUND_2: "R2", ROUND_3: "R3", ROUND_4: "R4", ROUND_5: "R5", ROUND_6: "R6", FINAL: "Final" };
 const JUDGE_NAMES = ["Neitsu", "Bibiblu", "Kaina", "Hauras", "Cal", "Aya"];
 const CANDIDATE_NAMES = ["yza","hope","lea","megara","asli","chanel","heaven","manuee","hwa_young","mimi","eria","panida","kelsy","suhaa","johi","sun","kora","brahmini","katie","donghyun","lizy","kyo"];
+const PRETTY = { yza:'Yza', hope:'Hope', lea:'Lea', megara:'Megara', asli:'Asli', chanel:'Chanel', heaven:'Heaven', manuee:'Manuee', hwa_young:'Hwa Young', mimi:'Mimi', eria:'Eria', panida:'Panida', kelsy:'Kelsy', suhaa:'Suhaa', johi:'Johi', sun:'Sun', kora:'Kora', brahmini:'Brahmini', katie:'Katie', donghyun:'Donghyun', lizy:'Lizy', kyo:'Kyo' };
 const ROUND1_NOMINEES = new Set(['brahmini', 'yza', 'donghyun', 'mimi', 'katie', 'kyo']);
 
 const PRERANK_MANUAL_ROWS = [
@@ -211,8 +212,13 @@ function normalizeJudgeName(v) {
   return String(v || '').trim().toLowerCase();
 }
 
+function prettyFromId(id) {
+  return PRETTY[id] || String(id || '').replace(/_/g, ' ').replace(/\b\w/g, m => m.toUpperCase());
+}
+
 function getContestantName(id) {
-  return state.data.contestants.find(c => c.id === id)?.name || id;
+  const raw = state.data.contestants.find(c => c.id === id)?.name || '';
+  return String(raw || '').trim() || prettyFromId(id);
 }
 
 function colorForIndex(i) {
@@ -321,7 +327,7 @@ function normalizeData() {
 
   d.contestants = d.contestants.map(r => ({
     id: normId(r.id || r.contestant_id || r.name),
-    name: String(r.name || '').trim(),
+    name: String(r.name || '').trim() || prettyFromId(normId(r.id || r.contestant_id || r.name)),
     photo_url: String(r.photo_url || `assets/${normId(r.id || r.name)}.jpg`),
     country: String(r.country || '').trim(),
     bio: String(r.bio || '').trim(),
@@ -524,7 +530,7 @@ function renderContestants() {
       const status = getStatus(state.latestRound, c.id);
       return `<article class="contestant-card" onclick="location.hash='#profile/${c.id}'">
         <img src="${c.photo_url}" alt="${c.name}" onerror="handleImageFallback(this)" />
-        <div class="body"><strong>${c.name}</strong><div class="small">${Number.isFinite(currentRanks[c.id]) ? `Rank ${ROUND_LABELS[state.latestRound]}: #${currentRanks[c.id]}` : `Rank ${ROUND_LABELS[state.latestRound]}: —`}</div><span class="pill ${statusClass(status)}">${statusLabel(status)}</span></div>
+        <div class="body"><strong>${getContestantName(c.id)}</strong><div class="small">${Number.isFinite(currentRanks[c.id]) ? `Rank ${ROUND_LABELS[state.latestRound]}: #${currentRanks[c.id]}` : `Rank ${ROUND_LABELS[state.latestRound]}: —`}</div><span class="pill ${statusClass(status)}">${statusLabel(status)}</span></div>
       </article>`;
     }).join('') || `<p class="small">No contestants found.</p>`;
   };
@@ -576,7 +582,7 @@ function renderRankings() {
             ${list.map((c, idx) => `
               <tr>
                 <td>${idx + 1}</td>
-                <td><a href="#profile/${c.id}">${c.name}</a></td>
+                <td><a href="#profile/${c.id}">${getContestantName(c.id)}</a></td>
                 ${ROUND_ORDER.map(r => {
                   const v = rankingMap[r]?.[c.id];
                   if (!Number.isFinite(v)) return '<td>—</td>';
@@ -611,7 +617,7 @@ function renderRankings() {
       datasets: state.data.contestants.map((c, idx) => {
         const color = colorForIndex(idx);
         return {
-          label: c.name,
+          label: getContestantName(c.id),
           data: ROUND_ORDER.map(r => {
             const v = rankingMap[r]?.[c.id];
             return Number.isFinite(v) ? v : null;
@@ -671,7 +677,7 @@ function renderProfile(contestantId) {
           <img class="profile-img" src="${c.photo_url}" alt="${c.name}" onerror="handleImageFallback(this)" />
         </div>
         <div>
-          <h2>${c.name}</h2>
+          <h2>${getContestantName(c.id)}</h2>
           ${c.bio ? `<p>${c.bio}</p>` : ''}
           ${meta ? `<p class="small">${meta}</p>` : ''}
 
@@ -721,7 +727,7 @@ function renderProfile(contestantId) {
     data: {
       labels: ROUND_ORDER.map(r => ROUND_LABELS[r]),
       datasets: [{
-        label: c.name,
+        label: getContestantName(c.id),
         data: ROUND_ORDER.map(r => official[r]?.[c.id] ?? null),
         borderColor: '#8b5cf6',
         backgroundColor: 'rgba(139,92,246,.2)',
