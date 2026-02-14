@@ -227,6 +227,17 @@ function colorForIndex(i) {
 }
 
 function handleImageFallback(img) {
+  const step = Number(img.dataset.fallbackStep || '0');
+  const contestantId = String(img.dataset.contestantId || '').trim();
+  const canonicalLocal = contestantId ? `assets/${contestantId}.jpg` : '';
+  const currentSrc = String(img.getAttribute('src') || '');
+
+  if (step === 0 && canonicalLocal && !currentSrc.endsWith(canonicalLocal)) {
+    img.dataset.fallbackStep = '1';
+    img.src = canonicalLocal;
+    return;
+  }
+
   img.onerror = null;
   img.src = 'assets/placeholder.jpg';
 }
@@ -529,7 +540,7 @@ function renderContestants() {
     document.getElementById('contestantsGrid').innerHTML = list.map(c => {
       const status = getStatus(state.latestRound, c.id);
       return `<article class="contestant-card" onclick="location.hash='#profile/${c.id}'">
-        <img src="${c.photo_url}" alt="${c.name}" onerror="handleImageFallback(this)" />
+        <img src="${c.photo_url}" data-contestant-id="${c.id}" alt="${c.name}" onerror="handleImageFallback(this)" />
         <div class="body"><strong>${getContestantName(c.id)}</strong><div class="small">${Number.isFinite(currentRanks[c.id]) ? `Rank ${ROUND_LABELS[state.latestRound]}: #${currentRanks[c.id]}` : `Rank ${ROUND_LABELS[state.latestRound]}: —`}</div><span class="pill ${statusClass(status)}">${statusLabel(status)}</span></div>
       </article>`;
     }).join('') || `<p class="small">No contestants found.</p>`;
@@ -674,7 +685,7 @@ function renderProfile(contestantId) {
       <a class="btn" href="#contestants">← Back to contestants</a>
       <div class="row two" style="margin-top:.8rem">
         <div>
-          <img class="profile-img" src="${c.photo_url}" alt="${c.name}" onerror="handleImageFallback(this)" />
+          <img class="profile-img" src="${c.photo_url}" data-contestant-id="${c.id}" alt="${c.name}" onerror="handleImageFallback(this)" />
         </div>
         <div>
           <h2>${getContestantName(c.id)}</h2>
