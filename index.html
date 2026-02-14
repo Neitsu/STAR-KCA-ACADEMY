@@ -123,7 +123,7 @@ const CONFIG = {
 
 const ROUND_ORDER = ["PRERANK", "ROUND_1", "ROUND_2", "ROUND_3", "ROUND_4", "ROUND_5", "ROUND_6", "FINAL"];
 const ROUND_LABELS = { PRERANK: "Prerank", ROUND_1: "R1", ROUND_2: "R2", ROUND_3: "R3", ROUND_4: "R4", ROUND_5: "R5", ROUND_6: "R6", FINAL: "Final" };
-const JUDGE_NAMES = ["Neitsu", "Bibiblu", "Kaina", "Hauras", "Cal", "Aya"];
+const JUDGE_NAMES = ["Neitsu", "Bibiblu", "Kaina", "Hauras", "Cal", "Aya", "(Y)ELLOW", "CAM"];
 const CANDIDATE_NAMES = ["yza","hope","lea","megara","asli","chanel","heaven","manuee","hwa_young","mimi","eria","panida","kelsy","suhaa","johi","sun","kora","brahmini","katie","donghyun","lizy","kyo"];
 const PRETTY = { yza:'Yza', hope:'Hope', lea:'Lea', megara:'Megara', asli:'Asli', chanel:'Chanel', heaven:'Heaven', manuee:'Manuee', hwa_young:'Hwa Young', mimi:'Mimi', eria:'Eria', panida:'Panida', kelsy:'Kelsy', suhaa:'Suhaa', johi:'Johi', sun:'Sun', kora:'Kora', brahmini:'Brahmini', katie:'Katie', donghyun:'Donghyun', lizy:'Lizy', kyo:'Kyo' };
 const ROUND1_NOMINEES = new Set(['brahmini', 'yza', 'donghyun', 'mimi', 'katie', 'kyo']);
@@ -664,11 +664,7 @@ function renderProfile(contestantId) {
   if (!c) { root.innerHTML = `<div class="card"><p>Contestant not found.</p></div>`; return; }
 
   const official = getOfficialRankingByRound();
-  const judges = {
-    neitsu: getJudgeRankingByRound('Neitsu'), bibiblu: getJudgeRankingByRound('Bibiblu'),
-    kaina: getJudgeRankingByRound('Kaina'), hauras: getJudgeRankingByRound('Hauras'),
-    cal: getJudgeRankingByRound('Cal'), aya: getJudgeRankingByRound('Aya')
-  };
+  const judgesByName = Object.fromEntries(JUDGE_NAMES.map(j => [j, getJudgeRankingByRound(j)]));
   const perfScore = getPerformanceScoreByRound();
   const perfRank = getPerformanceRankByRound();
 
@@ -695,18 +691,13 @@ function renderProfile(contestantId) {
           <h3>Rounds overview</h3>
           <div class="table-wrap">
             <table>
-              <thead><tr><th>Round</th><th>Official</th><th>Neitsu</th><th>Bibiblu</th><th>Kaina</th><th>Hauras</th><th>Cal</th><th>Aya</th><th>Performance score</th><th>Performance rank</th><th>Status</th></tr></thead>
+              <thead><tr><th>Round</th><th>Official</th>${JUDGE_NAMES.map(j => `<th>${j}</th>`).join('')}<th>Performance score</th><th>Performance rank</th><th>Status</th></tr></thead>
               <tbody>
                 ${ROUND_ORDER.map(r => `
                   <tr>
                     <td>${ROUND_LABELS[r]}</td>
                     <td>${official[r]?.[c.id] ?? '—'}</td>
-                    <td>${judges.neitsu[r]?.[c.id] ?? '—'}</td>
-                    <td>${judges.bibiblu[r]?.[c.id] ?? '—'}</td>
-                    <td>${judges.kaina[r]?.[c.id] ?? '—'}</td>
-                    <td>${judges.hauras[r]?.[c.id] ?? '—'}</td>
-                    <td>${judges.cal[r]?.[c.id] ?? '—'}</td>
-                    <td>${judges.aya[r]?.[c.id] ?? '—'}</td>
+                    ${JUDGE_NAMES.map(j => `<td>${judgesByName[j]?.[r]?.[c.id] ?? '—'}</td>`).join('')}
                     <td>${Number.isFinite(perfScore[r]?.[c.id]) ? perfScore[r][c.id] : '—'}</td>
                     <td>${perfRank[r]?.[c.id] ?? '—'}</td>
                     <td>${statusLabel(getStatus(r, c.id))}</td>
