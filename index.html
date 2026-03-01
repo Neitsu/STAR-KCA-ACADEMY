@@ -428,6 +428,36 @@ function normalizeData() {
   d.contestants = [...contestantsById.values()];
 
   d.submissions = d.submissions.map(r => ({ ...r, round_id: canonicalRoundId(r.round_id), contestant_id: normId(r.contestant_id) }));
+
+  // Deduplicate submissions by (round_id, contestant_id), preferring richer rows.
+  const submissionsByRoundContestant = new Map();
+  d.submissions.forEach((s) => {
+    const key = `${s.round_id}::${s.contestant_id}`;
+    if (!submissionsByRoundContestant.has(key)) {
+      submissionsByRoundContestant.set(key, s);
+      return;
+    }
+
+    const existing = submissionsByRoundContestant.get(key);
+    const existingScore = [existing.song_title, existing.group_song, existing.youtube_url, existing.bandlab_url].filter(v => String(v || '').trim()).length;
+    const candidateScore = [s.song_title, s.group_song, s.youtube_url, s.bandlab_url].filter(v => String(v || '').trim()).length;
+
+    if (candidateScore > existingScore) {
+      submissionsByRoundContestant.set(key, { ...existing, ...s });
+      return;
+    }
+
+    submissionsByRoundContestant.set(key, {
+      ...existing,
+      song_title: existing.song_title || s.song_title,
+      group_song: existing.group_song || s.group_song,
+      youtube_url: existing.youtube_url || s.youtube_url,
+      bandlab_url: existing.bandlab_url || s.bandlab_url,
+      notes: existing.notes || s.notes
+    });
+  });
+  d.submissions = [...submissionsByRoundContestant.values()];
+
   d.scores = d.scores.map(r => ({ ...r, round_id: canonicalRoundId(r.round_id), contestant_id: normId(r.contestant_id), total: Number(r.total) }));
   d.judge_rankings = d.judge_rankings.map(r => ({ ...r, round_id: canonicalRoundId(r.round_id), contestant_id: normId(r.contestant_id), rank: Number(r.rank), judge_name: String(r.judge_name || '').trim() }));
   d.round_status = d.round_status.map(r => ({ ...r, round_id: canonicalRoundId(r.round_id), contestant_id: normId(r.contestant_id), status: String(r.status || '').trim().toLowerCase() }));
@@ -464,6 +494,12 @@ function applyManualPrerankSeed() {
 
 function applyManualR1Seed() {
   const hasR1Submissions = state.data.submissions.some(r => r.round_id === 'ROUND_1' && (String(r.song_title || '').trim() || String(r.youtube_url || '').trim() || String(r.bandlab_url || '').trim()));
+
+  // If R1 submissions exist but are empty placeholders (e.g. TBD rows),
+  // replace them with manual rows to avoid duplicate R1 entries in profiles.
+  if (!hasR1Submissions) {
+    state.data.submissions = state.data.submissions.filter(r => r.round_id !== 'ROUND_1');
+  }
 
   R1_MANUAL_ROWS.forEach((row) => {
     const id = resolveContestantIdByName(row.name);
