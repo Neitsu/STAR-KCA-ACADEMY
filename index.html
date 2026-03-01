@@ -863,7 +863,7 @@ function renderVotes() {
   const root = document.getElementById('votes');
   const roundsWithVotes = ROUND_ORDER.filter(r => state.data.votes_live.some(v => v.round_id === r));
   const selected = canonicalRoundId(state.votesRound);
-  state.votesRound = ROUND_ORDER.includes(selected) ? selected : (roundsWithVotes[0] || state.latestRound);
+  state.votesRound = ROUND_ORDER.includes(selected) ? selected : (roundsWithVotes[roundsWithVotes.length - 1] || state.latestRound);
 
   const nominees = state.data.round_status.filter(r => r.round_id === state.votesRound && r.status === 'nominee').map(r => r.contestant_id);
   const targets = nominees.length ? nominees : [...new Set(state.data.votes_live.filter(v => v.round_id === state.votesRound).map(v => v.contestant_id))];
@@ -940,7 +940,7 @@ async function hydrate() {
   const officialByRound = getOfficialRankingByRound();
   state.latestRound = getLatestRound(officialByRound);
   const roundsWithVotes = ROUND_ORDER.filter(r => state.data.votes_live.some(v => v.round_id === r));
-  state.votesRound = roundsWithVotes[0] || state.latestRound;
+  state.votesRound = roundsWithVotes[roundsWithVotes.length - 1] || state.latestRound;
 }
 
 async function boot() {
