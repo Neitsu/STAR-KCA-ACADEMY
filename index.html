@@ -406,6 +406,27 @@ function normalizeData() {
     pronouns: String(r.pronouns || '').trim()
   })).filter(c => c.id);
 
+  // Deduplicate contestants by id while preserving first-seen order.
+  // This protects UI lists from duplicate rows in source sheets.
+  const contestantsById = new Map();
+  d.contestants.forEach((c) => {
+    if (!contestantsById.has(c.id)) {
+      contestantsById.set(c.id, c);
+      return;
+    }
+    const existing = contestantsById.get(c.id);
+    contestantsById.set(c.id, {
+      ...existing,
+      name: existing.name || c.name,
+      photo_url: existing.photo_url || c.photo_url,
+      country: existing.country || c.country,
+      bio: existing.bio || c.bio,
+      instagram: existing.instagram || c.instagram,
+      pronouns: existing.pronouns || c.pronouns
+    });
+  });
+  d.contestants = [...contestantsById.values()];
+
   d.submissions = d.submissions.map(r => ({ ...r, round_id: canonicalRoundId(r.round_id), contestant_id: normId(r.contestant_id) }));
   d.scores = d.scores.map(r => ({ ...r, round_id: canonicalRoundId(r.round_id), contestant_id: normId(r.contestant_id), total: Number(r.total) }));
   d.judge_rankings = d.judge_rankings.map(r => ({ ...r, round_id: canonicalRoundId(r.round_id), contestant_id: normId(r.contestant_id), rank: Number(r.rank), judge_name: String(r.judge_name || '').trim() }));
