@@ -82,6 +82,7 @@
     @media (min-width: 840px) { .row.two { grid-template-columns: 280px 1fr; } }
     .profile-img { width: 100%; max-width: 260px; border-radius: 12px; border: 1px solid var(--line); }
     .btn { text-decoration: none; color: var(--text); border: 1px solid var(--line); background: var(--panel2); border-radius: 10px; padding: .42rem .7rem; display: inline-block; }
+    .profile-nav { display: flex; gap: .5rem; align-items: center; flex-wrap: wrap; margin-bottom: .5rem; }
     .table-wrap { overflow: auto; }
     table { width: 100%; border-collapse: collapse; font-size: .88rem; }
     th, td { border-bottom: 1px solid var(--line); padding: .5rem .36rem; text-align: left; white-space: nowrap; }
@@ -849,7 +850,11 @@ function renderProfile(contestantId) {
   const official = getOfficialRankingByRound();
   const judgesByName = Object.fromEntries(JUDGE_NAMES.map(j => [j, getJudgeRankingByRound(j)]));
   const perfScore = getPerformanceScoreByRound();
-  const perfRank = getPerformanceRankByRound();
+
+  const profileOrder = sortedContestants();
+  const profileIndex = profileOrder.findIndex(x => x.id === c.id);
+  const prevContestant = profileIndex > 0 ? profileOrder[profileIndex - 1] : null;
+  const nextContestant = profileIndex >= 0 && profileIndex < profileOrder.length - 1 ? profileOrder[profileIndex + 1] : null;
 
   const submissions = state.data.submissions.filter(s => s.contestant_id === c.id).sort((a,b) => ROUND_ORDER.indexOf(a.round_id) - ROUND_ORDER.indexOf(b.round_id));
 
@@ -861,7 +866,11 @@ function renderProfile(contestantId) {
 
   root.innerHTML = `
     <div class="card">
-      <a class="btn" href="#contestants">← Back to contestants</a>
+      <div class="profile-nav">
+        <a class="btn" href="#contestants">← Back to contestants</a>
+        ${prevContestant ? `<a class="btn" href="#profile/${prevContestant.id}">← ${getContestantName(prevContestant.id)}</a>` : ''}
+        ${nextContestant ? `<a class="btn" href="#profile/${nextContestant.id}">${getContestantName(nextContestant.id)} →</a>` : ''}
+      </div>
       <div class="row two" style="margin-top:.8rem">
         <div>
           <img class="profile-img" src="${c.photo_url}" data-contestant-id="${c.id}" alt="${c.name}" onerror="handleImageFallback(this)" />
@@ -874,7 +883,7 @@ function renderProfile(contestantId) {
           <h3>Rounds overview</h3>
           <div class="table-wrap">
             <table>
-              <thead><tr><th>Round</th><th>Official</th>${JUDGE_NAMES.map(j => `<th>${j}</th>`).join('')}<th>Performance score</th><th>Performance rank</th><th>Status</th></tr></thead>
+              <thead><tr><th>Round</th><th>Official</th>${JUDGE_NAMES.map(j => `<th>${j}</th>`).join('')}<th>Performance score</th><th>Status</th></tr></thead>
               <tbody>
                 ${ROUND_ORDER.map(r => `
                   <tr>
@@ -882,7 +891,6 @@ function renderProfile(contestantId) {
                     <td>${official[r]?.[c.id] ?? '—'}</td>
                     ${JUDGE_NAMES.map(j => `<td>${judgesByName[j]?.[r]?.[c.id] ?? '—'}</td>`).join('')}
                     <td>${Number.isFinite(perfScore[r]?.[c.id]) ? perfScore[r][c.id] : '—'}</td>
-                    <td>${perfRank[r]?.[c.id] ?? '—'}</td>
                     <td>${statusLabel(getStatus(r, c.id))}</td>
                   </tr>`).join('')}
               </tbody>
