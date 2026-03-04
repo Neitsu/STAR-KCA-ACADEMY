@@ -282,6 +282,17 @@ function getContestantName(id) {
   return String(raw || '').trim() || prettyFromId(id);
 }
 
+function isPlaceholderContestantId(id) {
+  const key = String(id || '').trim().toLowerCase();
+  return key === 'n_a' || key === 'na' || key === 'n' || key === 'none' || key === 'null' || key === 'undefined' || key === 'unknown';
+}
+
+function isPlaceholderContestantName(name) {
+  const normalized = String(name || '').trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+  return normalized === 'na' || normalized === 'none' || normalized === 'null' || normalized === 'undefined' || normalized === 'unknown';
+}
+
+
 function colorForIndex(i) {
   const hue = (i * 47) % 360;
   return `hsl(${hue} 85% 62%)`;
@@ -405,7 +416,7 @@ function normalizeData() {
     bio: String(r.bio || '').trim(),
     instagram: String(r.instagram || '').trim(),
     pronouns: String(r.pronouns || '').trim()
-  })).filter(c => c.id);
+  })).filter(c => c.id && !isPlaceholderContestantId(c.id) && !isPlaceholderContestantName(c.name));
 
   // Deduplicate contestants by id while preserving first-seen order.
   // This protects UI lists from duplicate rows in source sheets.
@@ -428,7 +439,7 @@ function normalizeData() {
   });
   d.contestants = [...contestantsById.values()];
 
-  d.submissions = d.submissions.map(r => ({ ...r, round_id: canonicalRoundId(r.round_id), contestant_id: normId(r.contestant_id) }));
+  d.submissions = d.submissions.map(r => ({ ...r, round_id: canonicalRoundId(r.round_id), contestant_id: normId(r.contestant_id) })).filter(r => r.contestant_id && !isPlaceholderContestantId(r.contestant_id));
 
   // Deduplicate submissions by (round_id, contestant_id), preferring richer rows.
   const submissionsByRoundContestant = new Map();
@@ -459,10 +470,10 @@ function normalizeData() {
   });
   d.submissions = [...submissionsByRoundContestant.values()];
 
-  d.scores = d.scores.map(r => ({ ...r, round_id: canonicalRoundId(r.round_id), contestant_id: normId(r.contestant_id), total: Number(r.total) }));
-  d.judge_rankings = d.judge_rankings.map(r => ({ ...r, round_id: canonicalRoundId(r.round_id), contestant_id: normId(r.contestant_id), rank: Number(r.rank), judge_name: String(r.judge_name || '').trim() }));
-  d.round_status = d.round_status.map(r => ({ ...r, round_id: canonicalRoundId(r.round_id), contestant_id: normId(r.contestant_id), status: String(r.status || '').trim().toLowerCase() }));
-  d.votes_live = d.votes_live.map(r => ({ ...r, round_id: canonicalRoundId(r.round_id), contestant_id: normId(r.contestant_id), votes_count: Number(r.votes_count || 0) }));
+  d.scores = d.scores.map(r => ({ ...r, round_id: canonicalRoundId(r.round_id), contestant_id: normId(r.contestant_id), total: Number(r.total) })).filter(r => r.contestant_id && !isPlaceholderContestantId(r.contestant_id));
+  d.judge_rankings = d.judge_rankings.map(r => ({ ...r, round_id: canonicalRoundId(r.round_id), contestant_id: normId(r.contestant_id), rank: Number(r.rank), judge_name: String(r.judge_name || '').trim() })).filter(r => r.contestant_id && !isPlaceholderContestantId(r.contestant_id));
+  d.round_status = d.round_status.map(r => ({ ...r, round_id: canonicalRoundId(r.round_id), contestant_id: normId(r.contestant_id), status: String(r.status || '').trim().toLowerCase() })).filter(r => r.contestant_id && !isPlaceholderContestantId(r.contestant_id));
+  d.votes_live = d.votes_live.map(r => ({ ...r, round_id: canonicalRoundId(r.round_id), contestant_id: normId(r.contestant_id), votes_count: Number(r.votes_count || 0) })).filter(r => r.contestant_id && !isPlaceholderContestantId(r.contestant_id));
 }
 
 function resolveContestantIdByName(name) {
