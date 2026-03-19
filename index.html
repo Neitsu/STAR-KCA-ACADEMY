@@ -189,6 +189,36 @@ const ROUND2_RESULTS = [
   { name: 'Kyo', status: 'eliminated', performance: '', link: '' }
 ];
 
+
+const ROUND3_RESULTS = [
+  { name: 'Lea', status: 'safe', performance: 'Butter - Wonyoung & Sunghoon', link: 'https://www.instagram.com/star_kca_academy.svs/reel/DWBXPiyDKCq/' },
+  { name: 'Mimi', status: 'nominee', performance: 'Butter - Wonyoung & Sunghoon', link: 'https://www.instagram.com/star_kca_academy.svs/reel/DWBXPiyDKCq/' },
+
+  { name: 'Asli', status: 'safe', performance: 'Free - Rumi & Jinu', link: 'https://www.instagram.com/star_kca_academy.svs/reel/DWBWT9FDMhg/' },
+  { name: 'Megara', status: 'nominee', performance: 'Free - Rumi & Jinu', link: 'https://www.instagram.com/star_kca_academy.svs/reel/DWBWT9FDMhg/' },
+  { name: 'Panida', status: 'safe', performance: 'Free - Rumi & Jinu', link: 'https://www.instagram.com/star_kca_academy.svs/reel/DWBWmuODNqE/' },
+  { name: 'Sun', status: 'nominee', performance: 'Free - Rumi & Jinu', link: 'https://www.instagram.com/star_kca_academy.svs/reel/DWBWmuODNqE/' },
+
+  { name: 'Chanel', status: 'safe', performance: 'Monster - Irene & Seulgi', link: 'https://www.instagram.com/star_kca_academy.svs/reel/DWBYTOKjNtN/' },
+  { name: 'Eria', status: 'nominee', performance: 'Monster - Irene & Seulgi', link: 'https://www.instagram.com/star_kca_academy.svs/reel/DWBYTOKjNtN/' },
+  { name: 'Heaven', status: 'nominee', performance: 'Monster - Irene & Seulgi', link: 'https://www.instagram.com/star_kca_academy.svs/reel/DWBZCUVjPoI/' },
+  { name: 'Hwa Young', status: 'safe', performance: 'Monster - Irene & Seulgi', link: 'https://www.instagram.com/star_kca_academy.svs/reel/DWBZCUVjPoI/' },
+  { name: 'Kelsy', status: 'safe', performance: 'Monster - Irene & Seulgi', link: 'https://www.instagram.com/star_kca_academy.svs/reel/DWBXpXHDE-U/' },
+  { name: 'Manuee', status: 'nominee', performance: 'Monster - Irene & Seulgi', link: 'https://www.instagram.com/star_kca_academy.svs/reel/DWBXpXHDE-U/' },
+
+  { name: 'Hope', status: 'safe', performance: 'Spot - Zico & Jennie', link: 'https://www.instagram.com/star_kca_academy.svs/reel/DWBW5vdjGBJ/' },
+  { name: 'Johi', status: 'nominee', performance: 'Spot - Zico & Jennie', link: 'https://www.instagram.com/star_kca_academy.svs/reel/DWBW5vdjGBJ/' },
+  { name: 'Kora', status: 'nominee', performance: 'Spot - Zico & Jennie', link: 'https://www.instagram.com/star_kca_academy.svs/reel/DWBVyYPD1z1/' },
+  { name: 'Suhaa', status: 'safe', performance: 'Spot - Zico & Jennie', link: 'https://www.instagram.com/star_kca_academy.svs/reel/DWBVvYPD1z1/' },
+
+  { name: 'Brahmini', status: 'eliminated', performance: '', link: '' },
+  { name: 'Donghyun', status: 'eliminated', performance: '', link: '' },
+  { name: 'Katie', status: 'eliminated', performance: '', link: '' },
+  { name: 'Kyo', status: 'eliminated', performance: '', link: '' },
+  { name: 'Lizy', status: 'eliminated', performance: '', link: '' },
+  { name: 'Yza', status: 'eliminated', performance: '', link: '' }
+];
+
 const PRERANK_MANUAL_ROWS = [
   { name: 'Asli', instagram: '@aslcvrs', official_rank: 5, score: 89 },
   { name: 'Brahmini', instagram: '@brahmini.vc', official_rank: 18, score: 71 },
@@ -612,6 +642,39 @@ function applyManualRound2Info() {
   });
 }
 
+
+function applyManualRound3Info() {
+  const idsInResults = new Set(ROUND3_RESULTS.map(r => resolveContestantIdByName(r.name)));
+
+  state.data.round_status = state.data.round_status.filter(r => r.round_id !== 'ROUND_3');
+  state.data.submissions = state.data.submissions.filter(r => r.round_id !== 'ROUND_3');
+
+  ROUND3_RESULTS.forEach((row) => {
+    const contestantId = resolveContestantIdByName(row.name);
+    if (!contestantId) return;
+
+    state.data.round_status.push({ round_id: 'ROUND_3', contestant_id: contestantId, status: row.status });
+    if (row.performance || row.link) {
+      state.data.submissions.push({
+        round_id: 'ROUND_3',
+        contestant_id: contestantId,
+        song_title: row.performance || '',
+        group_song: row.performance || '',
+        bandlab_url: '',
+        youtube_url: row.link || '',
+        notes: ''
+      });
+    }
+  });
+
+  const allIds = state.data.contestants.map(c => c.id).filter(Boolean);
+  allIds.forEach((id) => {
+    if (!idsInResults.has(id) && !state.data.round_status.some(r => r.round_id === 'ROUND_3' && r.contestant_id === id)) {
+      state.data.round_status.push({ round_id: 'ROUND_3', contestant_id: id, status: 'safe' });
+    }
+  });
+}
+
 function getStatus(roundId, contestantId) {
   return state.data.round_status.find(r => r.round_id === roundId && r.contestant_id === contestantId)?.status || '';
 }
@@ -1024,6 +1087,7 @@ async function hydrate() {
   enforcePrerankSafeStatus();
   applyManualRound1Results();
   applyManualRound2Info();
+  applyManualRound3Info();
 
   const officialByRound = getOfficialRankingByRound();
   state.latestRound = getLatestRound(officialByRound);
