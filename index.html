@@ -216,6 +216,26 @@ const ROUND3_RESULTS = [
   { name: 'Yza', status: 'eliminated', performance: '', link: '' }
 ];
 
+
+const ROUND4_RESULTS = [
+  { name: 'Kelsy', performance: 'APT - Rosé & Bruno Mars', link: 'https://www.instagram.com/star_kca_academy.svs/reel/DWtbS4sDJNb/' },
+  { name: 'Suhaa', performance: 'APT - Rosé & Bruno Mars', link: 'https://www.instagram.com/star_kca_academy.svs/reel/DWtbS4sDJNb/' },
+  { name: 'Sun', performance: 'APT - Rosé & Bruno Mars', link: 'https://www.instagram.com/star_kca_academy.svs/reel/DWtbS4sDJNb/' },
+
+  { name: 'Asli', performance: 'Go in blind - &Team', link: 'https://www.instagram.com/star_kca_academy.svs/reel/DWtg5vtjKzZ/' },
+  { name: 'Hope', performance: 'Go in blind - &Team', link: 'https://www.instagram.com/star_kca_academy.svs/reel/DWtg5vtjKzZ/' },
+  { name: 'Panida', performance: 'Go in blind - &Team', link: 'https://www.instagram.com/star_kca_academy.svs/reel/DWtg5vtjKzZ/' },
+
+  { name: 'Chanel', performance: 'Soñar - Nmixx', link: 'https://www.instagram.com/star_kca_academy.svs/reel/DWtgWiEjFek/' },
+  { name: 'Hwa Young', performance: 'Soñar - Nmixx', link: 'https://www.instagram.com/star_kca_academy.svs/reel/DWtgWiEjFek/' },
+  { name: 'Lea', performance: 'Soñar - Nmixx', link: 'https://www.instagram.com/star_kca_academy.svs/reel/DWtgWiEjFek/' },
+
+  { name: 'Eria', performance: 'Sphinx - The9', link: 'https://www.instagram.com/star_kca_academy.svs/reel/DWtcubKjF1M/' },
+  { name: 'Heaven', performance: 'Sphinx - The9', link: 'https://www.instagram.com/star_kca_academy.svs/reel/DWtcubKjF1M/' },
+  { name: 'Johi', performance: 'Sphinx - The9', link: 'https://www.instagram.com/star_kca_academy.svs/reel/DWtcubKjF1M/' },
+  { name: 'Mimi', performance: 'Sphinx - The9', link: 'https://www.instagram.com/star_kca_academy.svs/reel/DWtcubKjF1M/' }
+];
+
 const PRERANK_MANUAL_ROWS = [
   { name: 'Asli', instagram: '@aslcvrs', official_rank: 5, score: 89 },
   { name: 'Brahmini', instagram: '@brahmini.vc', official_rank: 18, score: 71 },
@@ -683,6 +703,28 @@ function applyManualRound3Info() {
   });
 }
 
+
+function applyManualRound4Info() {
+  state.data.submissions = state.data.submissions.filter(r => r.round_id !== 'ROUND_4');
+
+  ROUND4_RESULTS.forEach((row) => {
+    const contestantId = resolveContestantIdByName(row.name);
+    if (!contestantId) return;
+
+    if (row.performance || row.link) {
+      state.data.submissions.push({
+        round_id: 'ROUND_4',
+        contestant_id: contestantId,
+        song_title: row.performance || '',
+        group_song: row.performance || '',
+        bandlab_url: '',
+        youtube_url: row.link || '',
+        notes: ''
+      });
+    }
+  });
+}
+
 function getStatus(roundId, contestantId) {
   return state.data.round_status.find(r => r.round_id === roundId && r.contestant_id === contestantId)?.status || '';
 }
@@ -1096,6 +1138,7 @@ async function hydrate() {
   applyManualRound1Results();
   applyManualRound2Info();
   applyManualRound3Info();
+  applyManualRound4Info();
 
   const officialByRound = getOfficialRankingByRound();
   state.latestRound = getLatestRound(officialByRound);
