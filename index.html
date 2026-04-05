@@ -218,22 +218,29 @@ const ROUND3_RESULTS = [
 
 
 const ROUND4_RESULTS = [
-  { name: 'Kelsy', performance: 'APT - Rosé & Bruno Mars', link: 'https://www.instagram.com/star_kca_academy.svs/reel/DWtbS4sDJNb/' },
-  { name: 'Suhaa', performance: 'APT - Rosé & Bruno Mars', link: 'https://www.instagram.com/star_kca_academy.svs/reel/DWtbS4sDJNb/' },
-  { name: 'Sun', performance: 'APT - Rosé & Bruno Mars', link: 'https://www.instagram.com/star_kca_academy.svs/reel/DWtbS4sDJNb/' },
+  { name: 'Kelsy', status: 'nominee', performance: 'APT - Rosé & Bruno Mars', link: 'https://www.instagram.com/star_kca_academy.svs/reel/DWtbS4sDJNb/' },
+  { name: 'Suhaa', status: 'nominee', performance: 'APT - Rosé & Bruno Mars', link: 'https://www.instagram.com/star_kca_academy.svs/reel/DWtbS4sDJNb/' },
+  { name: 'Sun', status: 'nominee', performance: 'APT - Rosé & Bruno Mars', link: 'https://www.instagram.com/star_kca_academy.svs/reel/DWtbS4sDJNb/' },
+  { name: 'Asli', status: 'safe', performance: 'Go in blind - &Team', link: 'https://www.instagram.com/star_kca_academy.svs/reel/DWtg5vtjKzZ/' },
+  { name: 'Hope', status: 'safe', performance: 'Go in blind - &Team', link: 'https://www.instagram.com/star_kca_academy.svs/reel/DWtg5vtjKzZ/' },
+  { name: 'Panida', status: 'safe', performance: 'Go in blind - &Team', link: 'https://www.instagram.com/star_kca_academy.svs/reel/DWtg5vtjKzZ/' },
+  { name: 'Chanel', status: 'safe', performance: 'Soñar - Nmixx', link: 'https://www.instagram.com/star_kca_academy.svs/reel/DWtgWiEjFek/' },
+  { name: 'Hwa Young', status: 'safe', performance: 'Soñar - Nmixx', link: 'https://www.instagram.com/star_kca_academy.svs/reel/DWtgWiEjFek/' },
+  { name: 'Lea', status: 'safe', performance: 'Soñar - Nmixx', link: 'https://www.instagram.com/star_kca_academy.svs/reel/DWtgWiEjFek/' },
+  { name: 'Eria', status: 'nominee', performance: 'Sphinx - The9', link: 'https://www.instagram.com/star_kca_academy.svs/reel/DWtcubKjF1M/' },
+  { name: 'Heaven', status: 'nominee', performance: 'Sphinx - The9', link: 'https://www.instagram.com/star_kca_academy.svs/reel/DWtcubKjF1M/' },
+  { name: 'Johi', status: 'safe', performance: 'Sphinx - The9', link: 'https://www.instagram.com/star_kca_academy.svs/reel/DWtcubKjF1M/' },
+  { name: 'Mimi', status: 'nominee', performance: 'Sphinx - The9', link: 'https://www.instagram.com/star_kca_academy.svs/reel/DWtcubKjF1M/' },
 
-  { name: 'Asli', performance: 'Go in blind - &Team', link: 'https://www.instagram.com/star_kca_academy.svs/reel/DWtg5vtjKzZ/' },
-  { name: 'Hope', performance: 'Go in blind - &Team', link: 'https://www.instagram.com/star_kca_academy.svs/reel/DWtg5vtjKzZ/' },
-  { name: 'Panida', performance: 'Go in blind - &Team', link: 'https://www.instagram.com/star_kca_academy.svs/reel/DWtg5vtjKzZ/' },
-
-  { name: 'Chanel', performance: 'Soñar - Nmixx', link: 'https://www.instagram.com/star_kca_academy.svs/reel/DWtgWiEjFek/' },
-  { name: 'Hwa Young', performance: 'Soñar - Nmixx', link: 'https://www.instagram.com/star_kca_academy.svs/reel/DWtgWiEjFek/' },
-  { name: 'Lea', performance: 'Soñar - Nmixx', link: 'https://www.instagram.com/star_kca_academy.svs/reel/DWtgWiEjFek/' },
-
-  { name: 'Eria', performance: 'Sphinx - The9', link: 'https://www.instagram.com/star_kca_academy.svs/reel/DWtcubKjF1M/' },
-  { name: 'Heaven', performance: 'Sphinx - The9', link: 'https://www.instagram.com/star_kca_academy.svs/reel/DWtcubKjF1M/' },
-  { name: 'Johi', performance: 'Sphinx - The9', link: 'https://www.instagram.com/star_kca_academy.svs/reel/DWtcubKjF1M/' },
-  { name: 'Mimi', performance: 'Sphinx - The9', link: 'https://www.instagram.com/star_kca_academy.svs/reel/DWtcubKjF1M/' }
+  { name: 'Brahmini', status: 'eliminated', performance: '', link: '' },
+  { name: 'Donghyun', status: 'eliminated', performance: '', link: '' },
+  { name: 'Katie', status: 'eliminated', performance: '', link: '' },
+  { name: 'Kora', status: 'eliminated', performance: '', link: '' },
+  { name: 'Kyo', status: 'eliminated', performance: '', link: '' },
+  { name: 'Lizy', status: 'eliminated', performance: '', link: '' },
+  { name: 'Manuee', status: 'eliminated', performance: '', link: '' },
+  { name: 'Megara', status: 'eliminated', performance: '', link: '' },
+  { name: 'Yza', status: 'eliminated', performance: '', link: '' }
 ];
 
 const PRERANK_MANUAL_ROWS = [
@@ -705,11 +712,18 @@ function applyManualRound3Info() {
 
 
 function applyManualRound4Info() {
+  const idsInResults = new Set(ROUND4_RESULTS.map(r => resolveContestantIdByName(r.name)));
+
+  state.data.round_status = state.data.round_status.filter(r => r.round_id !== 'ROUND_4');
   state.data.submissions = state.data.submissions.filter(r => r.round_id !== 'ROUND_4');
 
   ROUND4_RESULTS.forEach((row) => {
     const contestantId = resolveContestantIdByName(row.name);
     if (!contestantId) return;
+
+    if (row.status) {
+      state.data.round_status.push({ round_id: 'ROUND_4', contestant_id: contestantId, status: row.status });
+    }
 
     if (row.performance || row.link) {
       state.data.submissions.push({
@@ -721,6 +735,13 @@ function applyManualRound4Info() {
         youtube_url: row.link || '',
         notes: ''
       });
+    }
+  });
+
+  const allIds = state.data.contestants.map(c => c.id).filter(Boolean);
+  allIds.forEach((id) => {
+    if (!idsInResults.has(id) && !state.data.round_status.some(r => r.round_id === 'ROUND_4' && r.contestant_id === id)) {
+      state.data.round_status.push({ round_id: 'ROUND_4', contestant_id: id, status: 'safe' });
     }
   });
 }
