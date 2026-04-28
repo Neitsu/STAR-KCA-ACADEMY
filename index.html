@@ -243,6 +243,21 @@ const ROUND4_RESULTS = [
   { name: 'Yza', status: 'eliminated', performance: '', link: '' }
 ];
 
+
+const ROUND5_RESULTS = [
+  { name: 'Chanel', status: 'safe', performance: 'Drama - Aespa (TEAM A)', link: 'https://www.instagram.com/p/DXo-6aUDApS/' },
+  { name: 'Lea', status: 'safe', performance: 'Drama - Aespa (TEAM A)', link: 'https://www.instagram.com/p/DXo-6aUDApS/' },
+  { name: 'Johi', status: 'safe', performance: 'Drama - Aespa (TEAM A)', link: 'https://www.instagram.com/p/DXo-6aUDApS/' },
+  { name: 'Kelsy', status: 'safe', performance: 'Drama - Aespa (TEAM A)', link: 'https://www.instagram.com/p/DXo-6aUDApS/' },
+  { name: 'Eria', status: 'eliminated', performance: 'Drama - Aespa (TEAM A)', link: 'https://www.instagram.com/p/DXo-6aUDApS/' },
+
+  { name: 'Panida', status: 'nominee', performance: 'Drama - Aespa (TEAM B)', link: 'https://www.instagram.com/p/DXpANXnjI6o/' },
+  { name: 'Hwa Young', status: 'nominee', performance: 'Drama - Aespa (TEAM B)', link: 'https://www.instagram.com/p/DXpANXnjI6o/' },
+  { name: 'Hope', status: 'nominee', performance: 'Drama - Aespa (TEAM B)', link: 'https://www.instagram.com/p/DXpANXnjI6o/' },
+  { name: 'Heaven', status: 'nominee', performance: 'Drama - Aespa (TEAM B)', link: 'https://www.instagram.com/p/DXpANXnjI6o/' },
+  { name: 'Asli', status: 'nominee', performance: 'Drama - Aespa (TEAM B)', link: 'https://www.instagram.com/p/DXpANXnjI6o/' }
+];
+
 const PRERANK_MANUAL_ROWS = [
   { name: 'Asli', instagram: '@aslcvrs', official_rank: 5, score: 89 },
   { name: 'Brahmini', instagram: '@brahmini.vc', official_rank: 18, score: 71 },
@@ -757,6 +772,33 @@ function applyManualRound4Info() {
   });
 }
 
+
+function applyManualRound5Info() {
+  state.data.round_status = state.data.round_status.filter(r => r.round_id !== 'ROUND_5');
+  state.data.submissions = state.data.submissions.filter(r => r.round_id !== 'ROUND_5');
+
+  ROUND5_RESULTS.forEach((row) => {
+    const contestantId = resolveContestantIdByName(row.name);
+    if (!contestantId) return;
+
+    if (row.status) {
+      state.data.round_status.push({ round_id: 'ROUND_5', contestant_id: contestantId, status: row.status });
+    }
+
+    if (row.performance || row.link) {
+      state.data.submissions.push({
+        round_id: 'ROUND_5',
+        contestant_id: contestantId,
+        song_title: row.performance || '',
+        group_song: row.performance || '',
+        bandlab_url: '',
+        youtube_url: row.link || '',
+        notes: ''
+      });
+    }
+  });
+}
+
 function getStatus(roundId, contestantId) {
   return state.data.round_status.find(r => r.round_id === roundId && r.contestant_id === contestantId)?.status || '';
 }
@@ -1171,6 +1213,7 @@ async function hydrate() {
   applyManualRound2Info();
   applyManualRound3Info();
   applyManualRound4Info();
+  applyManualRound5Info();
 
   const officialByRound = getOfficialRankingByRound();
   state.latestRound = getLatestRound(officialByRound);
