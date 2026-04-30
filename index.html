@@ -245,17 +245,17 @@ const ROUND4_RESULTS = [
 
 
 const ROUND5_RESULTS = [
-  { name: 'Chanel', status: 'safe', performance: 'Drama - Aespa (TEAM A)', link: 'https://www.instagram.com/p/DXo-6aUDApS/' },
-  { name: 'Lea', status: 'safe', performance: 'Drama - Aespa (TEAM A)', link: 'https://www.instagram.com/p/DXo-6aUDApS/' },
-  { name: 'Johi', status: 'safe', performance: 'Drama - Aespa (TEAM A)', link: 'https://www.instagram.com/p/DXo-6aUDApS/' },
-  { name: 'Kelsy', status: 'safe', performance: 'Drama - Aespa (TEAM A)', link: 'https://www.instagram.com/p/DXo-6aUDApS/' },
-  { name: 'Eria', status: 'eliminated', performance: 'Drama - Aespa (TEAM A)', link: 'https://www.instagram.com/p/DXo-6aUDApS/' },
+  { name: 'Chanel', official: 2, score: 86.5, neitsu: 5, hauras: 4, bibiblu: 1, kaina: 1, aya: 1, status: 'safe', performance: 'Drama - Aespa (TEAM A)', link: 'https://www.instagram.com/p/DXo-6aUDApS/' },
+  { name: 'Lea', official: 3, score: 88, neitsu: 4, hauras: 5, bibiblu: 2, kaina: 2, aya: 2, status: 'safe', performance: 'Drama - Aespa (TEAM A)', link: 'https://www.instagram.com/p/DXo-6aUDApS/' },
+  { name: 'Johi', official: 5, score: 86.5, neitsu: 6, hauras: 3, bibiblu: 3, kaina: 3, aya: 4, status: 'safe', performance: 'Drama - Aespa (TEAM A)', link: 'https://www.instagram.com/p/DXo-6aUDApS/' },
+  { name: 'Kelsy', official: 7, score: 83, neitsu: 7, hauras: 9, bibiblu: 5, kaina: 4, aya: 6, status: 'safe', performance: 'Drama - Aespa (TEAM A)', link: 'https://www.instagram.com/p/DXo-6aUDApS/' },
+  { name: 'Eria', official: 10, score: 42, neitsu: 10, hauras: 10, bibiblu: 10, kaina: 10, aya: 10, status: 'eliminated', performance: 'Drama - Aespa (TEAM A)', link: 'https://www.instagram.com/p/DXo-6aUDApS/' },
 
-  { name: 'Panida', status: 'nominee', performance: 'Drama - Aespa (TEAM B)', link: 'https://www.instagram.com/p/DXpANXnjI6o/' },
-  { name: 'Hwa Young', status: 'nominee', performance: 'Drama - Aespa (TEAM B)', link: 'https://www.instagram.com/p/DXpANXnjI6o/' },
-  { name: 'Hope', status: 'nominee', performance: 'Drama - Aespa (TEAM B)', link: 'https://www.instagram.com/p/DXpANXnjI6o/' },
-  { name: 'Heaven', status: 'nominee', performance: 'Drama - Aespa (TEAM B)', link: 'https://www.instagram.com/p/DXpANXnjI6o/' },
-  { name: 'Asli', status: 'nominee', performance: 'Drama - Aespa (TEAM B)', link: 'https://www.instagram.com/p/DXpANXnjI6o/' },
+  { name: 'Panida', official: 1, score: 94, neitsu: 1, hauras: 1, bibiblu: 6, kaina: 7, aya: 3, status: 'saved_public', performance: 'Drama - Aespa (TEAM B)', link: 'https://www.instagram.com/p/DXpANXnjI6o/' },
+  { name: 'Hwa Young', official: 4, score: 88.5, neitsu: 3, hauras: 2, bibiblu: 4, kaina: 6, aya: 5, status: 'saved_judges', performance: 'Drama - Aespa (TEAM B)', link: 'https://www.instagram.com/p/DXpANXnjI6o/' },
+  { name: 'Hope', official: 6, score: 89, neitsu: 2, hauras: 8, bibiblu: 8, kaina: 8, aya: 8, status: 'saved_judges', performance: 'Drama - Aespa (TEAM B)', link: 'https://www.instagram.com/p/DXpANXnjI6o/' },
+  { name: 'Heaven', official: 8, score: 82.5, neitsu: 8, hauras: 6, bibiblu: 7, kaina: 9, aya: 9, status: 'eliminated', performance: 'Drama - Aespa (TEAM B)', link: 'https://www.instagram.com/p/DXpANXnjI6o/' },
+  { name: 'Asli', official: 9, score: 77, neitsu: 9, hauras: 7, bibiblu: 9, kaina: 5, aya: 7, status: 'eliminated', performance: 'Drama - Aespa (TEAM B)', link: 'https://www.instagram.com/p/DXpANXnjI6o/' },
 
   { name: 'Mimi', status: 'eliminated', performance: '', link: '' },
   { name: 'Sun', status: 'eliminated', performance: '', link: '' },
@@ -787,12 +787,23 @@ function applyManualRound4Info() {
 
 
 function applyManualRound5Info() {
+  state.data.judge_rankings = state.data.judge_rankings.filter(r => r.round_id !== 'ROUND_5');
+  state.data.scores = state.data.scores.filter(r => r.round_id !== 'ROUND_5');
   state.data.round_status = state.data.round_status.filter(r => r.round_id !== 'ROUND_5');
   state.data.submissions = state.data.submissions.filter(r => r.round_id !== 'ROUND_5');
 
   ROUND5_RESULTS.forEach((row) => {
     const contestantId = resolveContestantIdByName(row.name);
     if (!contestantId) return;
+
+    if (Number.isFinite(row.official)) state.data.judge_rankings.push({ round_id: 'ROUND_5', judge_name: 'official', contestant_id: contestantId, rank: row.official });
+    if (Number.isFinite(row.neitsu)) state.data.judge_rankings.push({ round_id: 'ROUND_5', judge_name: 'Neitsu', contestant_id: contestantId, rank: row.neitsu });
+    if (Number.isFinite(row.hauras)) state.data.judge_rankings.push({ round_id: 'ROUND_5', judge_name: 'Hauras', contestant_id: contestantId, rank: row.hauras });
+    if (Number.isFinite(row.kaina)) state.data.judge_rankings.push({ round_id: 'ROUND_5', judge_name: 'Kaina', contestant_id: contestantId, rank: row.kaina });
+    if (Number.isFinite(row.bibiblu)) state.data.judge_rankings.push({ round_id: 'ROUND_5', judge_name: 'Bibiblu', contestant_id: contestantId, rank: row.bibiblu });
+    if (Number.isFinite(row.aya)) state.data.judge_rankings.push({ round_id: 'ROUND_5', judge_name: 'Aya', contestant_id: contestantId, rank: row.aya });
+
+    if (Number.isFinite(row.score)) state.data.scores.push({ round_id: 'ROUND_5', contestant_id: contestantId, total: row.score });
 
     if (row.status) {
       state.data.round_status.push({ round_id: 'ROUND_5', contestant_id: contestantId, status: row.status });
