@@ -124,13 +124,13 @@ const CONFIG = {
     round_status: "round_status",
     votes_live: "votes_live"
   },
-  ROUND_TABS: { PRERANK: "PRERANK", ROUND_1: "R1", ROUND_2: "R2", ROUND_3: "R3", ROUND_4: "R4", ROUND_5: "R5", ROUND_6: "R6", FINAL: "FINAL" },
+  ROUND_TABS: { PRERANK: "PRERANK", ROUND_1: "R1", ROUND_2: "R2", ROUND_3: "R3", ROUND_4: "R4", ROUND_5: "R5", FINAL: "FINAL" },
   VOTE_FORM_URL: "https://docs.google.com/forms/d/e/1FAIpQLSdRAvtdk_e2yVjhhLJmvh6UJhMd4tw6OIzBHkbyLaau7tt8cQ/viewform?usp=header",
   REFRESH_MS: 30000
 };
 
-const ROUND_ORDER = ["PRERANK", "ROUND_1", "ROUND_2", "ROUND_3", "ROUND_4", "ROUND_5", "ROUND_6", "FINAL"];
-const ROUND_LABELS = { PRERANK: "Prerank", ROUND_1: "R1", ROUND_2: "R2", ROUND_3: "R3", ROUND_4: "R4", ROUND_5: "R5", ROUND_6: "R6", FINAL: "Final" };
+const ROUND_ORDER = ["PRERANK", "ROUND_1", "ROUND_2", "ROUND_3", "ROUND_4", "ROUND_5", "FINAL"];
+const ROUND_LABELS = { PRERANK: "Prerank", ROUND_1: "R1", ROUND_2: "R2", ROUND_3: "R3", ROUND_4: "R4", ROUND_5: "R5", FINAL: "Final" };
 const JUDGE_NAMES = ["Neitsu", "Bibiblu", "Kaina", "Hauras", "Cal", "Aya", "(Y)ellow", "Cam"];
 const CANDIDATE_NAMES = ["yza","hope","lea","megara","asli","chanel","heaven","manuee","hwa_young","mimi","eria","panida","kelsy","suhaa","johi","sun","kora","brahmini","katie","donghyun","lizy","kyo"];
 const PRETTY = { yza:'Yza', hope:'Hope', lea:'Lea', megara:'Megara', asli:'Asli', chanel:'Chanel', heaven:'Heaven', manuee:'Manuee', hwa_young:'Hwa Young', mimi:'Mimi', eria:'Eria', panida:'Panida', kelsy:'Kelsy', suhaa:'Suhaa', johi:'Johi', sun:'Sun', kora:'Kora', brahmini:'Brahmini', katie:'Katie', donghyun:'Donghyun', lizy:'Lizy', kyo:'Kyo' };
@@ -347,7 +347,6 @@ function canonicalRoundId(value) {
   if (raw === 'ROUND3') return 'ROUND_3';
   if (raw === 'ROUND4') return 'ROUND_4';
   if (raw === 'ROUND5') return 'ROUND_5';
-  if (raw === 'ROUND6') return 'ROUND_6';
   return raw;
 }
 
