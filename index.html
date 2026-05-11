@@ -83,7 +83,7 @@
     .profile-img { width: 100%; max-width: 260px; border-radius: 12px; border: 1px solid var(--line); }
     .btn { text-decoration: none; color: var(--text); border: 1px solid var(--line); background: var(--panel2); border-radius: 10px; padding: .42rem .7rem; display: inline-block; }
     .profile-nav { display: flex; gap: .5rem; align-items: center; flex-wrap: wrap; margin-bottom: .5rem; }
-    .table-wrap { overflow: auto; }
+    .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; margin-bottom: .5rem; }
     table { width: 100%; border-collapse: collapse; font-size: .88rem; }
     th, td { border-bottom: 1px solid var(--line); padding: .5rem .36rem; text-align: left; white-space: nowrap; }
     .table-wrap a { color: var(--text); text-decoration: underline; text-underline-offset: 2px; }
@@ -92,6 +92,20 @@
     .vote-row { margin-bottom: .72rem; }
     .bar { width: 100%; height: 12px; border: 1px solid var(--line); background: #091224; border-radius: 999px; overflow: hidden; }
     .bar > span { display: block; height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); }
+
+    /* Responsive Design Optimizations */
+    @media (max-width: 680px) {
+      th, td { font-size: .78rem; padding: .45rem .3rem; }
+      .brand h1 { font-size: .95rem; }
+      .brand p { font-size: .72rem; }
+      .nav-link { font-size: .76rem; padding: .35rem .6rem; }
+      .filters { flex-direction: column; align-items: stretch; gap: .45rem; }
+      input, select { width: 100%; font-size: .84rem; }
+      .card { padding: .75rem; border-radius: 10px; }
+      h2 { font-size: 1.2rem; }
+      h3 { font-size: 1.05rem; }
+      .profile-img { max-width: 100%; margin: 0 auto display: block; }
+    }
   </style>
 </head>
 <body>
@@ -190,7 +204,6 @@ const ROUND2_RESULTS = [
   { name: 'Kyo', status: 'eliminated', performance: '', link: '' }
 ];
 
-
 const ROUND3_RESULTS = [
   { name: 'Hwa Young', official: 1, neitsu: 1, hauras: 5, bibiblu: 3, kaina: 1, aya: 2, score: 93.5, status: 'safe', performance: 'Monster - Irene & Seulgi', link: 'https://www.instagram.com/star_kca_academy.svs/reel/DWBZCUVjPol/' },
   { name: 'Asli', official: 2, neitsu: 3, hauras: 1, bibiblu: 2, kaina: 3, aya: 3, score: 92.5, status: 'safe', performance: 'Free - Rumi & Jinu', link: 'https://www.instagram.com/star_kca_academy.svs/reel/DWBWT9FDMhg/' },
@@ -217,7 +230,6 @@ const ROUND3_RESULTS = [
   { name: 'Yza', status: 'eliminated', performance: '', link: '' }
 ];
 
-
 const ROUND4_RESULTS = [
   { name: 'Johi', official: 1, score: 97, neitsu: 1, hauras: 7, bibiblu: 2, kaina: 4, aya: 3, status: 'safe', performance: 'Sphinx - The9', link: 'https://www.instagram.com/star_kca_academy.svs/reel/DWtcubKjF1M/' },
   { name: 'Chanel', official: 2, score: 88.5, neitsu: 8, hauras: 1, bibiblu: 3, kaina: 1, aya: 1, status: 'safe', performance: 'Soñar - Nmixx', link: 'https://www.instagram.com/star_kca_academy.svs/reel/DWtgWiEjFek/' },
@@ -243,7 +255,6 @@ const ROUND4_RESULTS = [
   { name: 'Megara', status: 'eliminated', performance: '', link: '' },
   { name: 'Yza', status: 'eliminated', performance: '', link: '' }
 ];
-
 
 const ROUND5_RESULTS = [
   { name: 'Chanel', official: 2, score: 86.5, neitsu: 5, hauras: 4, bibiblu: 1, kaina: 1, aya: 1, status: 'safe', performance: 'Drama - Aespa (TEAM A)', link: 'https://www.instagram.com/p/DXo-6aUDApS/' },
@@ -374,7 +385,6 @@ function isPlaceholderContestantName(name) {
   return normalized === 'na' || normalized === 'none' || normalized === 'null' || normalized === 'undefined' || normalized === 'unknown';
 }
 
-
 function colorForIndex(i) {
   const hue = (i * 47) % 360;
   return `hsl(${hue} 85% 62%)`;
@@ -500,8 +510,6 @@ function normalizeData() {
     pronouns: String(r.pronouns || '').trim()
   })).filter(c => c.id && !isPlaceholderContestantId(c.id) && !isPlaceholderContestantName(c.name));
 
-  // Deduplicate contestants by id while preserving first-seen order.
-  // This protects UI lists from duplicate rows in source sheets.
   const contestantsById = new Map();
   d.contestants.forEach((c) => {
     if (!contestantsById.has(c.id)) {
@@ -523,7 +531,6 @@ function normalizeData() {
 
   d.submissions = d.submissions.map(r => ({ ...r, round_id: canonicalRoundId(r.round_id), contestant_id: normId(r.contestant_id) })).filter(r => r.contestant_id && !isPlaceholderContestantId(r.contestant_id));
 
-  // Deduplicate submissions by (round_id, contestant_id), preferring richer rows.
   const submissionsByRoundContestant = new Map();
   d.submissions.forEach((s) => {
     const key = `${s.round_id}::${s.contestant_id}`;
@@ -589,8 +596,6 @@ function applyManualPrerankSeed() {
 function applyManualR1Seed() {
   const hasR1Submissions = state.data.submissions.some(r => r.round_id === 'ROUND_1' && (String(r.song_title || '').trim() || String(r.youtube_url || '').trim() || String(r.bandlab_url || '').trim()));
 
-  // If R1 submissions exist but are empty placeholders (e.g. TBD rows),
-  // replace them with manual rows to avoid duplicate R1 entries in profiles.
   if (!hasR1Submissions) {
     state.data.submissions = state.data.submissions.filter(r => r.round_id !== 'ROUND_1');
   }
@@ -638,7 +643,6 @@ function applyManualRound1Results() {
     state.data.round_status.push({ round_id: 'ROUND_1', contestant_id: contestantId, status: row.status });
   });
 
-  // Safety fallback if a contestant is missing in manual rows.
   const allIds = state.data.contestants.map(c => c.id).filter(Boolean);
   allIds.forEach((id) => {
     if (!idsInResults.has(id) && !state.data.round_status.some(r => r.round_id === 'ROUND_1' && r.contestant_id === id)) {
@@ -682,7 +686,6 @@ function applyManualRound2Info() {
     }
   });
 
-  // Fallback: missing contestants default to safe in ROUND_2.
   const allIds = state.data.contestants.map(c => c.id).filter(Boolean);
   allIds.forEach((id) => {
     if (!idsInResults.has(id) && !state.data.round_status.some(r => r.round_id === 'ROUND_2' && r.contestant_id === id)) {
@@ -690,7 +693,6 @@ function applyManualRound2Info() {
     }
   });
 }
-
 
 function applyManualRound3Info() {
   const idsInResults = new Set(ROUND3_RESULTS.map(r => resolveContestantIdByName(r.name)));
@@ -734,7 +736,6 @@ function applyManualRound3Info() {
     }
   });
 }
-
 
 function applyManualRound4Info() {
   const idsInResults = new Set(ROUND4_RESULTS.map(r => resolveContestantIdByName(r.name)));
@@ -782,7 +783,6 @@ function applyManualRound4Info() {
   });
 }
 
-
 function applyManualRound5Info() {
   state.data.judge_rankings = state.data.judge_rankings.filter(r => r.round_id !== 'ROUND_5');
   state.data.scores = state.data.scores.filter(r => r.round_id !== 'ROUND_5');
@@ -828,8 +828,6 @@ function getFirstEliminatedRoundIndex(contestantId) {
   return ROUND_ORDER.findIndex(round => getStatus(round, contestantId) === 'eliminated');
 }
 
-// Fixed final placements are display-only sort helpers for visual card/row order.
-// They must not be merged into official rankings or chart/profile data.
 function applyFixedEliminatedSortRanks(rankingByRound) {
   Object.entries(FIXED_ELIMINATED_RANKS).forEach(([contestantId, rank]) => {
     const eliminatedAt = getFirstEliminatedRoundIndex(contestantId);
@@ -997,19 +995,36 @@ function renderRankings() {
     return null;
   };
 
+  // FIX: Dynamic Row Reordering based on chosen view data in state.latestRound
   const list = [...state.data.contestants].sort((a, b) => {
     const aEliminated = getStatus(state.latestRound, a.id) === 'eliminated';
     const bEliminated = getStatus(state.latestRound, b.id) === 'eliminated';
+    
+    // 1. Group Eliminated contestants strictly at the bottom
     if (aEliminated !== bEliminated) return aEliminated ? 1 : -1;
 
+    // 2. If both are eliminated, sort them by FIXED_ELIMINATED_RANKS
     if (aEliminated && bEliminated) {
       const ar = FIXED_ELIMINATED_RANKS[a.id];
       const br = FIXED_ELIMINATED_RANKS[b.id];
       if (Number.isFinite(ar) && Number.isFinite(br)) return ar - br;
       if (Number.isFinite(ar)) return -1;
       if (Number.isFinite(br)) return 1;
+      return a.name.localeCompare(b.name);
     }
 
+    // 3. For Active contestants, sort them dynamically based on the current view's values
+    const va = rankingMap[state.latestRound]?.[a.id];
+    const vb = rankingMap[state.latestRound]?.[b.id];
+
+    if (Number.isFinite(va) && Number.isFinite(vb)) {
+      // Scores: Higher is better (Descending). Ranks: Lower is better (Ascending).
+      return isPerformance ? vb - va : va - vb;
+    }
+    if (Number.isFinite(va)) return -1;
+    if (Number.isFinite(vb)) return 1;
+
+    // Fallback if no view specific data is available for this round
     const ar = getLatestOfficialRank(a.id);
     const br = getLatestOfficialRank(b.id);
     if (Number.isFinite(ar) && Number.isFinite(br)) return ar - br;
