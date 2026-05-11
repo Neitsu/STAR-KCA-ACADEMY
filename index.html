@@ -93,7 +93,15 @@
     .bar { width: 100%; height: 12px; border: 1px solid var(--line); background: #091224; border-radius: 999px; overflow: hidden; }
     .bar > span { display: block; height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); }
 
-    /* Responsive Design Optimizations */
+    /* Highlights CSS */
+    .highlight-grid { display: grid; gap: .8rem; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); margin-top: .8rem; }
+    .highlight-item { background: #0d1526; border: 1px solid var(--line); border-radius: 12px; padding: 1rem; transition: transform .15s ease; }
+    .highlight-item:hover { transform: translateY(-3px); border-color: rgba(139,92,246,.5); }
+    .highlight-item h4 { margin: 0 0 .5rem; font-size: .75rem; color: var(--accent); text-transform: uppercase; letter-spacing: .08em; }
+    .highlight-item p { margin: 0; font-size: 1.05rem; font-weight: 600; color: var(--text); }
+    .highlight-item .desc { display: block; font-size: .8rem; color: var(--muted); font-weight: normal; margin-top: .35rem; line-height: 1.4; }
+
+    /* Responsive */
     @media (max-width: 680px) {
       th, td { font-size: .78rem; padding: .45rem .3rem; }
       .brand h1 { font-size: .95rem; }
@@ -104,7 +112,7 @@
       .card { padding: .75rem; border-radius: 10px; }
       h2 { font-size: 1.2rem; }
       h3 { font-size: 1.05rem; }
-      .profile-img { max-width: 100%; margin: 0 auto display: block; }
+      .profile-img { max-width: 100%; margin: 0 auto; display: block; }
     }
   </style>
 </head>
@@ -149,6 +157,53 @@ const JUDGE_NAMES = ["Neitsu", "Bibiblu", "Kaina", "Hauras", "Aya"];
 const CANDIDATE_NAMES = ["yza","hope","lea","megara","asli","chanel","heaven","manuee","hwa_young","mimi","eria","panida","kelsy","suhaa","johi","sun","kora","brahmini","katie","donghyun","lizy","kyo"];
 const PRETTY = { yza:'Yza', hope:'Hope', lea:'Lea', megara:'Megara', asli:'Asli', chanel:'Chanel', heaven:'Heaven', manuee:'Manuee', hwa_young:'Hwa Young', mimi:'Mimi', eria:'Eria', panida:'Panida', kelsy:'Kelsy', suhaa:'Suhaa', johi:'Johi', sun:'Sun', kora:'Kora', brahmini:'Brahmini', katie:'Katie', donghyun:'Donghyun', lizy:'Lizy', kyo:'Kyo' };
 const FIXED_ELIMINATED_RANKS = { heaven: 8, asli: 9, eria: 10, mimi: 11, sun: 12, suhaa: 13, megara: 14, kora: 15, manuee: 16, yza: 17, lizy: 18, brahmini: 19, donghyun: 20, katie: 21, kyo: 22 };
+
+// --- DATA HIGHLIGHTS ---
+const ROUND_HIGHLIGHTS = {
+  PRERANK: {
+    top3: { val: 'Yza, Hope, Lea', desc: 'Le podium de départ officiel' }
+  },
+  ROUND_1: {
+    top3: { val: 'Johi, Megara, Eria', desc: 'Le top 3 officiel combiné du premier round' },
+    rise: { val: 'Johi', desc: 'Best First Impression (15e au Prerank ➔ 1re officielle)' },
+    jury: { val: 'Panida', desc: 'Choix n°1 de Neitsu' },
+    public: { val: 'Yza', desc: 'Sauvée par le public après un round blanc' },
+    shock: { val: 'Yza', desc: 'La n°1 du Prerank s\'effondre à la dernière place' }
+  },
+  ROUND_2: {
+    top3: { val: 'Yza, Lea, Chanel', desc: 'Le trio qui domine le classement officiel combiné' },
+    rise: { val: 'Yza', desc: 'Incroyable exploit (22e ➔ 1re place en un round)' },
+    jury: { val: 'Lea', desc: 'Double 1re chez Neitsu et Hauras' },
+    public: { val: 'Heaven', desc: 'Sauvée de la zone rouge par le vote du public' },
+    shock: { val: 'Suhaa', desc: 'Top 5 au R1, elle chute à la 19e place et se retrouve nominée' }
+  },
+  ROUND_3: {
+    top3: { val: 'Hwa Young, Asli, Chanel', desc: 'Le podium officiel combiné des duels' },
+    rise: { val: 'Hwa Young', desc: 'La plus belle trajectoire (17e ➔ 1re officielle)' },
+    danger: { val: 'Heaven', desc: 'Deuxième nomination consécutive, le statut de survivante s\'installe' },
+    jury: { val: 'Hwa Young', desc: 'Placée 1re par Neitsu et Kaina' },
+    public: { val: 'Johi', desc: 'Sauvée massivement par le public après son duel perdu' },
+    shock: { val: 'Megara', desc: 'Éliminée malgré un énorme score vocal de 91.5' }
+  },
+  ROUND_4: {
+    top3: { val: 'Johi, Chanel, Lea', desc: 'Les trois piliers reprennent le contrôle' },
+    rise: { val: 'Johi', desc: 'Elle remonte de la 8e place pour redevenir n°1 officielle' },
+    danger: { val: 'Heaven', desc: 'Troisième fois d\'affilée en nomination' },
+    jury: { val: 'Chanel', desc: 'Unanimité historique (1re chez Hauras, Kaina et Aya)' },
+    public: { val: 'Heaven', desc: 'Le public continue de faire rempart pour sa favorite' },
+    shock: { val: 'Kelsy', desc: 'Envoyée en nomination malgré une note vocale de 90.5' }
+  },
+  ROUND_5: {
+    top3: { val: 'Panida, Chanel, Lea', desc: 'Le podium officiel incontestable de la demi-finale' },
+    rise: { val: 'Panida', desc: 'Passe de la 5e place au trône au moment le plus crucial' },
+    danger: { val: 'Hwa Young', desc: 'De retour en nomination, sauvée par les juges' },
+    jury: { val: 'Chanel', desc: 'Adulée par le trio Bibi, Kaina et Aya (1re partout)' },
+    public: { val: 'Panida', desc: 'Sauvée par le public avec une avance écrasante' },
+    shock: { val: 'Panida', desc: 'N°1 officielle mais envoyée en nomination à cause de son équipe' }
+  }
+};
+
+// ... (Manual Results Arrays kept intact) ...
 const ROUND1_RESULTS = [
   { name: 'Asli', official: 10, neitsu: 10, hauras: 3, bibiblu: 8, kaina: 3, aya: 13, score: 82, status: 'safe' },
   { name: 'Brahmini', official: 19, neitsu: 17, hauras: 6, bibiblu: 18, kaina: 20, aya: 18, score: 71, status: 'saved_judges' },
@@ -178,27 +233,22 @@ const ROUND2_RESULTS = [
   { name: 'Heaven', official: 15, neitsu: 12, hauras: 15, bibiblu: 16, kaina: 14, aya: 16, score: 80.5, status: 'saved_public', performance: '0X1=Lovesong - TXT', link: 'https://www.instagram.com/p/DVUPvizjJv5/' },
   { name: 'Lizy', official: 16, neitsu: 15, hauras: 6, bibiblu: 17, kaina: 17, aya: 15, score: 74, status: 'eliminated', performance: '0X1=Lovesong - TXT', link: 'https://www.instagram.com/p/DVUPvizjJv5/' },
   { name: 'Megara', official: 8, neitsu: 5, hauras: 13, bibiblu: 4, kaina: 5, aya: 12, score: 91, status: 'safe', performance: '0X1=Lovesong - TXT', link: 'https://www.instagram.com/p/DVUPvizjJv5/' },
-
   { name: 'Asli', official: 6, neitsu: 9, hauras: 5, bibiblu: 10, kaina: 6, aya: 3, score: 85, status: 'safe', performance: 'Bite me - Enhypen', link: 'https://www.instagram.com/p/DVUJc29jJ5e/' },
   { name: 'Hwa Young', official: 17, neitsu: 18, hauras: 8, bibiblu: 15, kaina: 15, aya: 18, score: 69.5, status: 'saved_judges', performance: 'Bite me - Enhypen', link: 'https://www.instagram.com/p/DVUJc29jJ5e/' },
   { name: 'Kelsy', official: 13, neitsu: 16, hauras: 12, bibiblu: 9, kaina: 9, aya: 14, score: 73, status: 'safe', performance: 'Bite me - Enhypen', link: 'https://www.instagram.com/p/DVUJc29jJ5e/' },
   { name: 'Suhaa', official: 19, neitsu: 19, hauras: 16, bibiblu: 19, kaina: 12, aya: 13, score: 67, status: 'saved_judges', performance: 'Bite me - Enhypen', link: 'https://www.instagram.com/p/DVUJc29jJ5e/' },
-
   { name: 'Brahmini', official: 18, neitsu: 17, hauras: 17, bibiblu: 18, kaina: 19, aya: 19, score: 73, status: 'eliminated', performance: 'Iwaly - Izna', link: 'https://www.instagram.com/p/DVUF5iIDDNe/' },
   { name: 'Chanel', official: 3, neitsu: 8, hauras: 7, bibiblu: 2, kaina: 2, aya: 2, score: 88.5, status: 'safe', performance: 'Iwaly - Izna', link: 'https://www.instagram.com/p/DVUF5iIDDNe/' },
   { name: 'Kora', official: 9, neitsu: 10, hauras: 3, bibiblu: 5, kaina: 10, aya: 7, score: 84, status: 'safe', performance: 'Iwaly - Izna', link: 'https://www.instagram.com/p/DVUF5iIDDNe/' },
   { name: 'Yza', official: 1, neitsu: 4, hauras: 2, bibiblu: 3, kaina: 1, aya: 1, score: 94, status: 'safe', performance: 'Iwaly - Izna', link: 'https://www.instagram.com/p/DVUF5iIDDNe/' },
-
   { name: 'Eria', official: 10, neitsu: 7, hauras: 9, bibiblu: 13, kaina: 11, aya: 6, score: 89, status: 'safe', performance: 'Lovesick Girls - Blackpink', link: 'https://www.instagram.com/p/DVUM39ADGyf/' },
   { name: 'Manuee', official: 11, neitsu: 11, hauras: 18, bibiblu: 12, kaina: 18, aya: 8, score: 82.5, status: 'safe', performance: 'Lovesick Girls - Blackpink', link: 'https://www.instagram.com/p/DVUM39ADGyf/' },
   { name: 'Mimi', official: 12, neitsu: 13, hauras: 19, bibiblu: 11, kaina: 3, aya: 17, score: 78.5, status: 'safe', performance: 'Lovesick Girls - Blackpink', link: 'https://www.instagram.com/p/DVUM39ADGyf/' },
   { name: 'Sun', official: 14, neitsu: 14, hauras: 14, bibiblu: 14, kaina: 16, aya: 11, score: 77, status: 'eliminated', performance: 'Lovesick Girls - Blackpink', link: 'https://www.instagram.com/p/DVUM39ADGyf/' },
-
   { name: 'Hope', official: 5, neitsu: 6, hauras: 10, bibiblu: 1, kaina: 7, aya: 4, score: 91, status: 'safe', performance: 'Takedown - Huntrix', link: 'https://www.instagram.com/p/DVUHRIuDHmI/' },
   { name: 'Johi', official: 7, neitsu: 3, hauras: 11, bibiblu: 8, kaina: 4, aya: 9, score: 95, status: 'safe', performance: 'Takedown - Huntrix', link: 'https://www.instagram.com/p/DVUHRIuDHmI/' },
   { name: 'Lea', official: 2, neitsu: 1, hauras: 1, bibiblu: 7, kaina: 13, aya: 5, score: 97, status: 'safe', performance: 'Takedown - Huntrix', link: 'https://www.instagram.com/p/DVUHRIuDHmI/' },
   { name: 'Panida', official: 4, neitsu: 2, hauras: 4, bibiblu: 6, kaina: 8, aya: 10, score: 96, status: 'safe', performance: 'Takedown - Huntrix', link: 'https://www.instagram.com/p/DVUHRIuDHmI/' },
-
   { name: 'Donghyun', status: 'eliminated', performance: '', link: '' },
   { name: 'Katie', status: 'eliminated', performance: '', link: '' },
   { name: 'Kyo', status: 'eliminated', performance: '', link: '' }
@@ -221,7 +271,6 @@ const ROUND3_RESULTS = [
   { name: 'Suhaa', official: 14, neitsu: 15, hauras: 15, bibiblu: 13, kaina: 15, aya: 7, score: 76.5, status: 'safe', performance: 'Spot - Zico & Jennie', link: 'https://www.instagram.com/star_kca_academy.svs/reel/DWBVvYPDIz1/' },
   { name: 'Kora', official: 15, neitsu: 14, hauras: 13, bibiblu: 15, kaina: 13, aya: 14, score: 81, status: 'eliminated', performance: 'Spot - Zico & Jennie', link: 'https://www.instagram.com/star_kca_academy.svs/reel/DWBVvYPDIz1/' },
   { name: 'Manuee', official: 16, neitsu: 16, hauras: 16, bibiblu: 16, kaina: 16, aya: 16, score: 10, status: 'eliminated', performance: 'Monster - Irene & Seulgi', link: 'https://www.instagram.com/star_kca_academy.svs/reel/DWBXpXHDE-U/' },
-
   { name: 'Brahmini', status: 'eliminated', performance: '', link: '' },
   { name: 'Donghyun', status: 'eliminated', performance: '', link: '' },
   { name: 'Katie', status: 'eliminated', performance: '', link: '' },
@@ -244,7 +293,6 @@ const ROUND4_RESULTS = [
   { name: 'Mimi', official: 11, score: 83.5, neitsu: 12, hauras: 9, bibiblu: 8, kaina: 10, aya: 8, status: 'eliminated', performance: 'Sphinx - The9', link: 'https://www.instagram.com/star_kca_academy.svs/reel/DWtcubKjF1M/' },
   { name: 'Sun', official: 12, score: 85.5, neitsu: 10, hauras: 11, bibiblu: 11, kaina: 11, aya: 11, status: 'eliminated', performance: 'APT - Rosé & Bruno Mars', link: 'https://www.instagram.com/star_kca_academy.svs/reel/DWtbS4sDJNb/' },
   { name: 'Suhaa', official: 13, score: 83, neitsu: 13, hauras: 13, bibiblu: 13, kaina: 13, aya: 9, status: 'eliminated', performance: 'APT - Rosé & Bruno Mars', link: 'https://www.instagram.com/star_kca_academy.svs/reel/DWtbS4sDJNb/' },
-
   { name: 'Brahmini', status: 'eliminated', performance: '', link: '' },
   { name: 'Donghyun', status: 'eliminated', performance: '', link: '' },
   { name: 'Katie', status: 'eliminated', performance: '', link: '' },
@@ -262,13 +310,11 @@ const ROUND5_RESULTS = [
   { name: 'Johi', official: 5, score: 86.5, neitsu: 6, hauras: 3, bibiblu: 3, kaina: 3, aya: 4, status: 'safe', performance: 'Drama - Aespa (TEAM A)', link: 'https://www.instagram.com/p/DXo-6aUDApS/' },
   { name: 'Kelsy', official: 7, score: 83, neitsu: 7, hauras: 9, bibiblu: 5, kaina: 4, aya: 6, status: 'safe', performance: 'Drama - Aespa (TEAM A)', link: 'https://www.instagram.com/p/DXo-6aUDApS/' },
   { name: 'Eria', official: 10, score: 42, neitsu: 10, hauras: 10, bibiblu: 10, kaina: 10, aya: 10, status: 'eliminated', performance: 'Drama - Aespa (TEAM A)', link: 'https://www.instagram.com/p/DXo-6aUDApS/' },
-
   { name: 'Panida', official: 1, score: 94, neitsu: 1, hauras: 1, bibiblu: 6, kaina: 7, aya: 3, status: 'saved_public', performance: 'Drama - Aespa (TEAM B)', link: 'https://www.instagram.com/p/DXpANXnjI6o/' },
   { name: 'Hwa Young', official: 4, score: 88.5, neitsu: 3, hauras: 2, bibiblu: 4, kaina: 6, aya: 5, status: 'saved_judges', performance: 'Drama - Aespa (TEAM B)', link: 'https://www.instagram.com/p/DXpANXnjI6o/' },
   { name: 'Hope', official: 6, score: 89, neitsu: 2, hauras: 8, bibiblu: 8, kaina: 8, aya: 8, status: 'saved_judges', performance: 'Drama - Aespa (TEAM B)', link: 'https://www.instagram.com/p/DXpANXnjI6o/' },
   { name: 'Heaven', official: 8, score: 82.5, neitsu: 8, hauras: 6, bibiblu: 7, kaina: 9, aya: 9, status: 'eliminated', performance: 'Drama - Aespa (TEAM B)', link: 'https://www.instagram.com/p/DXpANXnjI6o/' },
   { name: 'Asli', official: 9, score: 77, neitsu: 9, hauras: 7, bibiblu: 9, kaina: 5, aya: 7, status: 'eliminated', performance: 'Drama - Aespa (TEAM B)', link: 'https://www.instagram.com/p/DXpANXnjI6o/' },
-
   { name: 'Mimi', status: 'eliminated', performance: '', link: '' },
   { name: 'Sun', status: 'eliminated', performance: '', link: '' },
   { name: 'Suhaa', status: 'eliminated', performance: '', link: '' },
@@ -878,16 +924,6 @@ function getPerformanceScoreByRound() {
   return out;
 }
 
-function getPerformanceRankByRound() {
-  const scoreMap = getPerformanceScoreByRound();
-  const out = Object.fromEntries(ROUND_ORDER.map(r => [r, {}]));
-  ROUND_ORDER.forEach(round => {
-    const rows = Object.entries(scoreMap[round]).sort((a, b) => b[1] - a[1]);
-    rows.forEach(([id], i) => out[round][id] = i + 1);
-  });
-  return out;
-}
-
 function getRankingViewOptions() {
   return [
     { value: 'official', label: 'Official ranking' },
@@ -979,6 +1015,30 @@ function renderContestants() {
   draw();
 }
 
+function renderHighlightsBlock(roundId) {
+  const h = ROUND_HIGHLIGHTS[roundId];
+  if (!h) return '';
+  
+  const items = [];
+  if (h.top3) items.push(`<div class="highlight-item"><h4>Top 3 of the Week</h4><p>${h.top3.val}<span class="desc">${h.top3.desc}</span></p></div>`);
+  if (h.rise) items.push(`<div class="highlight-item"><h4>Biggest Rise / Start</h4><p>${h.rise.val}<span class="desc">${h.rise.desc}</span></p></div>`);
+  if (h.danger) items.push(`<div class="highlight-item"><h4>In Danger Again</h4><p>${h.danger.val}<span class="desc">${h.danger.desc}</span></p></div>`);
+  if (h.jury) items.push(`<div class="highlight-item"><h4>Jury Favorite</h4><p>${h.jury.val}<span class="desc">${h.jury.desc}</span></p></div>`);
+  if (h.public) items.push(`<div class="highlight-item"><h4>Public Favorite</h4><p>${h.public.val}<span class="desc">${h.public.desc}</span></p></div>`);
+  if (h.shock) items.push(`<div class="highlight-item"><h4>Shock Nomination</h4><p>${h.shock.val}<span class="desc">${h.shock.desc}</span></p></div>`);
+  
+  if (items.length === 0) return '';
+  
+  return `
+    <div class="card">
+      <h3>🌟 Round Highlights (${ROUND_LABELS[roundId]})</h3>
+      <div class="highlight-grid">
+        ${items.join('')}
+      </div>
+    </div>
+  `;
+}
+
 function renderRankings() {
   const root = document.getElementById('rankings');
   const viewOptions = getRankingViewOptions();
@@ -995,15 +1055,12 @@ function renderRankings() {
     return null;
   };
 
-  // FIX: Dynamic Row Reordering based on chosen view data in state.latestRound
   const list = [...state.data.contestants].sort((a, b) => {
     const aEliminated = getStatus(state.latestRound, a.id) === 'eliminated';
     const bEliminated = getStatus(state.latestRound, b.id) === 'eliminated';
     
-    // 1. Group Eliminated contestants strictly at the bottom
     if (aEliminated !== bEliminated) return aEliminated ? 1 : -1;
 
-    // 2. If both are eliminated, sort them by FIXED_ELIMINATED_RANKS
     if (aEliminated && bEliminated) {
       const ar = FIXED_ELIMINATED_RANKS[a.id];
       const br = FIXED_ELIMINATED_RANKS[b.id];
@@ -1013,18 +1070,15 @@ function renderRankings() {
       return a.name.localeCompare(b.name);
     }
 
-    // 3. For Active contestants, sort them dynamically based on the current view's values
     const va = rankingMap[state.latestRound]?.[a.id];
     const vb = rankingMap[state.latestRound]?.[b.id];
 
     if (Number.isFinite(va) && Number.isFinite(vb)) {
-      // Scores: Higher is better (Descending). Ranks: Lower is better (Ascending).
       return isPerformance ? vb - va : va - vb;
     }
     if (Number.isFinite(va)) return -1;
     if (Number.isFinite(vb)) return 1;
 
-    // Fallback if no view specific data is available for this round
     const ar = getLatestOfficialRank(a.id);
     const br = getLatestOfficialRank(b.id);
     if (Number.isFinite(ar) && Number.isFinite(br)) return ar - br;
@@ -1076,6 +1130,9 @@ function renderRankings() {
       <p class="small">Saved public: ${nominations.saved_public.map(x => getContestantName(x.contestant_id)).join(', ') || '—'}</p>
       <p class="small">Eliminated: ${nominations.eliminated.map(x => getContestantName(x.contestant_id)).join(', ') || '—'}</p>
     </div>
+    
+    ${renderHighlightsBlock(state.latestRound)}
+
     <div class="card">
       <h3>Global evolution chart</h3>
       <canvas id="rankingChart" height="120"></canvas>
