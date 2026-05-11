@@ -153,7 +153,7 @@ const I18N = {
     auto_updated: "Auto-updated from latest available official ranking/status round:",
     no_contestants: "No contestants found.",
     rank: "Rank", pos: "Pos", name: "Name",
-    rankings_desc: "Table shows rank trajectory by round. In 'Performance score' mode, values are points.",
+    rankings_desc: "Table shows rank trajectory by round. Use the dropdowns to explore past rounds.",
     nominations: "Nominations", nominee_lbl: "Nominee", saved_judges_lbl: "Saved judges", saved_public_lbl: "Saved public", eliminated_lbl: "Eliminated",
     global_chart: "Global evolution chart",
     perf_score: "Performance score", official_rank: "Official ranking",
@@ -183,7 +183,7 @@ const I18N = {
     auto_updated: "Mis à jour via le dernier classement officiel :",
     no_contestants: "Aucun candidat trouvé.",
     rank: "Rang", pos: "Pos", name: "Nom",
-    rankings_desc: "Évolution du classement. En mode 'Score', les valeurs sont des points.",
+    rankings_desc: "Évolution du classement. Utilisez les menus pour explorer les anciens rounds.",
     nominations: "Nominations", nominee_lbl: "Nominé", saved_judges_lbl: "Sauvé (Juges)", saved_public_lbl: "Sauvé (Public)", eliminated_lbl: "Éliminé",
     global_chart: "Graphique d'évolution globale",
     perf_score: "Score de performance", official_rank: "Classement officiel",
@@ -213,7 +213,7 @@ const I18N = {
     auto_updated: "Actualizado automáticamente según la última ronda:",
     no_contestants: "No se encontraron concursantes.",
     rank: "Rango", pos: "Pos", name: "Nombre",
-    rankings_desc: "La tabla muestra la trayectoria por ronda. En modo 'Puntuación', son puntos.",
+    rankings_desc: "La tabla muestra la trayectoria por ronda. Usa los menús para ver rondas pasadas.",
     nominations: "Nominaciones", nominee_lbl: "Nominado", saved_judges_lbl: "Salvados (Jueces)", saved_public_lbl: "Salvados (Público)", eliminated_lbl: "Eliminados",
     global_chart: "Gráfico de evolución global",
     perf_score: "Puntuación", official_rank: "Clasificación oficial",
@@ -243,7 +243,7 @@ const I18N = {
     auto_updated: "최근 공식 순위에 따라 자동 업데이트됨:",
     no_contestants: "참가자를 찾을 수 없습니다.",
     rank: "순위", pos: "점수 순위", name: "이름",
-    rankings_desc: "라운드별 순위 변동입니다. '퍼포먼스 점수' 모드에서는 점수로 표시됩니다.",
+    rankings_desc: "라운드별 순위 변동입니다. 드롭다운을 사용하여 이전 라운드를 확인하세요.",
     nominations: "후보 및 결과", nominee_lbl: "후보", saved_judges_lbl: "심사위원 구제", saved_public_lbl: "대중 구제", eliminated_lbl: "탈락",
     global_chart: "전체 순위 변화 그래프",
     perf_score: "퍼포먼스 점수", official_rank: "공식 순위",
@@ -494,6 +494,7 @@ let profileChart = null;
 const state = {
   data: { contestants: [], rounds: [], submissions: [], scores: [], judge_rankings: [], round_status: [], votes_live: [] },
   latestRound: "PRERANK",
+  selectedRankingsRound: null,
   rankingView: "official",
   votesRound: "PRERANK",
   votesTimer: null
@@ -962,14 +963,19 @@ function renderRankings() {
   const rankingMap = getRankingMapByView(state.rankingView);
   const isPerformance = state.rankingView === 'performance_score';
   const officialByRound = getOfficialRankingByRound();
-  const latestRoundIndex = Math.max(0, ROUND_ORDER.indexOf(state.latestRound));
+  
+  // Define active round for Sorting, Nominations, and Highlights
+  const activeRound = state.selectedRankingsRound || state.latestRound;
+  const activeRoundIndex = Math.max(0, ROUND_ORDER.indexOf(activeRound));
+  
   const getLatestOfficialRank = (contestantId) => {
-    for (let i = latestRoundIndex; i >= 0; i--) { const rank = officialByRound[ROUND_ORDER[i]]?.[contestantId]; if (Number.isFinite(rank)) return rank; }
+    for (let i = activeRoundIndex; i >= 0; i--) { const rank = officialByRound[ROUND_ORDER[i]]?.[contestantId]; if (Number.isFinite(rank)) return rank; }
     return null;
   };
+  
   const list = [...state.data.contestants].sort((a, b) => {
-    const aEliminated = getStatus(state.latestRound, a.id) === 'eliminated';
-    const bEliminated = getStatus(state.latestRound, b.id) === 'eliminated';
+    const aEliminated = getStatus(activeRound, a.id) === 'eliminated';
+    const bEliminated = getStatus(activeRound, b.id) === 'eliminated';
     if (aEliminated !== bEliminated) return aEliminated ? 1 : -1;
     if (aEliminated && bEliminated) {
       const ar = FIXED_ELIMINATED_RANKS[a.id]; const br = FIXED_ELIMINATED_RANKS[b.id];
@@ -977,7 +983,7 @@ function renderRankings() {
       if (Number.isFinite(ar)) return -1; if (Number.isFinite(br)) return 1;
       return a.name.localeCompare(b.name);
     }
-    const va = rankingMap[state.latestRound]?.[a.id]; const vb = rankingMap[state.latestRound]?.[b.id];
+    const va = rankingMap[activeRound]?.[a.id]; const vb = rankingMap[activeRound]?.[b.id];
     if (Number.isFinite(va) && Number.isFinite(vb)) { return isPerformance ? vb - va : va - vb; }
     if (Number.isFinite(va)) return -1; if (Number.isFinite(vb)) return 1;
     const ar = getLatestOfficialRank(a.id); const br = getLatestOfficialRank(b.id);
@@ -987,10 +993,10 @@ function renderRankings() {
   });
 
   const nominations = {
-    nominee: state.data.round_status.filter(r => r.round_id === state.latestRound && r.status === 'nominee'),
-    saved_judges: state.data.round_status.filter(r => r.round_id === state.latestRound && r.status === 'saved_judges'),
-    saved_public: state.data.round_status.filter(r => r.round_id === state.latestRound && r.status === 'saved_public'),
-    eliminated: state.data.round_status.filter(r => r.round_id === state.latestRound && r.status === 'eliminated')
+    nominee: state.data.round_status.filter(r => r.round_id === activeRound && r.status === 'nominee'),
+    saved_judges: state.data.round_status.filter(r => r.round_id === activeRound && r.status === 'saved_judges'),
+    saved_public: state.data.round_status.filter(r => r.round_id === activeRound && r.status === 'saved_public'),
+    eliminated: state.data.round_status.filter(r => r.round_id === activeRound && r.status === 'eliminated')
   };
 
   root.innerHTML = `
@@ -998,6 +1004,9 @@ function renderRankings() {
       <h2>${t('nav_rankings')}</h2>
       <div class="filters">
         <select id="rankingViewSelect">${viewOptions.map(o => `<option value="${o.value}" ${o.value===state.rankingView?'selected':''}>${o.label}</option>`).join('')}</select>
+        <select id="rankingsRoundSelect">
+          ${ROUND_ORDER.slice(0, ROUND_ORDER.indexOf(state.latestRound) + 1).map(r => `<option value="${r}" ${r === activeRound ? 'selected' : ''}>${getRoundLabel(r)}</option>`).join('')}
+        </select>
       </div>
       <p class="small">${t('rankings_desc')}</p>
       <div class="table-wrap">
@@ -1012,19 +1021,20 @@ function renderRankings() {
           </tbody>
         </table>
       </div>
-      <h3>${t('nominations')} (${getRoundLabel(state.latestRound)})</h3>
+      <h3>${t('nominations')} (${getRoundLabel(activeRound)})</h3>
       <p class="small">${t('nominee_lbl')}: ${nominations.nominee.map(x => getContestantName(x.contestant_id)).join(', ') || '—'}</p>
       <p class="small">${t('saved_judges_lbl')}: ${nominations.saved_judges.map(x => getContestantName(x.contestant_id)).join(', ') || '—'}</p>
       <p class="small">${t('saved_public_lbl')}: ${nominations.saved_public.map(x => getContestantName(x.contestant_id)).join(', ') || '—'}</p>
       <p class="small">${t('eliminated_lbl')}: ${nominations.eliminated.map(x => getContestantName(x.contestant_id)).join(', ') || '—'}</p>
     </div>
-    ${renderHighlightsBlock(state.latestRound)}
+    ${renderHighlightsBlock(activeRound)}
     <div class="card">
       <h3>${t('global_chart')}</h3>
       <canvas id="rankingChart" height="120"></canvas>
     </div>`;
 
   document.getElementById('rankingViewSelect').addEventListener('change', (e) => { state.rankingView = e.target.value; renderRankings(); });
+  document.getElementById('rankingsRoundSelect').addEventListener('change', (e) => { state.selectedRankingsRound = e.target.value; renderRankings(); });
 
   if (rankingChart) rankingChart.destroy();
   const ctx = document.getElementById('rankingChart');
@@ -1034,10 +1044,32 @@ function renderRankings() {
       labels: ROUND_ORDER.map(r => getRoundLabel(r)),
       datasets: state.data.contestants.map((c, idx) => {
         const color = colorForIndex(idx);
-        return { label: getContestantName(c.id), data: ROUND_ORDER.map(r => { const v = rankingMap[r]?.[c.id]; return Number.isFinite(v) ? v : null; }), borderColor: color, backgroundColor: color, borderWidth: 2, pointRadius: 2, pointHoverRadius: 4, tension: .25, spanGaps: true };
+        return { label: getContestantName(c.id), data: ROUND_ORDER.map(r => { const v = rankingMap[r]?.[c.id]; return Number.isFinite(v) ? v : null; }), borderColor: color, backgroundColor: color, borderWidth: 2, pointRadius: 2, pointHoverRadius: 4, tension: .25, spanGaps: true, order: 1 };
       })
     },
     options: {
+      interaction: {
+        mode: 'dataset',
+        intersect: true
+      },
+      onHover: (e, elements, chart) => {
+        if (elements && elements.length) {
+          const hoveredIdx = elements[0].datasetIndex;
+          chart.data.datasets.forEach((ds, i) => {
+            ds.borderColor = i === hoveredIdx ? colorForIndex(i) : 'rgba(154, 166, 194, 0.1)';
+            ds.borderWidth = i === hoveredIdx ? 4 : 1;
+            ds.order = i === hoveredIdx ? 0 : 1;
+          });
+          chart.update('none');
+        } else {
+          chart.data.datasets.forEach((ds, i) => {
+            ds.borderColor = colorForIndex(i);
+            ds.borderWidth = 2;
+            ds.order = 1;
+          });
+          chart.update('none');
+        }
+      },
       plugins: { legend: { display: true, position: 'bottom', labels: { color: '#eef3ff', boxWidth: 10, usePointStyle: true, pointStyle: 'line' } } },
       scales: isPerformance ? { x: { ticks: { color: '#9aa6c2' } }, y: { ticks: { color: '#9aa6c2' }, title: { display: true, text: t('perf_score'), color: '#9aa6c2' } } }
                             : { x: { ticks: { color: '#9aa6c2' } }, y: { reverse: true, min: 1, max: Math.max(22, state.data.contestants.length), ticks: { color: '#9aa6c2', stepSize: 1 } } }
@@ -1181,6 +1213,7 @@ async function hydrate() {
   applyManualRound1Results(); applyManualRound2Info(); applyManualRound3Info(); applyManualRound4Info(); applyManualRound5Info();
   const officialByRound = getOfficialRankingByRound();
   state.latestRound = getLatestRound(officialByRound);
+  state.selectedRankingsRound = state.latestRound;
   const roundsWithVotes = ROUND_ORDER.filter(r => state.data.votes_live.some(v => v.round_id === r));
   state.votesRound = roundsWithVotes[roundsWithVotes.length - 1] || state.latestRound;
 }
