@@ -575,10 +575,7 @@ function applyAllManualRounds() {
     state.data.judge_rankings = state.data.judge_rankings.filter(r => r.round_id !== roundId);
     state.data.scores = state.data.scores.filter(r => r.round_id !== roundId);
     state.data.round_status = state.data.round_status.filter(r => r.round_id !== roundId);
-    
-    if (roundId !== 'ROUND_1') {
-      state.data.submissions = state.data.submissions.filter(r => r.round_id !== roundId);
-    }
+    state.data.submissions = state.data.submissions.filter(r => r.round_id !== roundId);
 
     results.forEach((row) => {
       const contestantId = resolveContestantIdByName(row.name); 
@@ -594,7 +591,7 @@ function applyAllManualRounds() {
       if (Number.isFinite(row.score)) state.data.scores.push({ round_id: roundId, contestant_id: contestantId, total: row.score });
       if (row.status) state.data.round_status.push({ round_id: roundId, contestant_id: contestantId, status: row.status });
       
-      if (roundId !== 'ROUND_1' && (row.performance || row.link)) { 
+      if (row.performance || row.link) { 
         state.data.submissions.push({ round_id: roundId, contestant_id: contestantId, song_title: row.performance || '', group_song: row.performance || '', bandlab_url: '', youtube_url: row.link || '', notes: '' }); 
       }
     });
@@ -631,18 +628,6 @@ function applyManualPrerankSeed() {
     if (!c.instagram && row.instagram) c.instagram = row.instagram;
     if (!hasOfficialPrerank) state.data.judge_rankings.push({ round_id: 'PRERANK', judge_name: 'official', contestant_id: id, rank: row.official_rank });
     if (!hasScorePrerank) state.data.scores.push({ round_id: 'PRERANK', contestant_id: id, total: row.score });
-  });
-}
-
-function applyManualR1Seed() {
-  const hasR1Submissions = state.data.submissions.some(r => r.round_id === 'ROUND_1' && (String(r.song_title || '').trim() || String(r.youtube_url || '').trim() || String(r.bandlab_url || '').trim()));
-  if (!hasR1Submissions) { state.data.submissions = state.data.submissions.filter(r => r.round_id !== 'ROUND_1'); }
-  R1_MANUAL_ROWS.forEach((row) => {
-    const id = resolveContestantIdByName(row.name);
-    let c = state.data.contestants.find(x => x.id === id);
-    if (!c) { c = { id, name: row.name, photo_url: `assets/${id}.jpg`, country: '', bio: '', instagram: '', pronouns: '' }; state.data.contestants.push(c); }
-    if (!c.instagram && row.instagram) c.instagram = row.instagram;
-    if (!hasR1Submissions && (row.performance || row.link)) { state.data.submissions.push({ round_id: 'ROUND_1', contestant_id: id, song_title: row.performance || '', group_song: '', bandlab_url: '', youtube_url: row.link || '', notes: '' }); }
   });
 }
 
@@ -1059,8 +1044,8 @@ function setupNav() {
 }
 
 async function hydrate() {
-  await loadData(); normalizeData(); applyManualPrerankSeed(); applyManualR1Seed(); enforcePrerankSafeStatus();
-  applyAllManualRounds(); // Le moteur intelligent est réparé !
+  await loadData(); normalizeData(); applyManualPrerankSeed(); enforcePrerankSafeStatus();
+  applyAllManualRounds();
   const officialByRound = getOfficialRankingByRound();
   state.latestRound = getLatestRound(officialByRound);
   state.selectedRankingsRound = state.latestRound;
