@@ -186,7 +186,7 @@ const I18N = {
     nominations: "Nominations", nominee_lbl: "Nominé", saved_judges_lbl: "Sauvé (Juges)", saved_public_lbl: "Sauvé (Public)", eliminated_lbl: "Éliminé",
     global_chart: "Graphique d'évolution globale", perf_score: "Score de performance", official_rank: "Classement officiel",
     back_contestants: "← Retour aux candidats", contestant_not_found: "Candidat introuvable.", rounds_overview: "Historique des rounds", round: "Round", official: "Officiel", status: "Statut",
-    performances: "Performances", song: "Chanson", links: "Liens", link_perf: "Lien vers la prestation", no_links: "Aucun lien de performance.",
+    performances: "Performances", song: "Chanson", links: "Liens", link_perf: "Prestation", no_links: "Aucun lien de performance.",
     indiv_chart: "Graphique d'évolution individuelle", country: "Pays", pronouns: "Pronoms", instagram: "Instagram",
     votes: "Votes", vote_now: "Voter maintenant", no_vote_data: "Pas de données de vote pour ce round.", avail_vote_rounds: "Rounds de vote disponibles :", total_votes: "Total des votes :", last_refresh: "Dernière MAJ :",
     hl_title: "🌟 Faits Marquants", hl_top3: "Top 3 de la Semaine", hl_rise: "Meilleure Percée", hl_danger: "Encore en Danger", hl_jury: "Favori du Jury", hl_public: "Favori du Public", hl_shock: "Coup de Théâtre",
@@ -206,7 +206,7 @@ const I18N = {
     nominations: "Nominaciones", nominee_lbl: "Nominado", saved_judges_lbl: "Salvados (Jueces)", saved_public_lbl: "Salvados (Público)", eliminated_lbl: "Eliminados",
     global_chart: "Gráfico de evolución global", perf_score: "Puntuación", official_rank: "Clasificación oficial",
     back_contestants: "← Volver a concursantes", contestant_not_found: "Concursante no encontrado.", rounds_overview: "Historial de rondas", round: "Ronda", official: "Oficial", status: "Estado",
-    performances: "Actuaciones", song: "Canción", links: "Enlaces", link_perf: "Enlace a la actuación", no_links: "No hay enlaces aún.",
+    performances: "Actuaciones", song: "Canción", links: "Enlaces", link_perf: "Actuación", no_links: "No hay enlaces aún.",
     indiv_chart: "Evolución individual (rango oficial)", country: "País", pronouns: "Pronombres", instagram: "Instagram",
     votes: "Votos", vote_now: "Votar ahora", no_vote_data: "No hay datos de votación.", avail_vote_rounds: "Rondas de votación disponibles:", total_votes: "Votos totales:", last_refresh: "Última actualización:",
     hl_title: "🌟 Momentos Destacados", hl_top3: "Top 3 de la Semana", hl_rise: "Mayor Ascenso", hl_danger: "En Peligro de Nuevo", hl_jury: "Favorito del Jurado", hl_public: "Favorito del Público", hl_shock: "Drama / Sorpresa",
@@ -226,7 +226,7 @@ const I18N = {
     nominations: "후보 및 결과", nominee_lbl: "후보", saved_judges_lbl: "심사위원 구제", saved_public_lbl: "대중 구제", eliminated_lbl: "탈락",
     global_chart: "전체 순위 변화 그래프", perf_score: "퍼포먼스 점수", official_rank: "공식 순위",
     back_contestants: "← 목록으로 돌아가기", contestant_not_found: "참가자 정보가 없습니다.", rounds_overview: "라운드 기록", round: "라운드", official: "공식", status: "상태",
-    performances: "퍼포먼스 영상", song: "곡명", links: "링크", link_perf: "영상 보러가기", no_links: "아직 등록된 영상이 없습니다.",
+    performances: "퍼포먼스 영상", song: "곡명", links: "링크", link_perf: "영상 보기", no_links: "아직 등록된 영상이 없습니다.",
     indiv_chart: "개인 순위 변화 그래프", country: "국가", pronouns: "대명사", instagram: "인스타그램",
     votes: "투표", vote_now: "지금 투표하기", no_vote_data: "이번 라운드 투표 데이터가 없습니다.", avail_vote_rounds: "투표 가능한 라운드:", total_votes: "총 투표수:", last_refresh: "최근 업데이트:",
     hl_title: "🌟 라운드 하이라이트", hl_top3: "금주의 톱 3", hl_rise: "최고의 상승세", hl_danger: "또다시 위기", hl_jury: "심사위원의 선택", hl_public: "대중의 픽", hl_shock: "충격 / 드라마",
@@ -270,7 +270,7 @@ const ROUND_HIGHLIGHTS = {
 };
 
 // ==========================================
-// 3. DONNÉES EN DUR (OVERRIDE)
+// 3. DONNÉES EN DUR (OVERRIDE ET LIENS VÉRIFIÉS)
 // ==========================================
 const PRERANK_MANUAL_ROWS = [
   { name: 'Asli', instagram: '@aslcvrs', official_rank: 5, score: 89 },
@@ -299,49 +299,49 @@ const PRERANK_MANUAL_ROWS = [
 
 const MANUAL_ROUNDS_DATA = {
   ROUND_1: [
-    { name: 'Asli', official: 10, neitsu: 10, hauras: 3, bibiblu: 8, kaina: 3, aya: 13, score: 82, status: 'safe', performance: 'Gabriela - Katseye', link: 'https://www.instagram.com/p/DUp7RDxDMeP/' },
-    { name: 'Brahmini', official: 19, neitsu: 17, hauras: 6, bibiblu: 18, kaina: 20, aya: 18, score: 71, status: 'saved_judges', performance: 'Sheesh - Babymonster', link: 'https://www.instagram.com/p/DUqCB2MjOau/' },
-    { name: 'Chanel', official: 11, neitsu: 11, hauras: 19, bibiblu: 11, kaina: 16, aya: 4, score: 81.5, status: 'safe', performance: 'Superscar - Adela', link: 'https://www.instagram.com/p/DUqCUs0DHSE/' },
-    { name: 'Donghyun', official: 17, neitsu: 16, hauras: 20, bibiblu: 19, kaina: 14, aya: 17, score: 72.5, status: 'eliminated', performance: 'Famous - AllDay Project', link: 'https://www.instagram.com/p/DUnyzUHjMTz/' },
-    { name: 'Eria', official: 3, neitsu: 4, hauras: 7, bibiblu: 3, kaina: 4, aya: 3, score: 90.5, status: 'safe', performance: 'Greedy - Tate Mcrae', link: 'https://www.instagram.com/p/DUqVKrcjNH9/' },
-    { name: 'Heaven', official: 13, neitsu: 14, hauras: 11, bibiblu: 17, kaina: 10, aya: 16, score: 78.5, status: 'safe', performance: 'Abracadabra - Lady Gaga', link: 'https://www.instagram.com/p/DUqCHvDjP_E/' },
-    { name: 'Hope', official: 4, neitsu: 5, hauras: 10, bibiblu: 5, kaina: 7, aya: 1, score: 89.5, status: 'safe', performance: 'Midnight Sun - Zara Larson', link: 'https://www.instagram.com/p/DUnzEkfDEv9/' },
-    { name: 'Hwa Young', official: 9, neitsu: 9, hauras: 4, bibiblu: 7, kaina: 19, aya: 10, score: 86, status: 'safe', performance: 'Gabriela - Katseye', link: 'https://www.instagram.com/p/DUrETdyjCc4/' },
     { name: 'Johi', official: 1, neitsu: 6, hauras: 1, bibiblu: 1, kaina: 1, aya: 2, score: 88.5, status: 'safe', performance: 'Sheesh - Babymonster', link: 'https://www.instagram.com/p/DUqBvFkDDK8/' },
-    { name: 'Katie', official: 20, neitsu: 19, hauras: 17, bibiblu: 20, kaina: 18, aya: 20, score: 69, status: 'eliminated', performance: 'Greedy - Tate Mcrae', link: 'https://www.instagram.com/p/DUqBeD_DKXj/' },
-    { name: 'Kelsy', official: 6, neitsu: 8, hauras: 5, bibiblu: 6, kaina: 6, aya: 7, score: 86.5, status: 'safe', performance: 'Gabriela - Katseye', link: 'https://www.instagram.com/p/DUp7AYdDBbv/' },
-    { name: 'Kora', official: 12, neitsu: 12, hauras: 14, bibiblu: 10, kaina: 8, aya: 14, score: 81.5, status: 'safe', performance: 'Gabriela - Katseye', link: 'https://www.instagram.com/p/DUp7LKHDN14/' },
-    { name: 'Kyo', official: 21, neitsu: 21, hauras: 21, bibiblu: 21, kaina: 21, aya: 21, score: 36, status: 'eliminated', performance: 'Soda pop - Saja Boys', link: 'https://www.instagram.com/p/DUqVftqDK8C/' },
-    { name: 'Lea', official: 7, neitsu: 7, hauras: 13, bibiblu: 9, kaina: 11, aya: 5, score: 86.5, status: 'safe', performance: 'Superscar - Adela', link: 'https://www.instagram.com/p/DUk5QK2DC8K/' },
-    { name: 'Lizy', official: 16, neitsu: 13, hauras: 12, bibiblu: 16, kaina: 15, aya: 19, score: 81, status: 'safe', performance: 'Greedy - Tate Mcrae', link: 'https://www.instagram.com/p/DUqB1jsjA7A/' },
-    { name: 'Manuee', official: 14, neitsu: 15, hauras: 16, bibiblu: 14, kaina: 9, aya: 8, score: 77, status: 'safe', performance: 'Abracadabra - Lady Gaga', link: 'https://www.instagram.com/p/DUk44gyDCbp/' },
-    { name: 'Megara', official: 2, neitsu: 3, hauras: 2, bibiblu: 2, kaina: 2, aya: 11, score: 91, status: 'safe', performance: 'Unethical - Faouzia', link: 'https://www.instagram.com/p/DUqBk_XjJmk/' },
-    { name: 'Mimi', official: 18, neitsu: 18, hauras: 15, bibiblu: 15, kaina: 13, aya: 12, score: 69.5, status: 'saved_judges', performance: 'Superscar - Adela', link: 'https://www.instagram.com/p/DUk4g-9DHa5/' },
-    { name: 'Panida', official: 8, neitsu: 1, hauras: 9, bibiblu: 13, kaina: 17, aya: 6, score: 92.5, status: 'safe', performance: 'Where is my husband - Raye', link: 'https://www.instagram.com/p/DUp79mfDM5e/' },
+    { name: 'Megara', official: 2, neitsu: 3, hauras: 2, bibiblu: 2, kaina: 2, aya: 11, score: 91, status: 'safe', performance: 'Unethical - Faouzia', link: 'https://www.instagram.com/p/DUqBk_XjMmk/' },
+    { name: 'Eria', official: 3, neitsu: 4, hauras: 7, bibiblu: 3, kaina: 4, aya: 3, score: 90.5, status: 'safe', performance: 'Greedy - Tate Mcrae', link: 'https://www.instagram.com/p/DUqVKrcjNH9/' },
+    { name: 'Hope', official: 4, neitsu: 5, hauras: 10, bibiblu: 5, kaina: 7, aya: 1, score: 89.5, status: 'safe', performance: 'Midnight Sun - Zara Larson', link: 'https://www.instagram.com/p/DUnzEkfDEv9/' },
     { name: 'Suhaa', official: 5, neitsu: 2, hauras: 8, bibiblu: 4, kaina: 5, aya: 15, score: 91, status: 'safe', performance: 'Famous - AllDay Project', link: 'https://www.instagram.com/p/DUnzQByjHZk/' },
+    { name: 'Kelsy', official: 6, neitsu: 8, hauras: 5, bibiblu: 6, kaina: 6, aya: 7, score: 86.5, status: 'safe', performance: 'Gabriela - Katseye', link: 'https://www.instagram.com/p/DUp7AYdDBbv/' },
+    { name: 'Lea', official: 7, neitsu: 7, hauras: 13, bibiblu: 9, kaina: 11, aya: 5, score: 86.5, status: 'safe', performance: 'Superscar - Adela', link: 'https://www.instagram.com/p/DUk5QK2DC8K/' },
+    { name: 'Panida', official: 8, neitsu: 1, hauras: 9, bibiblu: 13, kaina: 17, aya: 6, score: 92.5, status: 'safe', performance: 'Where is my husband - Raye', link: 'https://www.instagram.com/p/DUp79mfDM5e/' },
+    { name: 'Hwa Young', official: 9, neitsu: 9, hauras: 4, bibiblu: 7, kaina: 19, aya: 10, score: 86, status: 'safe', performance: 'Gabriela - Katseye', link: 'https://www.instagram.com/p/DUrETdyjCc4/' },
+    { name: 'Asli', official: 10, neitsu: 10, hauras: 3, bibiblu: 8, kaina: 3, aya: 13, score: 82, status: 'safe', performance: 'Gabriela - Katseye', link: 'https://www.instagram.com/p/DUp7RDxDMeP/' },
+    { name: 'Chanel', official: 11, neitsu: 11, hauras: 19, bibiblu: 11, kaina: 16, aya: 4, score: 81.5, status: 'safe', performance: 'Superscar - Adela', link: 'https://www.instagram.com/p/DUqCUs0DHSE/' },
+    { name: 'Kora', official: 12, neitsu: 12, hauras: 14, bibiblu: 10, kaina: 8, aya: 14, score: 81.5, status: 'safe', performance: 'Gabriela - Katseye', link: 'https://www.instagram.com/p/DUp7LKHDN14/' },
+    { name: 'Heaven', official: 13, neitsu: 14, hauras: 11, bibiblu: 17, kaina: 10, aya: 16, score: 78.5, status: 'safe', performance: 'Abracadabra - Lady Gaga', link: 'https://www.instagram.com/p/DUqCHvDjP_E/' },
+    { name: 'Manuee', official: 14, neitsu: 15, hauras: 16, bibiblu: 14, kaina: 9, aya: 8, score: 77, status: 'safe', performance: 'Abracadabra - Lady Gaga', link: 'https://www.instagram.com/p/DUk44gyDCbp/' },
     { name: 'Sun', official: 15, neitsu: 20, hauras: 18, bibiblu: 12, kaina: 12, aya: 9, score: 68, status: 'safe', performance: 'Midnight Sun - Zara Larson', link: 'https://www.instagram.com/p/DUnylisjLqH/' },
+    { name: 'Lizy', official: 16, neitsu: 13, hauras: 12, bibiblu: 16, kaina: 15, aya: 19, score: 81, status: 'safe', performance: 'Greedy - Tate Mcrae', link: 'https://www.instagram.com/p/DUqB1jsjA7A/' },
+    { name: 'Donghyun', official: 17, neitsu: 16, hauras: 20, bibiblu: 19, kaina: 14, aya: 17, score: 72.5, status: 'eliminated', performance: 'Famous - AllDay Project', link: 'https://www.instagram.com/p/DUnyzUHjMTz/' },
+    { name: 'Mimi', official: 18, neitsu: 18, hauras: 15, bibiblu: 15, kaina: 13, aya: 12, score: 69.5, status: 'saved_judges', performance: 'Superscar - Adela', link: 'https://www.instagram.com/p/DUk4g-9DHa5/' },
+    { name: 'Brahmini', official: 19, neitsu: 17, hauras: 6, bibiblu: 18, kaina: 20, aya: 18, score: 71, status: 'saved_judges', performance: 'Sheesh - Babymonster', link: 'https://www.instagram.com/p/DUqCB2MjOau/' },
+    { name: 'Katie', official: 20, neitsu: 19, hauras: 17, bibiblu: 20, kaina: 18, aya: 20, score: 69, status: 'eliminated', performance: 'Greedy - Tate Mcrae', link: 'https://www.instagram.com/p/DUqBeD_DKXj/' },
+    { name: 'Kyo', official: 21, neitsu: 21, hauras: 21, bibiblu: 21, kaina: 21, aya: 21, score: 36, status: 'eliminated', performance: 'Soda pop - Saja Boys', link: 'https://www.instagram.com/p/DUqVftqDK8C/' },
     { name: 'Yza', official: 22, neitsu: 22, hauras: 22, bibiblu: 22, kaina: 22, aya: 22, score: 0, status: 'saved_public', performance: 'Unethical - Faouzia', link: '' }
   ],
   ROUND_2: [
-    { name: 'Heaven', official: 15, neitsu: 12, hauras: 15, bibiblu: 16, kaina: 14, aya: 16, score: 80.5, status: 'saved_public', performance: '0X1=Lovesong - TXT', link: 'https://www.instagram.com/p/DVUPvizjJv5/' },
-    { name: 'Lizy', official: 16, neitsu: 15, hauras: 6, bibiblu: 17, kaina: 17, aya: 15, score: 74, status: 'eliminated', performance: '0X1=Lovesong - TXT', link: 'https://www.instagram.com/p/DVUPvizjJv5/' },
-    { name: 'Megara', official: 8, neitsu: 5, hauras: 13, bibiblu: 4, kaina: 5, aya: 12, score: 91, status: 'safe', performance: '0X1=Lovesong - TXT', link: 'https://www.instagram.com/p/DVUPvizjJv5/' },
-    { name: 'Asli', official: 6, neitsu: 9, hauras: 5, bibiblu: 10, kaina: 6, aya: 3, score: 85, status: 'safe', performance: 'Bite me - Enhypen', link: 'https://www.instagram.com/p/DVUJc29jJ5e/' },
-    { name: 'Hwa Young', official: 17, neitsu: 18, hauras: 8, bibiblu: 15, kaina: 15, aya: 18, score: 69.5, status: 'saved_judges', performance: 'Bite me - Enhypen', link: 'https://www.instagram.com/p/DVUJc29jJ5e/' },
-    { name: 'Kelsy', official: 13, neitsu: 16, hauras: 12, bibiblu: 9, kaina: 9, aya: 14, score: 73, status: 'safe', performance: 'Bite me - Enhypen', link: 'https://www.instagram.com/p/DVUJc29jJ5e/' },
-    { name: 'Suhaa', official: 19, neitsu: 19, hauras: 16, bibiblu: 19, kaina: 12, aya: 13, score: 67, status: 'saved_judges', performance: 'Bite me - Enhypen', link: 'https://www.instagram.com/p/DVUJc29jJ5e/' },
-    { name: 'Brahmini', official: 18, neitsu: 17, hauras: 17, bibiblu: 18, kaina: 19, aya: 19, score: 73, status: 'eliminated', performance: 'Iwaly - Izna', link: 'https://www.instagram.com/p/DVUF5iIDDNe/' },
+    { name: 'Lea', official: 2, neitsu: 1, hauras: 1, bibiblu: 7, kaina: 13, aya: 5, score: 97, status: 'safe', performance: 'Takedown - Huntrix', link: 'https://www.instagram.com/p/DVUHRluDHmI/' },
     { name: 'Chanel', official: 3, neitsu: 8, hauras: 7, bibiblu: 2, kaina: 2, aya: 2, score: 88.5, status: 'safe', performance: 'Iwaly - Izna', link: 'https://www.instagram.com/p/DVUF5iIDDNe/' },
+    { name: 'Panida', official: 4, neitsu: 2, hauras: 4, bibiblu: 6, kaina: 8, aya: 10, score: 96, status: 'safe', performance: 'Takedown - Huntrix', link: 'https://www.instagram.com/p/DVUHRluDHmI/' },
+    { name: 'Hope', official: 5, neitsu: 6, hauras: 10, bibiblu: 1, kaina: 7, aya: 4, score: 91, status: 'safe', performance: 'Takedown - Huntrix', link: 'https://www.instagram.com/p/DVUHRluDHmI/' },
+    { name: 'Asli', official: 6, neitsu: 9, hauras: 5, bibiblu: 10, kaina: 6, aya: 3, score: 85, status: 'safe', performance: 'Bite me - Enhypen', link: 'https://www.instagram.com/p/DVUJc29jJ5e/' },
+    { name: 'Johi', official: 7, neitsu: 3, hauras: 11, bibiblu: 8, kaina: 4, aya: 9, score: 95, status: 'safe', performance: 'Takedown - Huntrix', link: 'https://www.instagram.com/p/DVUHRluDHmI/' },
+    { name: 'Megara', official: 8, neitsu: 5, hauras: 13, bibiblu: 4, kaina: 5, aya: 12, score: 91, status: 'safe', performance: '0X1=Lovesong - TXT', link: 'https://www.instagram.com/p/DVUPvizjJv5/' },
     { name: 'Kora', official: 9, neitsu: 10, hauras: 3, bibiblu: 5, kaina: 10, aya: 7, score: 84, status: 'safe', performance: 'Iwaly - Izna', link: 'https://www.instagram.com/p/DVUF5iIDDNe/' },
-    { name: 'Yza', official: 1, neitsu: 4, hauras: 2, bibiblu: 3, kaina: 1, aya: 1, score: 94, status: 'safe', performance: 'Iwaly - Izna', link: 'https://www.instagram.com/p/DVUF5iIDDNe/' },
     { name: 'Eria', official: 10, neitsu: 7, hauras: 9, bibiblu: 13, kaina: 11, aya: 6, score: 89, status: 'safe', performance: 'Lovesick Girls - Blackpink', link: 'https://www.instagram.com/p/DVUM39ADGyf/' },
     { name: 'Manuee', official: 11, neitsu: 11, hauras: 18, bibiblu: 12, kaina: 18, aya: 8, score: 82.5, status: 'safe', performance: 'Lovesick Girls - Blackpink', link: 'https://www.instagram.com/p/DVUM39ADGyf/' },
     { name: 'Mimi', official: 12, neitsu: 13, hauras: 19, bibiblu: 11, kaina: 3, aya: 17, score: 78.5, status: 'safe', performance: 'Lovesick Girls - Blackpink', link: 'https://www.instagram.com/p/DVUM39ADGyf/' },
+    { name: 'Kelsy', official: 13, neitsu: 16, hauras: 12, bibiblu: 9, kaina: 9, aya: 14, score: 73, status: 'safe', performance: 'Bite me - Enhypen', link: 'https://www.instagram.com/p/DVUJc29jJ5e/' },
+    { name: 'Yza', official: 1, neitsu: 4, hauras: 2, bibiblu: 3, kaina: 1, aya: 1, score: 94, status: 'safe', performance: 'Iwaly - Izna', link: 'https://www.instagram.com/p/DVUF5iIDDNe/' },
     { name: 'Sun', official: 14, neitsu: 14, hauras: 14, bibiblu: 14, kaina: 16, aya: 11, score: 77, status: 'eliminated', performance: 'Lovesick Girls - Blackpink', link: 'https://www.instagram.com/p/DVUM39ADGyf/' },
-    { name: 'Hope', official: 5, neitsu: 6, hauras: 10, bibiblu: 1, kaina: 7, aya: 4, score: 91, status: 'safe', performance: 'Takedown - Huntrix', link: 'https://www.instagram.com/p/DVUHRIuDHmI/' },
-    { name: 'Johi', official: 7, neitsu: 3, hauras: 11, bibiblu: 8, kaina: 4, aya: 9, score: 95, status: 'safe', performance: 'Takedown - Huntrix', link: 'https://www.instagram.com/p/DVUHRIuDHmI/' },
-    { name: 'Lea', official: 2, neitsu: 1, hauras: 1, bibiblu: 7, kaina: 13, aya: 5, score: 97, status: 'safe', performance: 'Takedown - Huntrix', link: 'https://www.instagram.com/p/DVUHRIuDHmI/' },
-    { name: 'Panida', official: 4, neitsu: 2, hauras: 4, bibiblu: 6, kaina: 8, aya: 10, score: 96, status: 'safe', performance: 'Takedown - Huntrix', link: 'https://www.instagram.com/p/DVUHRIuDHmI/' }
+    { name: 'Heaven', official: 15, neitsu: 12, hauras: 15, bibiblu: 16, kaina: 14, aya: 16, score: 80.5, status: 'saved_public', performance: '0X1=Lovesong - TXT', link: 'https://www.instagram.com/p/DVUPvizjJv5/' },
+    { name: 'Lizy', official: 16, neitsu: 15, hauras: 6, bibiblu: 17, kaina: 17, aya: 15, score: 74, status: 'eliminated', performance: '0X1=Lovesong - TXT', link: 'https://www.instagram.com/p/DVUPvizjJv5/' },
+    { name: 'Hwa Young', official: 17, neitsu: 18, hauras: 8, bibiblu: 15, kaina: 15, aya: 18, score: 69.5, status: 'saved_judges', performance: 'Bite me - Enhypen', link: 'https://www.instagram.com/p/DVUJc29jJ5e/' },
+    { name: 'Brahmini', official: 18, neitsu: 17, hauras: 17, bibiblu: 18, kaina: 19, aya: 19, score: 73, status: 'eliminated', performance: 'Iwaly - Izna', link: 'https://www.instagram.com/p/DVUF5iIDDNe/' },
+    { name: 'Suhaa', official: 19, neitsu: 19, hauras: 16, bibiblu: 19, kaina: 12, aya: 13, score: 67, status: 'saved_judges', performance: 'Bite me - Enhypen', link: 'https://www.instagram.com/p/DVUJc29jJ5e/' }
   ],
   ROUND_3: [
     { name: 'Hwa Young', official: 1, neitsu: 1, hauras: 5, bibiblu: 3, kaina: 1, aya: 2, score: 93.5, status: 'safe', performance: 'Monster - Irene & Seulgi', link: 'https://www.instagram.com/star_kca_academy.svs/reel/DWBZCUVjPol/' },
@@ -388,6 +388,15 @@ const MANUAL_ROUNDS_DATA = {
     { name: 'Hope', official: 6, score: 89, neitsu: 2, hauras: 8, bibiblu: 8, kaina: 8, aya: 8, status: 'saved_judges', performance: 'Drama - Aespa (TEAM B)', link: 'https://www.instagram.com/p/DXpANXnjI6o/' },
     { name: 'Heaven', official: 8, score: 82.5, neitsu: 8, hauras: 6, bibiblu: 7, kaina: 9, aya: 9, status: 'eliminated', performance: 'Drama - Aespa (TEAM B)', link: 'https://www.instagram.com/p/DXpANXnjI6o/' },
     { name: 'Asli', official: 9, score: 77, neitsu: 9, hauras: 7, bibiblu: 9, kaina: 5, aya: 7, status: 'eliminated', performance: 'Drama - Aespa (TEAM B)', link: 'https://www.instagram.com/p/DXpANXnjI6o/' }
+  ],
+  FINAL: [
+    { name: 'Hope', official: 1, neitsu: 1, hauras: 1, bibiblu: 6, kaina: 4, aya: 4, score: 92, status: 'safe', performance: 'Fever - Enhypen', link: 'https://www.instagram.com/reel/DY7Y5lKs7Wq/', performance2: 'Psycho - Babymonster', link2: 'https://www.instagram.com/reel/DY7Uv_3MdUl/' },
+    { name: 'Chanel', official: 2, neitsu: 5, hauras: 2, bibiblu: 1, kaina: 1, aya: 1, score: 88, status: 'safe', performance: 'Fever - Enhypen', link: 'https://www.instagram.com/reel/DY7Y5lKs7Wq/', performance2: 'Oh my god - (G)-Idle', link2: 'https://www.instagram.com/reel/DY7RD-BsJCI/' },
+    { name: 'Panida', official: 3, neitsu: 2, hauras: 3, bibiblu: 4, kaina: 3, aya: 6, score: 91, status: 'safe', performance: 'Rude! - Hearts2Hearts', link: 'https://www.instagram.com/reel/DY7NaVgM90F/', performance2: 'Psycho - Babymonster', link2: 'https://www.instagram.com/reel/DY7Uv_3MdUl/' },
+    { name: 'Johi', official: 4, neitsu: 3, hauras: 5, bibiblu: 3, kaina: 7, aya: 3, score: 91, status: 'safe', performance: 'Psycho - Babymonster', link: 'https://www.instagram.com/reel/DY7Uv_3MdUl/', performance2: 'Oh my god - (G)-Idle', link2: 'https://www.instagram.com/reel/DY7RD-BsJCI/' },
+    { name: 'Lea', official: 5, neitsu: 4, hauras: 4, bibiblu: 2, kaina: 6, aya: 2, score: 89, status: 'safe', performance: 'Fever - Enhypen', link: 'https://www.instagram.com/reel/DY7Y5lKs7Wq/', performance2: 'Oh my god - (G)-Idle', link2: 'https://www.instagram.com/reel/DY7RD-BsJCI/' },
+    { name: 'Hwa Young', official: 6, neitsu: 6, hauras: 6, bibiblu: 5, kaina: 2, aya: 7, score: 86, status: 'safe', performance: 'Rude! - Hearts2Hearts', link: 'https://www.instagram.com/reel/DY7NaVgM90F/', performance2: 'Psycho - Babymonster', link2: 'https://www.instagram.com/reel/DY7Uv_3MdUl/' },
+    { name: 'Kelsy', official: 7, neitsu: 7, hauras: 7, bibiblu: 7, kaina: 5, aya: 5, score: 86, status: 'safe', performance: 'Rude! - Hearts2Hearts', link: 'https://www.instagram.com/reel/DY7NaVgM90F/', performance2: 'Oh my god - (G)-Idle', link2: 'https://www.instagram.com/reel/DY7RD-BsJCI/' }
   ]
 };
 
@@ -563,9 +572,9 @@ function resolveContestantIdByName(name) {
   if (byName) return byName.id; return slug;
 }
 
-// 🔥 NOUVELLE LOGIQUE : GESTION INTELLIGENTE DES ÉLIMINÉS
+// 🔥 GESTION INTELLIGENTE DES ÉLIMINÉS ET LIENS MULTIPLES
 function applyAllManualRounds() {
-  const roundsToProcess = ['ROUND_1', 'ROUND_2', 'ROUND_3', 'ROUND_4', 'ROUND_5'];
+  const roundsToProcess = ['ROUND_1', 'ROUND_2', 'ROUND_3', 'ROUND_4', 'ROUND_5', 'FINAL'];
   
   roundsToProcess.forEach(roundId => {
     const results = MANUAL_ROUNDS_DATA[roundId];
@@ -593,7 +602,15 @@ function applyAllManualRounds() {
       if (row.status) state.data.round_status.push({ round_id: roundId, contestant_id: contestantId, status: row.status });
       
       if (row.performance || row.link) { 
-        state.data.submissions.push({ round_id: roundId, contestant_id: contestantId, song_title: row.performance || '', group_song: row.performance || '', bandlab_url: '', youtube_url: row.link || '', notes: '' }); 
+        state.data.submissions.push({ 
+          round_id: roundId, 
+          contestant_id: contestantId, 
+          song_title: row.performance || '', 
+          group_song: row.performance2 || '', // Utilisé pour stocker la perf 2 (FINALE)
+          bandlab_url: row.link2 || '',       // Utilisé pour stocker le lien 2 (FINALE)
+          youtube_url: row.link || '', 
+          notes: '' 
+        }); 
       }
     });
 
@@ -760,7 +777,7 @@ function renderContestants() {
       const status = getStatus(state.latestRound, c.id);
       return `<article class="contestant-card ${status === 'eliminated' ? 'eliminated-card' : ''}" onclick="location.hash='#profile/${c.id}'">
         <img src="${c.photo_url}" loading="lazy" data-contestant-id="${c.id}" alt="${c.name}" onerror="handleImageFallback(this)" />
-        <div class="body"><strong>${getContestantName(c.id)}</strong><div class="small">${Number.isFinite(currentRanks[c.id]) ? `${t('rank')} ${getRoundLabel(state.latestRound)}: #${currentRanks[c.id]}` : `${t('rank')} ${getRoundLabel(state.latestRound)}: —`}</div><span class="pill ${statusClass(status)}">${statusLabel(status)}</span></div>
+        <div class="body" style="padding:0.75rem;"><strong>${getContestantName(c.id)}</strong><div class="small" style="margin-bottom:0.2rem;">${Number.isFinite(currentRanks[c.id]) ? `${t('rank')} ${getRoundLabel(state.latestRound)}: #${currentRanks[c.id]}` : `${t('rank')} ${getRoundLabel(state.latestRound)}: —`}</div><span class="pill ${statusClass(status)}">${statusLabel(status)}</span></div>
       </article>`;
     }).join('') || `<p class="small">${t('no_contestants')}</p>`;
   };
@@ -931,7 +948,7 @@ function renderProfile(contestantId) {
   const meta = [
     c.country ? `${t('country')}: ${c.country}` : '',
     c.pronouns ? `${t('pronouns')}: ${c.pronouns}` : '',
-    c.instagram ? `${t('instagram')}: <a href="${c.instagram}" target="_blank" style="color:var(--accent)">${c.instagram}</a>` : ''
+    c.instagram ? `${t('instagram')}: <a href="${c.instagram.startsWith('http') ? c.instagram : 'https://instagram.com/' + c.instagram.replace('@', '')}" target="_blank" style="color:var(--accent)">${c.instagram}</a>` : ''
   ].filter(Boolean).join(' · ');
 
   root.innerHTML = `
@@ -953,7 +970,7 @@ function renderProfile(contestantId) {
             <table>
               <thead><tr><th>${t('round')}</th><th>${t('official')}</th>${JUDGE_NAMES.map(j => `<th>${j}</th>`).join('')}<th>${t('perf_score')}</th><th>${t('status')}</th></tr></thead>
               <tbody>
-                ${ROUND_ORDER.map(r => `<tr><td>${getRoundLabel(r)}</td><td>${official[r]?.[c.id] ?? '—'}</td>${JUDGE_NAMES.map(j => `<td>${judgesByName[j]?.[r]?.[c.id] ?? '—'}</td>`).join('')}<td>${Number.isFinite(perfScore[r]?.[c.id]) ? perfScore[r][c.id] : '—'}</td><td>${statusLabel(getStatus(r, c.id))}</td></tr>`).join('')}
+                ${ROUND_ORDER.map(r => `<tr><td>${getRoundLabel(r)}</td><td>${official[r]?.[c.id] ?? '—'}</td>${JUDGE_NAMES.map(j => `<td>${judgesByName[j]?.[r]?.[c.id] ?? '—'}</td>`).join('')}<td>${Number.isFinite(perfScore[r]?.[c.id]) ? perfScore[r][c.id] : '—'}</td><td><span class="pill ${statusClass(getStatus(r, c.id))}">${statusLabel(getStatus(r, c.id))}</span></td></tr>`).join('')}
               </tbody>
             </table>
           </div>
@@ -963,7 +980,17 @@ function renderProfile(contestantId) {
             <table>
               <thead><tr><th>${t('round')}</th><th>${t('song')}</th><th>${t('links')}</th></tr></thead>
               <tbody>
-                ${submissions.map(s => `<tr><td>${getRoundLabel(s.round_id) || s.round_id}</td><td>${s.song_title || s.group_song || t('tbd')}</td><td>${s.youtube_url ? `<a target="_blank" href="${s.youtube_url}">${t('link_perf')}</a>` : '—'}${s.bandlab_url ? ` · <a target="_blank" href="${s.bandlab_url}">BandLab</a>` : ''}</td></tr>`).join('') || `<tr><td colspan="3">${t('no_links')}</td></tr>`}
+                ${submissions.map(s => `<tr>
+                  <td>${getRoundLabel(s.round_id) || s.round_id}</td>
+                  <td>
+                    ${s.song_title || t('tbd')}
+                    ${s.group_song ? `<br><span style="color:var(--muted); font-size:0.85em">${s.group_song}</span>` : ''}
+                  </td>
+                  <td>
+                    ${s.youtube_url ? `<a target="_blank" href="${s.youtube_url}">${t('link_perf')}</a>` : '—'}
+                    ${s.bandlab_url ? `<br><a target="_blank" href="${s.bandlab_url}">${t('link_perf')} 2</a>` : ''}
+                  </td>
+                </tr>`).join('') || `<tr><td colspan="3">${t('no_links')}</td></tr>`}
               </tbody>
             </table>
           </div>
