@@ -81,12 +81,20 @@
     .contestant-card img { width: 100%; height: 165px; object-fit: cover; display: block; }
     .contestant-card.eliminated-card { opacity: .75; border-color: rgba(148,163,184,.3); }
     .contestant-card.eliminated-card img { filter: grayscale(100%) contrast(.85); }
-    .pill { display: inline-block; margin-top: .32rem; padding: .16rem .52rem; border-radius: 999px; font-size: .72rem; border: 1px solid transparent; }
-    .safe { background: rgba(34,197,94,.16); border-color: rgba(34,197,94,.45); }
-    .nominee { background: rgba(245,158,11,.16); border-color: rgba(245,158,11,.42); }
-    .saved_judges, .saved_public { background: rgba(59,130,246,.16); border-color: rgba(59,130,246,.42); }
-    .eliminated { background: rgba(239,68,68,.16); border-color: rgba(239,68,68,.42); }
-    .tbd { background: rgba(148,163,184,.16); border-color: rgba(148,163,184,.42); }
+    .pill { display: inline-block; margin-top: .32rem; padding: .2rem .55rem; border-radius: 999px; font-size: .72rem; border: 1px solid transparent; letter-spacing: 0.03em; }
+    
+    /* Statuts Classiques */
+    .safe { background: rgba(34,197,94,.16); border-color: rgba(34,197,94,.45); color: #86efac; }
+    .nominee { background: rgba(245,158,11,.16); border-color: rgba(245,158,11,.42); color: #fcd34d; }
+    .saved_judges, .saved_public { background: rgba(59,130,246,.16); border-color: rgba(59,130,246,.42); color: #93c5fd; }
+    .eliminated { background: rgba(239,68,68,.16); border-color: rgba(239,68,68,.42); color: #fca5a5; }
+    .tbd { background: rgba(148,163,184,.16); border-color: rgba(148,163,184,.42); color: #cbd5e1; }
+    
+    /* NOUVEAUX STATUTS FINALE (COULEURS MÉDAILLES) */
+    .winner { background: rgba(255, 215, 0, 0.15); border-color: #ffd700; color: #ffd700; font-weight: 800; box-shadow: 0 0 10px rgba(255, 215, 0, 0.2); }
+    .second { background: rgba(192, 192, 192, 0.15); border-color: #c0c0c0; color: #e2e8f0; font-weight: bold; box-shadow: 0 0 6px rgba(192, 192, 192, 0.15); }
+    .third { background: rgba(205, 127, 50, 0.15); border-color: #cd7f32; color: #fdba74; font-weight: bold; box-shadow: 0 0 6px rgba(205, 127, 50, 0.15); }
+    .fourth, .fifth, .sixth, .seventh { background: rgba(139, 92, 246, 0.15); border-color: rgba(139, 92, 246, 0.5); color: #d8b4fe; font-weight: bold; }
     
     .row { display: grid; grid-template-columns: 1fr; gap: 1rem; }
     @media (min-width: 840px) { .row.two { grid-template-columns: 280px 1fr; } }
@@ -161,6 +169,7 @@ const I18N = {
   en: {
     tagline: "Contestants · Rankings · Votes", nav_contestants: "Contestants", nav_rankings: "Rankings", nav_votes: "Votes",
     search_ph: "Search name...", all_status: "All status", safe: "Safe", nominee: "Nominee", saved_judges: "Saved judges", saved_public: "Saved public", eliminated: "Eliminated", tbd: "TBD",
+    winner: "WINNER 👑", second: "2ND 🥈", third: "3RD 🥉", fourth: "4TH", fifth: "5TH", sixth: "6TH", seventh: "7TH",
     auto_updated: "Auto-updated from latest available official ranking/status round:", no_contestants: "No contestants found.",
     rank: "Rank", pos: "Pos", name: "Name", rankings_desc: "Table shows rank trajectory by round. Use the dropdowns to explore past rounds.",
     nominations: "Nominations", nominee_lbl: "Nominee", saved_judges_lbl: "Saved judges", saved_public_lbl: "Saved public", eliminated_lbl: "Eliminated",
@@ -181,6 +190,7 @@ const I18N = {
   fr: {
     tagline: "Candidats · Classements · Votes", nav_contestants: "Candidats", nav_rankings: "Classements", nav_votes: "Votes",
     search_ph: "Rechercher...", all_status: "Tous les statuts", safe: "Sauvé", nominee: "Nominé", saved_judges: "Sauvé (Juges)", saved_public: "Sauvé (Public)", eliminated: "Éliminé", tbd: "À venir",
+    winner: "WINNER 👑", second: "2ÈME 🥈", third: "3ÈME 🥉", fourth: "4ÈME", fifth: "5ÈME", sixth: "6ÈME", seventh: "7ÈME",
     auto_updated: "Mis à jour via le dernier classement officiel :", no_contestants: "Aucun candidat trouvé.",
     rank: "Rang", pos: "Pos", name: "Nom", rankings_desc: "Évolution du classement. Utilisez les menus pour explorer les anciens rounds.",
     nominations: "Nominations", nominee_lbl: "Nominé", saved_judges_lbl: "Sauvé (Juges)", saved_public_lbl: "Sauvé (Public)", eliminated_lbl: "Éliminé",
@@ -201,6 +211,7 @@ const I18N = {
   es: {
     tagline: "Concursantes · Clasificaciones · Votos", nav_contestants: "Concursantes", nav_rankings: "Clasificaciones", nav_votes: "Votos",
     search_ph: "Buscar nombre...", all_status: "Todos los estados", safe: "A salvo", nominee: "Nominado", saved_judges: "Salvado (Jueces)", saved_public: "Salvado (Público)", eliminated: "Eliminado", tbd: "Por definir",
+    winner: "GANADORA 👑", second: "2DA 🥈", third: "3RA 🥉", fourth: "4TA", fifth: "5TA", sixth: "6TA", seventh: "7MA",
     auto_updated: "Actualizado automáticamente según la última ronda:", no_contestants: "No se encontraron concursantes.",
     rank: "Rango", pos: "Pos", name: "Nombre", rankings_desc: "La tabla muestra la trayectoria por ronda. Usa los menús para ver rondas pasadas.",
     nominations: "Nominaciones", nominee_lbl: "Nominado", saved_judges_lbl: "Salvados (Jueces)", saved_public_lbl: "Salvados (Público)", eliminated_lbl: "Eliminados",
@@ -221,6 +232,7 @@ const I18N = {
   ko: {
     tagline: "참가자 · 순위 · 투표", nav_contestants: "참가자", nav_rankings: "순위", nav_votes: "투표",
     search_ph: "이름 검색...", all_status: "모든 상태", safe: "생존", nominee: "후보", saved_judges: "심사위원 구제", saved_public: "대중 구제", eliminated: "탈락", tbd: "미정",
+    winner: "우승 👑", second: "2위 🥈", third: "3위 🥉", fourth: "4위", fifth: "5위", sixth: "6위", seventh: "7위",
     auto_updated: "최근 공식 순위에 따라 자동 업데이트됨:", no_contestants: "참가자를 찾을 수 없습니다.",
     rank: "순위", pos: "점수 순위", name: "이름", rankings_desc: "라운드별 순위 변동입니다. 드롭다운을 사용하여 이전 라운드를 확인하세요.",
     nominations: "후보 및 결과", nominee_lbl: "후보", saved_judges_lbl: "심사위원 구제", saved_public_lbl: "대중 구제", eliminated_lbl: "탈락",
@@ -390,13 +402,13 @@ const MANUAL_ROUNDS_DATA = {
     { name: 'Asli', official: 9, score: 77, neitsu: 9, hauras: 7, bibiblu: 9, kaina: 5, aya: 7, status: 'eliminated', performance: 'Drama - Aespa (TEAM B)', link: 'https://www.instagram.com/p/DXpANXnjI6o/' }
   ],
   FINAL: [
-    { name: 'Hope', official: 1, neitsu: 1, hauras: 1, bibiblu: 6, kaina: 4, aya: 4, score: 92, status: 'safe', performance: 'Fever - Enhypen', link: 'https://www.instagram.com/reel/DY7Y5lKs7Wq/', performance2: 'Psycho - Babymonster', link2: 'https://www.instagram.com/reel/DY7Uv_3MdUl/' },
-    { name: 'Chanel', official: 2, neitsu: 5, hauras: 2, bibiblu: 1, kaina: 1, aya: 1, score: 88, status: 'safe', performance: 'Fever - Enhypen', link: 'https://www.instagram.com/reel/DY7Y5lKs7Wq/', performance2: 'Oh my god - (G)-Idle', link2: 'https://www.instagram.com/reel/DY7RD-BsJCI/' },
-    { name: 'Panida', official: 3, neitsu: 2, hauras: 3, bibiblu: 4, kaina: 3, aya: 6, score: 91, status: 'safe', performance: 'Rude! - Hearts2Hearts', link: 'https://www.instagram.com/reel/DY7NaVgM90F/', performance2: 'Psycho - Babymonster', link2: 'https://www.instagram.com/reel/DY7Uv_3MdUl/' },
-    { name: 'Johi', official: 4, neitsu: 3, hauras: 5, bibiblu: 3, kaina: 7, aya: 3, score: 91, status: 'safe', performance: 'Psycho - Babymonster', link: 'https://www.instagram.com/reel/DY7Uv_3MdUl/', performance2: 'Oh my god - (G)-Idle', link2: 'https://www.instagram.com/reel/DY7RD-BsJCI/' },
-    { name: 'Lea', official: 5, neitsu: 4, hauras: 4, bibiblu: 2, kaina: 6, aya: 2, score: 89, status: 'safe', performance: 'Fever - Enhypen', link: 'https://www.instagram.com/reel/DY7Y5lKs7Wq/', performance2: 'Oh my god - (G)-Idle', link2: 'https://www.instagram.com/reel/DY7RD-BsJCI/' },
-    { name: 'Hwa Young', official: 6, neitsu: 6, hauras: 6, bibiblu: 5, kaina: 2, aya: 7, score: 86, status: 'safe', performance: 'Rude! - Hearts2Hearts', link: 'https://www.instagram.com/reel/DY7NaVgM90F/', performance2: 'Psycho - Babymonster', link2: 'https://www.instagram.com/reel/DY7Uv_3MdUl/' },
-    { name: 'Kelsy', official: 7, neitsu: 7, hauras: 7, bibiblu: 7, kaina: 5, aya: 5, score: 86, status: 'safe', performance: 'Rude! - Hearts2Hearts', link: 'https://www.instagram.com/reel/DY7NaVgM90F/', performance2: 'Oh my god - (G)-Idle', link2: 'https://www.instagram.com/reel/DY7RD-BsJCI/' }
+    { name: 'Hope', official: 1, neitsu: 1, hauras: 1, bibiblu: 6, kaina: 4, aya: 4, score: 92, status: 'winner', performance: 'Fever - Enhypen', link: 'https://www.instagram.com/reel/DY7Y5lKs7Wq/', performance2: 'Psycho - Babymonster', link2: 'https://www.instagram.com/reel/DY7Uv_3MdUl/' },
+    { name: 'Chanel', official: 2, neitsu: 5, hauras: 2, bibiblu: 1, kaina: 1, aya: 1, score: 88, status: 'second', performance: 'Fever - Enhypen', link: 'https://www.instagram.com/reel/DY7Y5lKs7Wq/', performance2: 'Oh my god - (G)-Idle', link2: 'https://www.instagram.com/reel/DY7RD-BsJCI/' },
+    { name: 'Panida', official: 3, neitsu: 2, hauras: 3, bibiblu: 4, kaina: 3, aya: 6, score: 91, status: 'third', performance: 'Rude! - Hearts2Hearts', link: 'https://www.instagram.com/reel/DY7NaVgM90F/', performance2: 'Psycho - Babymonster', link2: 'https://www.instagram.com/reel/DY7Uv_3MdUl/' },
+    { name: 'Johi', official: 4, neitsu: 3, hauras: 5, bibiblu: 3, kaina: 7, aya: 3, score: 91, status: 'fourth', performance: 'Psycho - Babymonster', link: 'https://www.instagram.com/reel/DY7Uv_3MdUl/', performance2: 'Oh my god - (G)-Idle', link2: 'https://www.instagram.com/reel/DY7RD-BsJCI/' },
+    { name: 'Lea', official: 5, neitsu: 4, hauras: 4, bibiblu: 2, kaina: 6, aya: 2, score: 89, status: 'fifth', performance: 'Fever - Enhypen', link: 'https://www.instagram.com/reel/DY7Y5lKs7Wq/', performance2: 'Oh my god - (G)-Idle', link2: 'https://www.instagram.com/reel/DY7RD-BsJCI/' },
+    { name: 'Hwa Young', official: 6, neitsu: 6, hauras: 6, bibiblu: 5, kaina: 2, aya: 7, score: 86, status: 'sixth', performance: 'Rude! - Hearts2Hearts', link: 'https://www.instagram.com/reel/DY7NaVgM90F/', performance2: 'Psycho - Babymonster', link2: 'https://www.instagram.com/reel/DY7Uv_3MdUl/' },
+    { name: 'Kelsy', official: 7, neitsu: 7, hauras: 7, bibiblu: 7, kaina: 5, aya: 5, score: 86, status: 'seventh', performance: 'Rude! - Hearts2Hearts', link: 'https://www.instagram.com/reel/DY7NaVgM90F/', performance2: 'Oh my god - (G)-Idle', link2: 'https://www.instagram.com/reel/DY7RD-BsJCI/' }
   ]
 };
 
@@ -572,7 +584,6 @@ function resolveContestantIdByName(name) {
   if (byName) return byName.id; return slug;
 }
 
-// 🔥 GESTION INTELLIGENTE DES ÉLIMINÉS ET LIENS MULTIPLES
 function applyAllManualRounds() {
   const roundsToProcess = ['ROUND_1', 'ROUND_2', 'ROUND_3', 'ROUND_4', 'ROUND_5', 'FINAL'];
   
@@ -606,8 +617,8 @@ function applyAllManualRounds() {
           round_id: roundId, 
           contestant_id: contestantId, 
           song_title: row.performance || '', 
-          group_song: row.performance2 || '', // Utilisé pour stocker la perf 2 (FINALE)
-          bandlab_url: row.link2 || '',       // Utilisé pour stocker le lien 2 (FINALE)
+          group_song: row.performance2 || '', 
+          bandlab_url: row.link2 || '',       
           youtube_url: row.link || '', 
           notes: '' 
         }); 
@@ -617,19 +628,15 @@ function applyAllManualRounds() {
     const allIds = state.data.contestants.map(c => c.id).filter(Boolean);
     allIds.forEach((id) => { 
       if (!idsInResults.has(id) && !state.data.round_status.some(r => r.round_id === roundId && r.contestant_id === id)) { 
-        
-        // On vérifie le statut du candidat dans les rounds précédents
         const priorStatuses = state.data.round_status.filter(r => r.contestant_id === id);
         let isEliminated = false;
         
         if (priorStatuses.length > 0) {
           const lastStatus = priorStatuses[priorStatuses.length - 1].status;
           if (lastStatus === 'eliminated') {
-            isEliminated = true; // Il a déjà été éliminé avant !
+            isEliminated = true; 
           }
         }
-        
-        // S'il était éliminé, il reste éliminé. Sinon on le met safe.
         state.data.round_status.push({ round_id: roundId, contestant_id: id, status: isEliminated ? 'eliminated' : 'safe' }); 
       } 
     });
@@ -771,7 +778,7 @@ function renderContestants() {
       const status = getStatus(state.latestRound, c.id);
       if (f === 'all') return true;
       if (f === 'tbd') return !status;
-      return status === f;
+      return status === f || (f === 'safe' && ['winner', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh'].includes(status)); // Inclure les gagnantes si on filtre "safe"
     });
     document.getElementById('contestantsGrid').innerHTML = list.map(c => {
       const status = getStatus(state.latestRound, c.id);
